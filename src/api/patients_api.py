@@ -2,12 +2,8 @@ from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Query, Depends
 from sqlmodel import Session, select
-from schema.wounds.schema import Patients
-from schema.wounds.schema import PatientsPublic
-from schema.wounds.schema import PatientsCreate
-from schema.wounds.schema import PatientsUpdate
-from schema.wounds.schema import PatientsPublicWithWounds
 from db.manager import Database
+from schema.schema import Patients, PatientsCreate, PatientsPublic, PatientsPublicWithWounds, PatientsUpdate
 
 wounds_patients_router = APIRouter()
 BASE_URL_PATIENTS = "/patients/"

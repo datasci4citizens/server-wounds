@@ -1,7 +1,8 @@
-from sqlmodel import create_engine, Session
+from sqlmodel import create_engine, Session, select
 
 import db.config as config
-from schema.common.users_schema import Users
+from schema.users_schema import Users
+from schema.schema import Comorbidities
 
 
 class Database:
@@ -14,6 +15,29 @@ class Database:
         """Create the database and tables that do not exist"""
         Users.metadata.create_all(self.engine)
 
+    def create_initial_comorbidities(self, engine):
+        """ Create the most commom comorbidities """
+
+        session = Session(engine)
+        
+        existing_comorbidities = session.exec(select(Comorbidities)).first()
+
+        if not existing_comorbidities:
+            comorbidities = [
+                Comorbidities(cid11_code="5A10", name="Diabetes mellitus tipo 1"),
+                Comorbidities(cid11_code="5A11", name="Diabetes mellitus tipo 2"),
+                Comorbidities(cid11_code="BA00", name="Hipertensão Essencial"),
+                Comorbidities(cid11_code="5B81", name="Obesidade"),
+                Comorbidities(cid11_code="8B20", name="Acidente vascular cerebral não conhecido se isquêmico ou hemorrágico"),
+                Comorbidities(cid11_code="5C80", name="Hiperlipoproteinemia")
+            ]
+
+            session.add_all(comorbidities)
+            session.commit()
+
+        session.close()
+
+
     # Singleton Database instance attribute
     _db_instance = None
 
@@ -24,6 +48,7 @@ class Database:
         if Database._db_instance is None:
             Database._db_instance = Database()
             Database._db_instance.create_db()
+            Database._db_instance.create_initial_comorbidities(Database._db_instance.engine)
 
         return Database._db_instance.engine
 
