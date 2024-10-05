@@ -1,11 +1,10 @@
-from datetime import datetime
+from datetime import datetime, date
 from sqlmodel import Field, SQLModel, Relationship
 
 """ SPECIALISTS TABLES """
 class SpecialistsBase(SQLModel):
     email: str
     name: str
-    phone_number: str
     is_allowed: bool
 
 class SpecialistsCreate(SpecialistsBase):
@@ -19,35 +18,63 @@ class SpecialistsPublic(SpecialistsBase):
 class SpecialistsUpdate(SQLModel):
     email: str | None = None
     name: str | None = None
-    phone_number: str | None = None
+    is_allowed: bool | None = None
 
 class Specialists(SpecialistsBase, table=True):
     specialist_id: int = Field(default=None, primary_key=True)
     created_at: datetime
     updated_at: datetime
 
+    patients: list["Patients"] = Relationship(back_populates="specialist")
     tracking_records: list["TrackingRecords"] = Relationship(back_populates="specialist")
+
+""" COMORBIDITIES TABLES """
+class ComorbiditiesBase(SQLModel):
+    cid11_code: str
+    name: str
+
+class ComorbiditiesCreate(ComorbiditiesBase):
+    pass
+
+class ComorbiditiesPublic(ComorbiditiesBase):
+    comorbidity_id: int
+
+class ComorbiditiesUpdate(SQLModel):
+    cid11_code: str | None = None
+    name: str | None = None
+
+class Comorbidities(ComorbiditiesBase, table=True):
+    comorbidity_id: int = Field(default=None, primary_key=True) # ta dando erro
+
+    patients: list["PatientComorbidities"] = Relationship(back_populates="comorbidity")
+
+class PatientComorbidities(SQLModel, table=True):
+    patient_id: int = Field(foreign_key="patients.patient_id", primary_key=True)
+    comorbidity_id: int = Field(foreign_key="comorbidities.comorbidity_id", primary_key=True)
+
+    # Relacionamentos para paciente e comorbidade
+    patient: "Patients" = Relationship(back_populates="comorbidities")
+    comorbidity: Comorbidities = Relationship(back_populates="patients")
 
 """ PATIENTS TABLES """
 class PatientsBase(SQLModel):
     name: str
-    birthday: datetime | None = None
+    gender: str
+    birthday: date
+    email: str
     phone_number: str
-    is_smoker: bool
-    drink_frequency: str
-    observations: str | None = None
     accept_tcle: bool
+    specialist_id: int = Field(foreign_key="specialists.specialist_id")
 
 class PatientsCreate(PatientsBase):
     pass
 
 class PatientsUpdate(SQLModel):
     name: str | None = None
-    birthday: datetime | None = None
+    gender: str | None = None
+    birthday: date | None = None
+    email: str | None = None
     phone_number: str | None = None
-    is_smoker: bool | None = None
-    drink_frequency: str | None = None
-    observations: str | None = None
     accept_tcle: bool | None = None
 
 class PatientsPublic(PatientsBase):
@@ -59,37 +86,20 @@ class Patients(PatientsBase, table=True):
     patient_id: int = Field(default=None, primary_key=True)
     created_at: datetime
     updated_at: datetime
-
+    
+    specialist: "Specialists" = Relationship(back_populates="patients") # não sei se ta certo
+    comorbidities: list[PatientComorbidities] = Relationship(back_populates="patient")
     wounds: list["Wounds"] = Relationship(back_populates="patient")
-    tracking_records: list["TrackingRecords"] = Relationship(back_populates="patient")
-
-""" WOUNDTYPEs TABLES """
-
-class WoundTypesBase(SQLModel):
-    wound_type_name: str
-
-class WoundTypesCreate(WoundTypesBase):
-    pass
-
-class WoundTypesUpdate(SQLModel):
-    wound_type_name: str | None = None
-
-class WoundTypesPublic(WoundTypesBase):
-    wound_type_id: int
-
-class WoundTypes(WoundTypesBase, table = True):
-    wound_type_id: int = Field(default=None, primary_key=True)
-
-    wounds: list["Wounds"] = Relationship(back_populates="wound_type")
+    # tracking_records: list["TrackingRecords"] = Relationship(back_populates="patient")
 
 """ WOUNDS TABLES """
 """ no tutorial do sqlmodel, wounds é o hero e patient e wound_type é o team"""
 class WoundsBase(SQLModel):
-    wound_location: str
-    start_date: datetime
-    end_date: datetime | None = None
+    wound_location: str 
+    wound_type: str
+    start_date: date
+    end_date: date | None = None
     patient_id: int = Field(foreign_key="patients.patient_id")
-    wound_type_id: int = Field(foreign_key="woundtypes.wound_type_id")
 
 class WoundsCreate(WoundsBase):
     pass
@@ -97,7 +107,7 @@ class WoundsCreate(WoundsBase):
 class WoundsUpdate(SQLModel):
     # wound_location: str | None = None # acho que não deveria da pra mudar a localização da ferida
     # start_date: datetime | None = None
-    end_date: datetime | None = None
+    end_date: date | None = None
     # wound_type_id: int | None = None
 
 class WoundsPublic(WoundsBase):
@@ -107,25 +117,26 @@ class Wounds(WoundsBase, table = True):
     wound_id: int = Field(default=None, primary_key=True)
     created_at: datetime
     updated_at: datetime
-    patient: Patients = Relationship(back_populates="wounds")
-    wound_type: WoundTypes = Relationship(back_populates="wounds")
+    patient: "Patients" = Relationship(back_populates="wounds")
 
     tracking_records: list["TrackingRecords"] = Relationship(back_populates="wound")
 
 """ TRACKING RECORDS TABLES"""
 class TrackingRecordsBase(SQLModel):
-    wound_color: str
-    wound_aspect: str
-    secretion_amount: str
-    smell: str
-    temperature: float
-    dressing: str | None = None
-    wound_length: float
-    wound_height: float
-    wound_area: float
+    wound_size: str
+    wound_size_score: int
+    exudate_amount: str
+    exudate_type: str
+    tissue_type: str 
+    wound_edges: str | None = None
+    skin_around_the_wound: str | None = None
+    had_a_fever: bool | None = None
+    pain_level: str | None = None
+    dressing_changes_per_day: str | None = None
+    conduct: str | None = None
+    extra_notes: str | None = None
     image_id: int
-    observations: str | None = None
-    patient_id: int = Field(foreign_key="patients.patient_id")
+    # patient_id: int = Field(foreign_key="patients.patient_id")
     wound_id: int = Field(foreign_key="wounds.wound_id")
     specialist_id: int = Field(foreign_key="specialists.specialist_id")
 
@@ -133,27 +144,32 @@ class TrackingRecordsCreate(TrackingRecordsBase):
     pass
 
 class TrackingRecordsUpdate(SQLModel):
-    wound_color: str | None = None
-    wound_aspect: str | None = None
-    secretion_amount: str | None = None
-    smell: str | None = None
-    temperature: float | None = None
-    dressing: str | None = None
-    wound_length: float | None = None
-    wound_height: float | None = None
-    wound_area: float | None = None
+    wound_size: float | None = None 
+    wound_size_score: int | None = None
+    exudate_amount: str | None = None
+    exudate_amount_score: int | None = None
+    exudate_type: str | None = None
+    tissue_type: str | None = None
+    tissue_type_score: int | None = None
+    wound_edges: str | None = None 
+    skin_around_the_wound: str | None = None 
+    had_a_fever: bool | None = None
+    pain_level: str | None = None
+    dressing_changes_per_day: str | None = None
+    conduct: str | None = None
+    extra_notes: str | None = None
     image_id: int | None = None
-    observations: str | None = None
 
 class TrackingRecordsPublic(TrackingRecordsBase):
     tracking_record_id: int
     created_at: datetime
+    updated_at: datetime
 
 class TrackingRecords(TrackingRecordsBase, table = True):
     tracking_record_id: int = Field(default=None, primary_key=True)
     created_at: datetime
     updated_at: datetime
-    patient: Patients = Relationship(back_populates="tracking_records")
+    # patient: Patients = Relationship(back_populates="tracking_records")
     wound: Wounds = Relationship(back_populates="tracking_records")
     specialist: Specialists = Relationship(back_populates="tracking_records")
 
@@ -161,12 +177,8 @@ class TrackingRecords(TrackingRecordsBase, table = True):
 class PatientsPublicWithWounds(PatientsPublic):
     wounds: list[WoundsPublic] = []
 
-class WoundsPublicWithWoundType(WoundsPublic):
-    wound_type: WoundTypes | None = None
-
 class WoundsPublicWithPatient(WoundsPublic):
     patient: PatientsPublic | None = None
-    wound_type: WoundTypes | None = None
 
 class WoundsPublicWithTrackingRecords(WoundsPublic):
     tracking_records: list[TrackingRecordsPublic] = []
