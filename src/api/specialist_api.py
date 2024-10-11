@@ -3,7 +3,7 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException, Query, Depends
 from sqlmodel import Session, select
 from db.manager import Database
-from schema.schema import Specialists, SpecialistsCreate, SpecialistsPublic, SpecialistsUpdate
+from schema.schema import Specialists, SpecialistsCreate, SpecialistsPublic, SpecialistsUpdate, SpecialistsPublicWithTrackingRecords,SpecialistsPublicWithPatients
 
 wounds_specialist_router = APIRouter()
 BASE_URL_SPECIALISTS = "/specialists/"
@@ -50,6 +50,30 @@ def get_specialist_by_id(
         specialist_id: int
 ):
     """Get specific specialist"""
+    specialist = session.get(Specialists, specialist_id)
+    if not specialist:
+        raise HTTPException(status_code=404, detail="Specialist not found")
+    return specialist
+
+@wounds_specialist_router.get(BASE_URL_SPECIALISTS + "{specialist_id}" + "/tracking-records", response_model=SpecialistsPublicWithTrackingRecords)
+def get_specialist_tracking_wounds(
+        *,
+        session: Session = Depends(Database.get_session),
+        specialist_id: int
+):
+    """Get tracking records that have been analyzed by an specialist"""
+    specialist = session.get(Specialists, specialist_id)
+    if not specialist:
+        raise HTTPException(status_code=404, detail="Specialist not found")
+    return specialist
+
+@wounds_specialist_router.get(BASE_URL_SPECIALISTS + "{specialist_id}" + "/patients", response_model=SpecialistsPublicWithPatients)
+def get_specialist_patients(
+        *,
+        session: Session = Depends(Database.get_session),
+        specialist_id: int
+):
+    """Get specialist1s patients"""
     specialist = session.get(Specialists, specialist_id)
     if not specialist:
         raise HTTPException(status_code=404, detail="Specialist not found")

@@ -6,7 +6,6 @@ from schema.schema import Wounds
 from schema.schema import WoundsPublic
 from schema.schema import WoundsCreate
 from schema.schema import WoundsUpdate
-from schema.schema import WoundsPublicWithPatient
 from schema.schema import WoundsPublicWithTrackingRecords
 from db.manager import Database
 
@@ -50,18 +49,6 @@ def update_wound(
 
 @wounds_router.get(BASE_URL_WOUNDS + "{wound_id}", response_model=WoundsPublic)
 def get_wound_by_id(
-        *,
-        session: Session = Depends(Database.get_session),
-        wound_id: int
-):
-    """Get specific wound"""
-    wound = session.get(Wounds, wound_id)
-    if not wound:
-        raise HTTPException(status_code=404, detail="Wound not found")
-    return wound
-
-@wounds_router.get(BASE_URL_WOUNDS + "{wound_id}" + "/patient", response_model=WoundsPublicWithPatient)
-def get_wound_with_patient(
         *,
         session: Session = Depends(Database.get_session),
         wound_id: int

@@ -6,27 +6,10 @@ from db.manager import Database
 from schema.schema import Comorbidities, ComorbiditiesCreate, ComorbiditiesPublic, ComorbiditiesUpdate
 
 comorbidities_router = APIRouter()
-BASE_URL_WOUNDS_TYPE = "/comorbidities/"
+BASE_URL_COMORBIDITIES = "/comorbidities/"
 
-@comorbidities_router.post(BASE_URL_WOUNDS_TYPE, response_model=ComorbiditiesPublic)
-def create_comorbidity(
-        *,
-        session: Session = Depends(Database.get_session),
-        comorbidity: ComorbiditiesCreate
-):
-    """Create a new comorbidity"""
-    # na criação de uma nova comorbidade, devemos adicionar um busca a api do cid11 para verificar se realmente existe a doença
-    # https://id.who.int/swagger/index.html -> endpoints da api (swagger)
-    # https://icd.who.int/docs/icd-api/APIDoc-Version2/ -> documentação da api
-    dates = {"created_at": datetime.now(), "updated_at": datetime.now()}
-    db_comorbidity = Comorbidities.model_validate(comorbidity, update=dates)
-    session.add(db_comorbidity)
-    session.commit()
-    session.refresh(db_comorbidity)
-    return db_comorbidity
-
-
-@comorbidities_router.patch(BASE_URL_WOUNDS_TYPE + "{comorbidity_id}", response_model=ComorbiditiesPublic)
+# The creation of comorbidities will happen when creating patients, so there will not be an exclusive endpoint for this, for now
+@comorbidities_router.patch(BASE_URL_COMORBIDITIES + "{comorbidity_id}", response_model=ComorbiditiesPublic)
 def update_comorbidity(
         *,
         session: Session = Depends(Database.get_session),
@@ -34,7 +17,6 @@ def update_comorbidity(
         comorbidity: ComorbiditiesUpdate
 ):
     """Update comorbidity"""
-    # na atualização de uma nova comorbidade, devemos adicionar um busca a api do cid11 para verificar se realmente existe a doença
     # https://id.who.int/swagger/index.html -> endpoints da api (swagger)
     # https://icd.who.int/docs/icd-api/APIDoc-Version2/ -> documentação da api
     db_comorbidity = session.get(Comorbidities, comorbidity_id)
@@ -49,7 +31,7 @@ def update_comorbidity(
     return db_comorbidity
 
 
-@comorbidities_router.get(BASE_URL_WOUNDS_TYPE + "{comorbidity_id}", response_model=ComorbiditiesPublic)
+@comorbidities_router.get(BASE_URL_COMORBIDITIES + "{comorbidity_id}", response_model=ComorbiditiesPublic)
 def get_comorbidity_by_id(
         *,
         session: Session = Depends(Database.get_session),
@@ -61,8 +43,7 @@ def get_comorbidity_by_id(
         raise HTTPException(status_code=404, detail="Comorbidity not found")
     return comorbidity
 
-
-@comorbidities_router.get(BASE_URL_WOUNDS_TYPE, response_model=list[ComorbiditiesPublic])
+@comorbidities_router.get(BASE_URL_COMORBIDITIES, response_model=list[ComorbiditiesPublic])
 def get_all_comorbidities(
         *,
         session: Session = Depends(Database.get_session),
@@ -74,7 +55,7 @@ def get_all_comorbidities(
     return types
 
 
-@comorbidities_router.delete(BASE_URL_WOUNDS_TYPE + "{comorbidity_id}")
+@comorbidities_router.delete(BASE_URL_COMORBIDITIES + "{comorbidity_id}")
 def delete_comorbidity(
         *,
         session: Session = Depends(Database.get_session),
