@@ -2,11 +2,8 @@ from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Depends
 from sqlmodel import Session
-from schema.wounds.schema import TrackingRecords
-from schema.wounds.schema import TrackingRecordsPublic
-from schema.wounds.schema import TrackingRecordsCreate
-from schema.wounds.schema import TrackingRecordsUpdate
 from db.manager import Database
+from schema.schema import TrackingRecords, TrackingRecordsCreate, TrackingRecordsPublic, TrackingRecordsUpdate
 
 wounds_tracking_records_router = APIRouter()
 BASE_URL_TRACKING_RECORDS = "/tracking-records/"
