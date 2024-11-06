@@ -45,5 +45,5 @@ cd src
 Run server
 
 ~~~
-fastapi dev main_common.py
+fastapi dev main.py
 ~~~
