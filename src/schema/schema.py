@@ -5,7 +5,10 @@ from sqlmodel import Field, SQLModel, Relationship
 class SpecialistsBase(SQLModel):
     email: str
     name: str
-    is_allowed: bool
+    birthday: date
+    state: str
+    city: str
+    speciality: str
 
 class SpecialistsCreate(SpecialistsBase):
     pass
@@ -18,7 +21,10 @@ class SpecialistsPublic(SpecialistsBase):
 class SpecialistsUpdate(SQLModel):
     email: str | None = None
     name: str | None = None
-    is_allowed: bool | None = None
+    birthday: date | None = None
+    state: str | None = None
+    city: str | None = None
+    speciality: str | None = None
 
 class Specialists(SpecialistsBase, table=True):
     specialist_id: int = Field(default=None, primary_key=True)
@@ -49,7 +55,7 @@ class ComorbiditiesUpdate(SQLModel):
     name: str | None = None
 
 class Comorbidities(ComorbiditiesBase, table=True):
-    comorbidity_id: int = Field(default=None, primary_key=True) # ta dando erro
+    comorbidity_id: int = Field(default=None, primary_key=True)
 
     patients: list["Patients"] = Relationship(back_populates="comorbidities", link_model=PatientComorbidities)
 
@@ -59,7 +65,12 @@ class PatientsBase(SQLModel):
     gender: str
     birthday: date
     email: str
+    hospital_registration: str
     phone_number: str
+    height: float
+    weight: float
+    smoke_frequency: str
+    drink_frequency: str
     accept_tcle: bool
     specialist_id: int = Field(foreign_key="specialists.specialist_id")
 
@@ -72,7 +83,12 @@ class PatientsUpdate(SQLModel):
     gender: str | None = None
     birthday: date | None = None
     email: str | None = None
+    hospital_registration: str | None = None
     phone_number: str | None = None
+    height: float | None = None
+    weight: float | None = None
+    smoke_frequency: str | None = None
+    drink_frequency: str | None = None
     accept_tcle: bool | None = None
     comorbidities: list[int] | None = None
     comorbidities_to_add: list[str] | None = None
@@ -90,11 +106,12 @@ class Patients(PatientsBase, table=True):
     
     specialist: "Specialists" = Relationship(back_populates="patients") # não sei se ta certo
     comorbidities: list["Comorbidities"] = Relationship(back_populates="patients", link_model=PatientComorbidities)
-    wounds: list["Wounds"] = Relationship(back_populates="patient")
+    wounds: list["Wounds"] = Relationship(back_populates="patient", cascade_delete=True)
 
 """ WOUNDS TABLES """
 class WoundsBase(SQLModel):
-    wound_location: str 
+    wound_region: str
+    wound_subregion: str | None = None
     wound_type: str
     start_date: date
     end_date: date | None = None
@@ -104,7 +121,7 @@ class WoundsCreate(WoundsBase):
     pass
 
 class WoundsUpdate(SQLModel):
-    start_date: datetime | None = None
+    is_active: bool
     end_date: date | None = None
 
 class WoundsPublic(WoundsBase):
@@ -114,9 +131,10 @@ class Wounds(WoundsBase, table = True):
     wound_id: int = Field(default=None, primary_key=True)
     created_at: datetime
     updated_at: datetime
+    is_active: bool
     patient: "Patients" = Relationship(back_populates="wounds")
 
-    tracking_records: list["TrackingRecords"] = Relationship(back_populates="wound")
+    tracking_records: list["TrackingRecords"] = Relationship(back_populates="wound", cascade_delete=True)
 
 """ TRACKING RECORDS TABLES"""
 class TrackingRecordsBase(SQLModel):
@@ -129,9 +147,10 @@ class TrackingRecordsBase(SQLModel):
     had_a_fever: bool | None = None
     pain_level: str | None = None
     dressing_changes_per_day: str | None = None
-    conduct: str | None = None
+    guidelines_to_patient: str | None = None
     extra_notes: str | None = None
     image_id: int
+    created_at: date
     wound_id: int = Field(foreign_key="wounds.wound_id")
     specialist_id: int = Field(foreign_key="specialists.specialist_id")
 
@@ -148,19 +167,20 @@ class TrackingRecordsUpdate(SQLModel):
     had_a_fever: bool | None = None
     pain_level: str | None = None
     dressing_changes_per_day: str | None = None
-    conduct: str | None = None
+    guidelines_to_patient: str | None = None
     extra_notes: str | None = None
     image_id: int | None = None
+    is_active: bool | None = None
+    created_at: date
 
 class TrackingRecordsPublic(TrackingRecordsBase):
     tracking_record_id: int
-    created_at: datetime
     updated_at: datetime
 
 class TrackingRecords(TrackingRecordsBase, table = True):
     tracking_record_id: int = Field(default=None, primary_key=True)
-    created_at: datetime
     updated_at: datetime
+    is_active: bool
     wound: Wounds = Relationship(back_populates="tracking_records")
     specialist: Specialists = Relationship(back_populates="tracking_records")
 
