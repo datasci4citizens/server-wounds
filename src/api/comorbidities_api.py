@@ -17,8 +17,8 @@ def update_comorbidity(
         comorbidity: ComorbiditiesUpdate
 ):
     """Update comorbidity"""
-    # https://id.who.int/swagger/index.html -> endpoints da api (swagger)
-    # https://icd.who.int/docs/icd-api/APIDoc-Version2/ -> documentação da api
+    # https://id.who.int/swagger/index.html -> api's endpoints (swagger)
+    # https://icd.who.int/docs/icd-api/APIDoc-Version2/ -> api's documentation
     db_comorbidity = session.get(Comorbidities, comorbidity_id)
     if not db_comorbidity:
         raise HTTPException(status_code=404, detail="Comorbidity not found")

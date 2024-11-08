@@ -1,8 +1,8 @@
 from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Query, Depends
-from sqlmodel import Session
-from schema.schema import Wounds
+from sqlmodel import Session, select
+from schema.schema import TrackingRecords, Wounds
 from schema.schema import WoundsPublic
 from schema.schema import WoundsCreate
 from schema.schema import WoundsUpdate
@@ -19,7 +19,7 @@ def create_wound(
         wound: WoundsCreate
 ):
     """Create a new wound"""
-    dates = {"created_at": datetime.now(), "updated_at": datetime.now()}
+    dates = {"is_active": True, "created_at": datetime.now(), "updated_at": datetime.now()}
     if wound.start_date == None:
         dates.update({"start_date": datetime.now})
     db_wound = Wounds.model_validate(wound, update=dates)
@@ -73,16 +73,30 @@ def get_wound_tracking_records(
         raise HTTPException(status_code=404, detail="Wound not found")
     return wound
 
-@wounds_router.delete(BASE_URL_WOUNDS + "{wound_id}")
-def delete_wound(
+@wounds_router.put(BASE_URL_WOUNDS + "{wound_id}" + "/archive", response_model=WoundsPublic)
+def archive_wound(
         *,
         session: Session = Depends(Database.get_session),
         wound_id: int
 ):
-    """Delete wound"""
+    """Archive wound"""
     wound = session.get(Wounds, wound_id)
     if not wound:
         raise HTTPException(status_code=404, detail="Wound not found")
-    session.delete(wound)
+    
+    tracking_records = session.exec(select(TrackingRecords).where(TrackingRecords.wound_id == wound_id)).all()
+    if not tracking_records:
+        raise HTTPException(status_code=404, detail="Tracking records for the wound not found")
+    
+    for tracking_record in tracking_records:
+        tracking_record.is_active = False
+        tracking_record.updated_at = datetime.now()
+        session.add(tracking_record)
+        session.commit()
+        session.refresh(tracking_record)
+
+    wound.is_active = False
+    session.add(wound)
     session.commit()
-    return {"ok": True}
+    session.refresh(wound)
+    return wound

@@ -3,12 +3,12 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException, Query, Depends
 from sqlmodel import Session, select
 from db.manager import Database
-from schema.schema import Specialists, SpecialistsCreate, SpecialistsPublic, SpecialistsUpdate, SpecialistsPublicWithTrackingRecords,SpecialistsPublicWithPatients
+from schema.schema import Patients, Specialists, SpecialistsCreate, SpecialistsPublic, SpecialistsUpdate, SpecialistsPublicWithTrackingRecords,SpecialistsPublicWithPatients
 
-wounds_specialist_router = APIRouter()
+specialist_router = APIRouter()
 BASE_URL_SPECIALISTS = "/specialists/"
 
-@wounds_specialist_router.post(BASE_URL_SPECIALISTS, response_model=SpecialistsPublic)
+@specialist_router.post(BASE_URL_SPECIALISTS, response_model=SpecialistsPublic)
 def create_specialist(
         *,
         session: Session = Depends(Database.get_session),
@@ -23,7 +23,7 @@ def create_specialist(
     return db_specialist
     
 
-@wounds_specialist_router.patch(BASE_URL_SPECIALISTS + "{specialist_id}", response_model=SpecialistsPublic)
+@specialist_router.patch(BASE_URL_SPECIALISTS + "{specialist_id}", response_model=SpecialistsPublic)
 def update_specialist(
         *,
         session: Session = Depends(Database.get_session),
@@ -43,7 +43,7 @@ def update_specialist(
     return specialist_db
 
 
-@wounds_specialist_router.get(BASE_URL_SPECIALISTS + "{specialist_id}", response_model=SpecialistsPublic)
+@specialist_router.get(BASE_URL_SPECIALISTS + "{specialist_id}", response_model=SpecialistsPublic)
 def get_specialist_by_id(
         *,
         session: Session = Depends(Database.get_session),
@@ -55,7 +55,7 @@ def get_specialist_by_id(
         raise HTTPException(status_code=404, detail="Specialist not found")
     return specialist
 
-@wounds_specialist_router.get(BASE_URL_SPECIALISTS + "{specialist_id}" + "/tracking-records", response_model=SpecialistsPublicWithTrackingRecords)
+@specialist_router.get(BASE_URL_SPECIALISTS + "{specialist_id}" + "/tracking-records", response_model=SpecialistsPublicWithTrackingRecords)
 def get_specialist_tracking_wounds(
         *,
         session: Session = Depends(Database.get_session),
@@ -67,7 +67,7 @@ def get_specialist_tracking_wounds(
         raise HTTPException(status_code=404, detail="Specialist not found")
     return specialist
 
-@wounds_specialist_router.get(BASE_URL_SPECIALISTS + "{specialist_id}" + "/patients", response_model=SpecialistsPublicWithPatients)
+@specialist_router.get(BASE_URL_SPECIALISTS + "{specialist_id}" + "/patients", response_model=SpecialistsPublicWithPatients)
 def get_specialist_patients(
         *,
         session: Session = Depends(Database.get_session),
@@ -79,7 +79,7 @@ def get_specialist_patients(
         raise HTTPException(status_code=404, detail="Specialist not found")
     return specialist
 
-@wounds_specialist_router.get(BASE_URL_SPECIALISTS, response_model=list[SpecialistsPublic])
+@specialist_router.get(BASE_URL_SPECIALISTS, response_model=list[SpecialistsPublic])
 def get_all_specialists(
         *,
         session: Session = Depends(Database.get_session),
@@ -90,16 +90,18 @@ def get_all_specialists(
     specialists = session.exec(select(Specialists).offset(offset).limit(limit)).all()
     return specialists
 
-@wounds_specialist_router.delete(BASE_URL_SPECIALISTS + "{specialist_id}")
-def delete_specialist(
+@specialist_router.delete(BASE_URL_SPECIALISTS + "{patient_id}")
+def delete_patient(
         *,
         session: Session = Depends(Database.get_session),
-        specialist_id: int
+        patient_id: int,
+        confirmation: bool
 ):
-    """Delete specialist"""
-    specialist = session.get(Specialists, specialist_id)
-    if not specialist:
-        raise HTTPException(status_code=404, detail="Specialist not found")
-    session.delete(specialist)
-    session.commit()
-    return {"ok": True}
+    """ Delete everything related to the patient """
+    if confirmation:
+        patient = session.get(Patients, patient_id)
+        if not patient:
+            raise HTTPException(status_code=404, detail="Patient not found")
+        session.delete(patient)
+        session.commit()
+        return {"ok": True}
