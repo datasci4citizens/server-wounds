@@ -1,8 +1,7 @@
 from sqlmodel import create_engine, Session, select
 
 import db.config as config
-from schema.users_schema import Users
-from schema.schema import Comorbidities
+from schema.schema import Comorbidities, PatientComorbidities, Patients, Specialists, TrackingRecords, Wounds
 
 
 class Database:
@@ -13,7 +12,12 @@ class Database:
 
     def create_db(self):
         """Create the database and tables that do not exist"""
-        Users.metadata.create_all(self.engine)
+        Specialists.metadata.create_all(self.engine)
+        Patients.metadata.create_all(self.engine)
+        Wounds.metadata.create_all(self.engine)
+        TrackingRecords.metadata.create_all(self.engine)
+        PatientComorbidities.metadata.create_all(self.engine)
+        Comorbidities.metadata.create_all(self.engine)
 
     def create_initial_comorbidities(self, engine):
         """ Create the most commom comorbidities """

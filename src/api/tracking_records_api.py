@@ -2,10 +2,13 @@ from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Depends
 from sqlmodel import Session
+from auth.auth_service import AuthService
 from db.manager import Database
 from schema.schema import TrackingRecords, TrackingRecordsCreate, TrackingRecordsPublic, TrackingRecordsUpdate
 
-tracking_records_router = APIRouter()
+tracking_records_router = APIRouter(
+    dependencies=[Depends(AuthService.get_current_user)]
+)
 BASE_URL_TRACKING_RECORDS = "/tracking-records/"
 
 @tracking_records_router.post(BASE_URL_TRACKING_RECORDS, response_model=TrackingRecordsPublic)

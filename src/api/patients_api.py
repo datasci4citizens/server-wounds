@@ -4,11 +4,14 @@ from fastapi import APIRouter, HTTPException, Query, Depends, Response
 from sqlmodel import Session, select
 import pandas as pd
 from io import BytesIO
+from auth.auth_service import AuthService
 from db.manager import Database
 from schema.schema import Patients, PatientsCreate, PatientsPublic, PatientsPublicWithWounds, PatientsUpdate, TrackingRecords, Wounds, WoundsPublic
 from schema.schema import Comorbidities, ComorbiditiesCreate, ComorbiditiesPublic, PatientComorbidities
 
-patients_router = APIRouter()
+patients_router = APIRouter(
+    dependencies=[Depends(AuthService.get_current_user)]
+)
 BASE_URL_PATIENTS = "/patients/"
 
 
