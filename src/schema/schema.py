@@ -138,7 +138,8 @@ class Wounds(WoundsBase, table = True):
 
 """ TRACKING RECORDS TABLES"""
 class TrackingRecordsBase(SQLModel):
-    wound_size: str
+    wound_length: int
+    wound_width: int
     exudate_amount: str
     exudate_type: str
     tissue_type: str 
