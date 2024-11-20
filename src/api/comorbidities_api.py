@@ -2,10 +2,13 @@ from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Query, Depends
 from sqlmodel import Session, select
+from auth.auth_service import AuthService
 from db.manager import Database
 from schema.schema import Comorbidities, ComorbiditiesCreate, ComorbiditiesPublic, ComorbiditiesUpdate
 
-comorbidities_router = APIRouter()
+comorbidities_router = APIRouter(
+    dependencies=[Depends(AuthService.get_current_user)]
+)
 BASE_URL_COMORBIDITIES = "/comorbidities/"
 
 # The creation of comorbidities will happen when creating patients, so there will not be an exclusive endpoint for this, for now
