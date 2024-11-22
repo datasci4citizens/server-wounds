@@ -27,6 +27,7 @@ def create_image(
     image: ImagesCreate,
 ):
     """Create a new image"""
+    # TODO: SUBSTITUIR CREATED BY PELO ID DO USUARIO
     db_img = ImagesSchema.model_validate(image, update={"created_by": 1})
     session.add(db_img)
     session.commit()
