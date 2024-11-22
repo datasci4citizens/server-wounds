@@ -12,6 +12,10 @@ from api.wounds_api import wounds_router
 from api.tracking_records_api import tracking_records_router
 from api.comorbidities_api import comorbidities_router
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 Database.db_engine()
 
 app = FastAPI()
