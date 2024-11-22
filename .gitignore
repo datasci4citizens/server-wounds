@@ -4,3 +4,4 @@ docker-compose.yml
 .idea/
 client_secret.json
 secrets.env
+.env

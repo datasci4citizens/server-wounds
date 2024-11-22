@@ -1,5 +1,5 @@
 import os
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI
 
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
@@ -11,6 +11,10 @@ from api.patients_api import patients_router
 from api.wounds_api import wounds_router
 from api.tracking_records_api import tracking_records_router
 from api.comorbidities_api import comorbidities_router
+from api.images_api import images_router
+from dotenv import load_dotenv
+
+load_dotenv()
 
 Database.db_engine()
 
@@ -25,7 +29,7 @@ app.add_middleware(SessionMiddleware, secret_key=os.getenv("SECRET_KEY"))
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Allows requests from this source
-    allow_credentials=True, # Allows sending cookies, authentication tokens and other types of credentials in requests
+    allow_credentials=True,  # Allows sending cookies, authentication tokens and other types of credentials in requests
     allow_methods=["*"],  # Allows all HTTP methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
 )
@@ -43,3 +47,4 @@ app.include_router(patients_router)
 app.include_router(wounds_router)
 app.include_router(tracking_records_router)
 app.include_router(comorbidities_router)
+app.include_router(images_router)
