@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import requests as rq
 from google_auth_oauthlib.flow import Flow
 import os
+import json
 
 login_router = APIRouter()
 
@@ -15,7 +16,14 @@ login_router = APIRouter()
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 # This variable specifies the name of a file that contains the OAuth 2.0 information for this application
-CLIENT_SECRETS_FILE = os.path.join(os.path.dirname(__file__), "client_secret.json")
+# CLIENT_SECRETS_FILE = os.path.join(os.path.dirname(__file__), "client_secret.json")
+
+# print('===== CLIENT_SECRETS_FILE =====')
+# print(CLIENT_SECRETS_FILE)
+# with open(CLIENT_SECRETS_FILE, 'r') as file:
+#     client_secrets = file.read()
+#     print('===== CLIENT SECRETS CONTENT =====')
+#     print(client_secrets)
 
 # These OAuth 2.0 scopes allow access to the user's Google account OpenID, Email, and Profile.
 SCOPES = [
@@ -26,14 +34,35 @@ SCOPES = [
 
 @login_router.get('/auth/login/google')
 async def call_google_signin(request: Request):
-    flow = Flow.from_client_secrets_file(
-        CLIENT_SECRETS_FILE, 
+    # flow = Flow.from_client_secrets_file(
+    #     CLIENT_SECRETS_FILE, 
+    #     scopes=SCOPES
+    # )
+    # client_secrets_content = os.getenv('CLIENT_SECRETS_CONTENT')
+    # if not client_secrets_content:
+    #     raise HTTPException(status_code=500, detail="Client secrets not found in environment variables")
+
+    # client_secrets = json.loads(client_secrets_content)
+
+    client_secrets = {
+        "web":{
+            "client_id":os.getenv('CLIENT_ID'),
+            "project_id":"wounds",
+            "auth_uri":"https://accounts.google.com/o/oauth2/auth",
+            "token_uri":"https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs",
+            "client_secret":os.getenv('CLIENT_SECRET'),
+            "redirect_uris":[os.getenv('SERVER_URL')]
+        }
+    }
+
+    flow = Flow.from_client_config(
+        client_secrets, 
         scopes=SCOPES
     )
     flow.redirect_uri = 'http://localhost:8000/auth/login/google/callback'
     auth_url, state = flow.authorization_url(
-        access_type='offline',
-        include_granted_scopes='true'
+        access_type='offline'
     )
     request.session['state'] = state
     return RedirectResponse(auth_url)
@@ -49,6 +78,9 @@ async def callback_uri(request: Request, session: Session = Depends(Database.get
     flow.redirect_uri = 'http://localhost:8000/auth/login/google/callback'
 
     authorization_response = str(request.url)
+
+    print('===== autorization_response =====')
+    print(authorization_response)
 
     flow.fetch_token(authorization_response=authorization_response)
     credentials = flow.credentials
