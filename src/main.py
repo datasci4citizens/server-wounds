@@ -16,6 +16,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 Database.db_engine()
 
 app = FastAPI()
