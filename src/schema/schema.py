@@ -197,3 +197,15 @@ class SpecialistsPublicWithTrackingRecords(SpecialistsPublic):
 
 class SpecialistsPublicWithPatients(SpecialistsPublic):
     patients: list[PatientsPublic] = []
+
+""" IMAGES TABLES """
+class ImagesBase(SQLModel):
+    extension: str
+
+class ImagesCreate(ImagesBase):
+    pass
+
+class Images(ImagesBase, table = True):
+    image_id: int = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default=datetime.now())
+    created_by: int = Field(foreign_key="specialists.specialist_id")
