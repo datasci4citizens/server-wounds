@@ -72,7 +72,7 @@ class PatientsBase(SQLModel):
     smoke_frequency: str
     drink_frequency: str
     accept_tcle: bool
-    specialist_id: int = Field(foreign_key="specialists.specialist_id")
+    specialist_id: int | None = Field(default=None, foreign_key="specialists.specialist_id", nullable=True)
 
 class PatientsCreate(PatientsBase):
     comorbidities: list[int] | None = None
