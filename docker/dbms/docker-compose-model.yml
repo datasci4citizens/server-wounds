@@ -2,8 +2,8 @@ services:
   db:
     image: postgres
     volumes:
-      - postgres-data:/var/lib/postgresql/data
-      - postgres-impexp:/home
+      - wound-data:/var/lib/postgresql/data
+      - wound-impexp:/home
     restart: on-failure:5
     shm_size: 128mb
     environment:
@@ -12,15 +12,15 @@ services:
       - "5432:5432"
 
 volumes:
-  postgres-data:
+  wound-data:
     driver: "local"
     driver_opts:
       type: "none"
-      device: "/home/santanche/data/pgsql/docker"
+      device: "/home/user/data/pgsql/wound-db"
       o: "bind" 
-  postgres-impexp:
+  wound-impexp:
     driver: "local"
     driver_opts:
       type: "none"
-      device: "/home/santanche/data/pgsql/impexp"
+      device: "/home/user/data/pgsql/wound-impexp"
       o: "bind" 

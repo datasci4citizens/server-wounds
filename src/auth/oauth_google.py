@@ -32,6 +32,18 @@ SCOPES = [
     "https://www.googleapis.com/auth/userinfo.profile",
 ]
 
+client_secrets = {
+    "web":{
+        "client_id":os.getenv('CLIENT_ID'),
+        "project_id":"wounds",
+        "auth_uri":"https://accounts.google.com/o/oauth2/auth",
+        "token_uri":"https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs",
+        "client_secret":os.getenv('CLIENT_SECRET'),
+        "redirect_uris":[os.getenv('SERVER_URL')]
+    }
+}
+
 @login_router.get('/auth/login/google')
 async def call_google_signin(request: Request):
     # flow = Flow.from_client_secrets_file(
@@ -43,18 +55,6 @@ async def call_google_signin(request: Request):
     #     raise HTTPException(status_code=500, detail="Client secrets not found in environment variables")
 
     # client_secrets = json.loads(client_secrets_content)
-
-    client_secrets = {
-        "web":{
-            "client_id":os.getenv('CLIENT_ID'),
-            "project_id":"wounds",
-            "auth_uri":"https://accounts.google.com/o/oauth2/auth",
-            "token_uri":"https://oauth2.googleapis.com/token",
-            "auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs",
-            "client_secret":os.getenv('CLIENT_SECRET'),
-            "redirect_uris":[os.getenv('SERVER_URL')]
-        }
-    }
 
     flow = Flow.from_client_config(
         client_secrets, 
@@ -70,10 +70,14 @@ async def call_google_signin(request: Request):
 @login_router.get('/auth/login/google/callback')
 async def callback_uri(request: Request, session: Session = Depends(Database.get_session)):
     state = request.session.get('state')
-    flow = Flow.from_client_secrets_file(
-        CLIENT_SECRETS_FILE, 
-        scopes=SCOPES, 
-        state=state
+    # flow = Flow.from_client_secrets_file(
+    #     CLIENT_SECRETS_FILE, 
+    #     scopes=SCOPES, 
+    #     state=state
+    # )
+    flow = Flow.from_client_config(
+        client_secrets, 
+        scopes=SCOPES
     )
     flow.redirect_uri = 'http://localhost:8000/auth/login/google/callback'
 
@@ -106,9 +110,9 @@ async def callback_uri(request: Request, session: Session = Depends(Database.get
     request.session['email'] = user_info['email']
     required_fields = [specialist.birthday, specialist.state, specialist.city, specialist.speciality]
     if all(field is None for field in required_fields):
-        return RedirectResponse(os.getenv("LOGIN_CALLBACK_URL", 'http://localhost:8080/specialists/'))
+        return RedirectResponse(os.getenv("CLIENT_REDIRECT", 'http://localhost:8080/specialists/'))
     else:
-        return RedirectResponse(os.getenv("LOGIN_CALLBACK_URL", 'http://localhost:8080'))
+        return RedirectResponse(os.getenv("CLIENT_REDIRECT", 'http://localhost:8080'))
 
 # endpoint 'protegido' para buscar o usario ativo atualmente usando o token dos cookies
 @login_router.get("/specialists/me")

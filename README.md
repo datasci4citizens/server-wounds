@@ -36,6 +36,12 @@ Go back to root and activate virtual environment
 source .venv/bin/activate
 ~~~
 
+Install the requirements.txt
+
+~~~
+pip install -r requirements.txt
+~~~
+
 Go to src
 
 ~~~
