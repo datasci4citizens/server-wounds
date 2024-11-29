@@ -110,7 +110,7 @@ async def callback_uri(request: Request, session: Session = Depends(Database.get
     request.session['email'] = user_info['email']
     required_fields = [specialist.birthday, specialist.state, specialist.city, specialist.speciality]
     if all(field is None for field in required_fields):
-        return RedirectResponse(os.getenv("CLIENT_REDIRECT", 'http://localhost:5173))
+        return RedirectResponse(os.getenv("CLIENT_REDIRECT", 'http://localhost:5173'))
     else:
         return RedirectResponse(os.getenv("CLIENT_REDIRECT", 'http://localhost:5173'))
 

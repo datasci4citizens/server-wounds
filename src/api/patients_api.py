@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, Query, Depends, Response
+from fastapi import APIRouter, HTTPException, Query, Depends, Request, Response
 from sqlmodel import Session, select
 import pandas as pd
 from io import BytesIO
@@ -18,12 +18,21 @@ BASE_URL_PATIENTS = "/patients/"
 @patients_router.post(BASE_URL_PATIENTS, response_model=PatientsPublic)
 def create_patient(
         *,
+        request: Request,
         session: Session = Depends(Database.get_session),
         patient: PatientsCreate
 ):
     """Create a new patient"""
     now = datetime.now()
-    patient_for_database = Patients(name = patient.name, gender = patient.gender, birthday = patient.birthday, email = patient.email, hospital_registration = patient.hospital_registration, phone_number = patient.phone_number, height = patient.height, weight = patient.weight, smoke_frequency = patient.smoke_frequency, drink_frequency = patient.drink_frequency, accept_tcle = patient.accept_tcle, specialist_id = patient.specialist_id, created_at=now, updated_at=now)
+    patient_for_database = Patients(
+        name = patient.name, gender = patient.gender, birthday = patient.birthday,
+        email = patient.email, hospital_registration = patient.hospital_registration,
+        phone_number = patient.phone_number, height = patient.height, weight = patient.weight,
+        smoke_frequency = patient.smoke_frequency, drink_frequency = patient.drink_frequency,
+        accept_tcle = patient.accept_tcle,
+        specialist_id = request.session.get("id"),
+        created_at=now,
+        updated_at=now)
     session.add(patient_for_database)
     session.commit()
     session.refresh(patient_for_database)
