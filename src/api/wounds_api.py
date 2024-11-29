@@ -2,6 +2,7 @@ from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Query, Depends
 from sqlmodel import Session, select
+from auth.auth_service import AuthService
 from schema.schema import TrackingRecords, Wounds
 from schema.schema import WoundsPublic
 from schema.schema import WoundsCreate
@@ -9,7 +10,9 @@ from schema.schema import WoundsUpdate
 from schema.schema import WoundsPublicWithTrackingRecords
 from db.manager import Database
 
-wounds_router = APIRouter()
+wounds_router = APIRouter(
+    dependencies=[Depends(AuthService.get_current_user)]
+)
 BASE_URL_WOUNDS = "/wounds/"
 
 @wounds_router.post(BASE_URL_WOUNDS, response_model=WoundsPublic)
