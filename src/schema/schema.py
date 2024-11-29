@@ -5,10 +5,10 @@ from sqlmodel import Field, SQLModel, Relationship
 class SpecialistsBase(SQLModel):
     email: str
     name: str
-    birthday: date
-    state: str
-    city: str
-    speciality: str
+    birthday: date | None = None
+    state: str | None = None
+    city: str | None = None
+    speciality: str | None = None
 
 class SpecialistsCreate(SpecialistsBase):
     pass
@@ -28,8 +28,8 @@ class SpecialistsUpdate(SQLModel):
 
 class Specialists(SpecialistsBase, table=True):
     specialist_id: int = Field(default=None, primary_key=True)
-    created_at: datetime
-    updated_at: datetime
+    created_at: datetime = Field(default=datetime.now())
+    updated_at: datetime = Field(default=datetime.now())
 
     patients: list["Patients"] = Relationship(back_populates="specialist")
     tracking_records: list["TrackingRecords"] = Relationship(back_populates="specialist")
@@ -138,7 +138,8 @@ class Wounds(WoundsBase, table = True):
 
 """ TRACKING RECORDS TABLES"""
 class TrackingRecordsBase(SQLModel):
-    wound_size: str
+    wound_length: int
+    wound_width: int
     exudate_amount: str
     exudate_type: str
     tissue_type: str 
@@ -196,3 +197,15 @@ class SpecialistsPublicWithTrackingRecords(SpecialistsPublic):
 
 class SpecialistsPublicWithPatients(SpecialistsPublic):
     patients: list[PatientsPublic] = []
+
+""" IMAGES TABLES """
+class ImagesBase(SQLModel):
+    extension: str
+
+class ImagesCreate(ImagesBase):
+    pass
+
+class Images(ImagesBase, table = True):
+    image_id: int = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default=datetime.now())
+    created_by: int = Field(foreign_key="specialists.specialist_id")

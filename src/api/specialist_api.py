@@ -2,10 +2,13 @@ from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Query, Depends
 from sqlmodel import Session, select
+from auth.auth_service import AuthService
 from db.manager import Database
 from schema.schema import Patients, Specialists, SpecialistsCreate, SpecialistsPublic, SpecialistsUpdate, SpecialistsPublicWithTrackingRecords,SpecialistsPublicWithPatients
 
-specialist_router = APIRouter()
+specialist_router = APIRouter(
+    dependencies=[Depends(AuthService.get_current_user)]
+)
 BASE_URL_SPECIALISTS = "/specialists/"
 
 @specialist_router.post(BASE_URL_SPECIALISTS, response_model=SpecialistsPublic)
