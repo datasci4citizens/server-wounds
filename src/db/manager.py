@@ -1,7 +1,7 @@
 from sqlmodel import create_engine, Session, select
 
 import db.config as config
-from schema.schema import Comorbidities, PatientComorbidities, Patients, Specialists, TrackingRecords, Wounds
+from schema.schema import Comorbidities, Images, PatientComorbidities, Patients, Specialists, TrackingRecords, Wounds
 
 
 class Database:
@@ -18,6 +18,7 @@ class Database:
         TrackingRecords.metadata.create_all(self.engine)
         PatientComorbidities.metadata.create_all(self.engine)
         Comorbidities.metadata.create_all(self.engine)
+        Images.metadata.create_all(self.engine)
 
     def create_initial_comorbidities(self, engine):
         """ Create the most commom comorbidities """
