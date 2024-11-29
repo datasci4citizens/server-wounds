@@ -65,13 +65,13 @@ class PatientsBase(SQLModel):
     gender: str
     birthday: date
     email: str
-    hospital_registration: str
-    phone_number: str
-    height: float
-    weight: float
-    smoke_frequency: str
-    drink_frequency: str
-    accept_tcle: bool
+    hospital_registration: str | None = None
+    phone_number: str | None = None
+    height: float | None = None
+    weight: float | None = None
+    smoke_frequency: str | None = None
+    drink_frequency: str | None = None
+    accept_tcle: bool | None = None
     specialist_id: int | None = Field(default=None, foreign_key="specialists.specialist_id", nullable=True)
 
 class PatientsCreate(PatientsBase):
