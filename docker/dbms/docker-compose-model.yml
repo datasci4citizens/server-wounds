@@ -16,11 +16,11 @@ volumes:
     driver: "local"
     driver_opts:
       type: "none"
-      device: "/home/user/data/pgsql/wound-db"
+      device: "/home/user/data/pgsql/wounds-db"
       o: "bind" 
   wound-impexp:
     driver: "local"
     driver_opts:
       type: "none"
-      device: "/home/user/data/pgsql/wound-impexp"
+      device: "/home/user/data/pgsql/wounds-impexp"
       o: "bind" 

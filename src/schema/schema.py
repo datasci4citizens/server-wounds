@@ -32,6 +32,7 @@ class Specialists(SpecialistsBase, table=True):
     updated_at: datetime = Field(default=datetime.now())
 
     patients: list["Patients"] = Relationship(back_populates="specialist")
+    wounds: list["Wounds"] = Relationship(back_populates="specialist")
     tracking_records: list["TrackingRecords"] = Relationship(back_populates="specialist")
 
 """ PATIENTS-COMMORBIDITIES JOIN MODEL """
@@ -116,6 +117,7 @@ class WoundsBase(SQLModel):
     start_date: date
     end_date: date | None = None
     patient_id: int = Field(foreign_key="patients.patient_id")
+    specialist_id: int = Field(foreign_key="specialists.specialist_id")
 
 class WoundsCreate(WoundsBase):
     pass
@@ -133,8 +135,10 @@ class Wounds(WoundsBase, table = True):
     updated_at: datetime
     is_active: bool
     patient: "Patients" = Relationship(back_populates="wounds")
+    specialist: Specialists = Relationship(back_populates="wounds")
 
-    tracking_records: list["TrackingRecords"] = Relationship(back_populates="wound", cascade_delete=True)
+    tracking_records: list["TrackingRecords"] = Relationship(
+        back_populates="wound", cascade_delete=True)
 
 """ TRACKING RECORDS TABLES"""
 class TrackingRecordsBase(SQLModel):
@@ -150,7 +154,7 @@ class TrackingRecordsBase(SQLModel):
     dressing_changes_per_day: str | None = None
     guidelines_to_patient: str | None = None
     extra_notes: str | None = None
-    image_id: int
+    image_id: int = Field(foreign_key="images.image_id")
     created_at: date
     wound_id: int = Field(foreign_key="wounds.wound_id")
     specialist_id: int = Field(foreign_key="specialists.specialist_id")
@@ -207,5 +211,3 @@ class ImagesCreate(ImagesBase):
 
 class Images(ImagesBase, table = True):
     image_id: int = Field(default=None, primary_key=True)
-    created_at: datetime = Field(default=datetime.now())
-    created_by: int = Field(foreign_key="specialists.specialist_id")
