@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, Query, Depends
+from fastapi import APIRouter, HTTPException, Query, Depends, Request
 from sqlmodel import Session, select
 from auth.auth_service import AuthService
 from schema.schema import TrackingRecords, Wounds
@@ -18,14 +18,20 @@ BASE_URL_WOUNDS = "/wounds/"
 @wounds_router.post(BASE_URL_WOUNDS, response_model=WoundsPublic)
 def create_wound(
         *,
+        request: Request,
         session: Session = Depends(Database.get_session),
         wound: WoundsCreate
 ):
     """Create a new wound"""
-    dates = {"is_active": True, "created_at": datetime.now(), "updated_at": datetime.now()}
+    update_fields = {
+        "is_active": True,
+        "specialist_id": request.session.get("id"),
+        "created_at": datetime.now(),
+        "updated_at": datetime.now()
+    }
     if wound.start_date == None:
-        dates.update({"start_date": datetime.now})
-    db_wound = Wounds.model_validate(wound, update=dates)
+        update_fields.update({"start_date": datetime.now})
+    db_wound = Wounds.model_validate(wound, update=update_fields)
     session.add(db_wound)
     session.commit()
     session.refresh(db_wound)
