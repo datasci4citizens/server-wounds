@@ -1,7 +1,7 @@
 # Data Science for Citizens
-# Server Application Software for Peleja App
+# Server Application Software for Wounds App
 
-This project embraces the server implementation of Peleja App.
+This project embraces the server implementation of Wounds App.
 
 ## Directory Structure
 

@@ -106,13 +106,13 @@ async def callback_uri(request: Request, session: Session = Depends(Database.get
         session.refresh(specialist)
 
     # adds the information we need from the user to the cookies
-    request.session['id'] = user_info['sub'] 
+    request.session['id'] = specialist.specialist_id
     request.session['email'] = user_info['email']
     required_fields = [specialist.birthday, specialist.state, specialist.city, specialist.speciality]
     if all(field is None for field in required_fields):
-        return RedirectResponse(os.getenv("CLIENT_REDIRECT", 'http://localhost:8080/specialists/'))
+        return RedirectResponse(os.getenv("CLIENT_REDIRECT", 'http://localhost:5173'))
     else:
-        return RedirectResponse(os.getenv("CLIENT_REDIRECT", 'http://localhost:8080'))
+        return RedirectResponse(os.getenv("CLIENT_REDIRECT", 'http://localhost:5173'))
 
 # endpoint 'protegido' para buscar o usario ativo atualmente usando o token dos cookies
 @login_router.get("/specialists/me")
