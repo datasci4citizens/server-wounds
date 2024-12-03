@@ -154,7 +154,7 @@ class TrackingRecordsBase(SQLModel):
     dressing_changes_per_day: str | None = None
     guidelines_to_patient: str | None = None
     extra_notes: str | None = None
-    image_id: int = Field(foreign_key="images.image_id")
+    image_id: int | None = Field(default=None, foreign_key="images.image_id", nullable=True)
     created_at: date
     wound_id: int = Field(foreign_key="wounds.wound_id")
     specialist_id: int | None = Field(default=None, foreign_key="specialists.specialist_id", nullable=True)
