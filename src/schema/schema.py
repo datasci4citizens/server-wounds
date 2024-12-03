@@ -117,7 +117,7 @@ class WoundsBase(SQLModel):
     start_date: date
     end_date: date | None = None
     patient_id: int = Field(foreign_key="patients.patient_id")
-    specialist_id: int = Field(foreign_key="specialists.specialist_id")
+    specialist_id: int | None = Field(default=None, foreign_key="specialists.specialist_id", nullable=True)
 
 class WoundsCreate(WoundsBase):
     pass
@@ -157,7 +157,7 @@ class TrackingRecordsBase(SQLModel):
     image_id: int = Field(foreign_key="images.image_id")
     created_at: date
     wound_id: int = Field(foreign_key="wounds.wound_id")
-    specialist_id: int = Field(foreign_key="specialists.specialist_id")
+    specialist_id: int | None = Field(default=None, foreign_key="specialists.specialist_id", nullable=True)
 
 class TrackingRecordsCreate(TrackingRecordsBase):
     pass
