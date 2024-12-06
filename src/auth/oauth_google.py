@@ -87,8 +87,6 @@ async def callback_uri(request: Request, session: Session = Depends(Database.get
     print(authorization_response)
 
     flow.fetch_token(authorization_response=authorization_response)
-    credentials = flow.credentials
-    request.session['credentials'] = credentials_to_dict(credentials)
 
     user_info=None
     try:
@@ -119,10 +117,3 @@ async def callback_uri(request: Request, session: Session = Depends(Database.get
 async def me(request: Request, current_user = Depends(AuthService.get_current_user)):
     return request.session
 
-def credentials_to_dict(credentials):
-  return {'token': credentials.token,
-          'refresh_token': credentials.refresh_token,
-          'token_uri': credentials.token_uri,
-          'client_id': credentials.client_id,
-          'client_secret': credentials.client_secret,
-          'scopes': credentials.scopes}
