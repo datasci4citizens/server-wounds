@@ -144,6 +144,7 @@ class Wounds(WoundsBase, table = True):
 class TrackingRecordsBase(SQLModel):
     wound_length: int
     wound_width: int
+    track_date: date
     exudate_amount: str
     exudate_type: str
     tissue_type: str 
@@ -162,7 +163,9 @@ class TrackingRecordsCreate(TrackingRecordsBase):
     pass
 
 class TrackingRecordsUpdate(SQLModel):
-    wound_size: float | None = None 
+    wound_length: int | None = None
+    wound_width: int | None = None
+    track_date: date | None = None
     exudate_amount: str | None = None
     exudate_type: str | None = None
     tissue_type: str | None = None
