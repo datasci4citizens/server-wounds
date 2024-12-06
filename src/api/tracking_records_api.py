@@ -22,6 +22,7 @@ def create_tracking_record(
     update_fields = {
         "is_active": True,
         "specialist_id": request.session.get("id"),
+        "created_at": datetime.now(),
         "updated_at": datetime.now()
     }
     db_tracking_record = TrackingRecords.model_validate(tracking_record, update=update_fields)

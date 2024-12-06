@@ -155,7 +155,6 @@ class TrackingRecordsBase(SQLModel):
     guidelines_to_patient: str | None = None
     extra_notes: str | None = None
     image_id: int | None = Field(default=None, foreign_key="images.image_id", nullable=True)
-    created_at: date
     wound_id: int = Field(foreign_key="wounds.wound_id")
     specialist_id: int | None = Field(default=None, foreign_key="specialists.specialist_id", nullable=True)
 
@@ -176,7 +175,6 @@ class TrackingRecordsUpdate(SQLModel):
     extra_notes: str | None = None
     image_id: int | None = None
     is_active: bool | None = None
-    created_at: date
 
 class TrackingRecordsPublic(TrackingRecordsBase):
     tracking_record_id: int
@@ -184,6 +182,7 @@ class TrackingRecordsPublic(TrackingRecordsBase):
 
 class TrackingRecords(TrackingRecordsBase, table = True):
     tracking_record_id: int = Field(default=None, primary_key=True)
+    created_at: datetime
     updated_at: datetime
     is_active: bool
     wound: Wounds = Relationship(back_populates="tracking_records")
