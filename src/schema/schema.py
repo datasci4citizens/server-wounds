@@ -144,6 +144,7 @@ class Wounds(WoundsBase, table = True):
 class TrackingRecordsBase(SQLModel):
     wound_length: int
     wound_width: int
+    track_date: date
     exudate_amount: str
     exudate_type: str
     tissue_type: str 
@@ -155,7 +156,6 @@ class TrackingRecordsBase(SQLModel):
     guidelines_to_patient: str | None = None
     extra_notes: str | None = None
     image_id: int | None = Field(default=None, foreign_key="images.image_id", nullable=True)
-    created_at: date
     wound_id: int = Field(foreign_key="wounds.wound_id")
     specialist_id: int | None = Field(default=None, foreign_key="specialists.specialist_id", nullable=True)
 
@@ -163,7 +163,9 @@ class TrackingRecordsCreate(TrackingRecordsBase):
     pass
 
 class TrackingRecordsUpdate(SQLModel):
-    wound_size: float | None = None 
+    wound_length: int | None = None
+    wound_width: int | None = None
+    track_date: date | None = None
     exudate_amount: str | None = None
     exudate_type: str | None = None
     tissue_type: str | None = None
@@ -176,7 +178,6 @@ class TrackingRecordsUpdate(SQLModel):
     extra_notes: str | None = None
     image_id: int | None = None
     is_active: bool | None = None
-    created_at: date
 
 class TrackingRecordsPublic(TrackingRecordsBase):
     tracking_record_id: int
@@ -184,6 +185,7 @@ class TrackingRecordsPublic(TrackingRecordsBase):
 
 class TrackingRecords(TrackingRecordsBase, table = True):
     tracking_record_id: int = Field(default=None, primary_key=True)
+    created_at: datetime
     updated_at: datetime
     is_active: bool
     wound: Wounds = Relationship(back_populates="tracking_records")
