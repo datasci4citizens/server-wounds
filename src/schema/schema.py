@@ -1,215 +1,106 @@
-from datetime import datetime, date
-from sqlmodel import Field, SQLModel, Relationship
+from django.db import models
+from django.utils import timezone
 
-""" SPECIALISTS TABLES """
-class SpecialistsBase(SQLModel):
-    email: str
-    name: str
-    birthday: date | None = None
-    state: str | None = None
-    city: str | None = None
-    speciality: str | None = None
+""" SPECIALIST MODEL """
+class Specialists(models.Model):
+    specialist_id = models.AutoField(primary_key=True)
+    specialist_name = models.CharField(max_length=255)
+    email = models.EmailField()
+    birthday = models.DateTimeField(null=True, blank=True)
+    city_character = models.CharField(max_length=255, null=True, blank=True)
+    state_character = models.CharField(max_length=2, null=True, blank=True)
+    specialist_character = models.CharField(max_length=255, null=True, blank=True)
+    created = models.DateTimeField(default=timezone.now)
+    updated = models.DateTimeField(auto_now=True)
 
-class SpecialistsCreate(SpecialistsBase):
-    pass
+    def __str__(self):
+        return self.specialist_name
 
-class SpecialistsPublic(SpecialistsBase):
-    specialist_id: int
-    created_at: datetime
-    updated_at: datetime
-
-class SpecialistsUpdate(SQLModel):
-    email: str | None = None
-    name: str | None = None
-    birthday: date | None = None
-    state: str | None = None
-    city: str | None = None
-    speciality: str | None = None
-
-class Specialists(SpecialistsBase, table=True):
-    specialist_id: int = Field(default=None, primary_key=True)
-    created_at: datetime = Field(default=datetime.now())
-    updated_at: datetime = Field(default=datetime.now())
-
-    patients: list["Patients"] = Relationship(back_populates="specialist")
-    wounds: list["Wounds"] = Relationship(back_populates="specialist")
-    tracking_records: list["TrackingRecords"] = Relationship(back_populates="specialist")
-
-""" PATIENTS-COMMORBIDITIES JOIN MODEL """
-class PatientComorbidities(SQLModel, table=True):
-    patient_id: int = Field(default=None, foreign_key="patients.patient_id", primary_key=True)
-    comorbidity_id: int = Field(default=None, foreign_key="comorbidities.comorbidity_id", primary_key=True)
-
-""" COMORBIDITIES TABLES """
-class ComorbiditiesBase(SQLModel):
-    cid11_code: str | None = None # For now, this field can be optional.
-    name: str
-
-class ComorbiditiesCreate(ComorbiditiesBase):
-    pass
-
-class ComorbiditiesPublic(ComorbiditiesBase):
-    comorbidity_id: int
-
-class ComorbiditiesUpdate(SQLModel):
-    cid11_code: str | None = None
-    name: str | None = None
-
-class Comorbidities(ComorbiditiesBase, table=True):
-    comorbidity_id: int = Field(default=None, primary_key=True)
-
-    patients: list["Patients"] = Relationship(back_populates="comorbidities", link_model=PatientComorbidities)
-
-""" PATIENTS TABLES """
-class PatientsBase(SQLModel):
-    name: str
-    gender: str
-    birthday: date
-    email: str
-    hospital_registration: str | None = None
-    phone_number: str | None = None
-    height: float | None = None
-    weight: float | None = None
-    smoke_frequency: str | None = None
-    drink_frequency: str | None = None
-    accept_tcle: bool | None = None
-    specialist_id: int | None = Field(default=None, foreign_key="specialists.specialist_id", nullable=True)
-
-class PatientsCreate(PatientsBase):
-    comorbidities: list[int] | None = None
-    comorbidities_to_add: list[str] | None = None
-
-class PatientsUpdate(SQLModel):
-    name: str | None = None
-    gender: str | None = None
-    birthday: date | None = None
-    email: str | None = None
-    hospital_registration: str | None = None
-    phone_number: str | None = None
-    height: float | None = None
-    weight: float | None = None
-    smoke_frequency: str | None = None
-    drink_frequency: str | None = None
-    accept_tcle: bool | None = None
-    comorbidities: list[int] | None = None
-    comorbidities_to_add: list[str] | None = None
-
-class PatientsPublic(PatientsBase):
-    patient_id: int
-    created_at: datetime
-    updated_at: datetime
-    comorbidities: list[ComorbiditiesPublic] = []
-
-class Patients(PatientsBase, table=True):
-    patient_id: int = Field(default=None, primary_key=True)
-    created_at: datetime
-    updated_at: datetime
+""" PATIENT MODEL """
+class Patients(models.Model):
+    patient_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=255)
+    email = models.EmailField()
+    gender = models.CharField(max_length=10)
+    sex = models.CharField(max_length=10)
+    birthday = models.DateTimeField()
+    phone_number = models.CharField(max_length=20, null=True, blank=True)
+    specialist_id = models.ForeignKey(Specialists, on_delete=models.SET_NULL, null=True, blank=True, related_name='patients')
+    hospital_registration = models.CharField(max_length=50, null=True, blank=True)
     
-    specialist: "Specialists" = Relationship(back_populates="patients") # não sei se ta certo
-    comorbidities: list["Comorbidities"] = Relationship(back_populates="patients", link_model=PatientComorbidities)
-    wounds: list["Wounds"] = Relationship(back_populates="patient", cascade_delete=True)
+    def __str__(self):
+        return self.name
 
-""" WOUNDS TABLES """
-class WoundsBase(SQLModel):
-    wound_region: str
-    wound_subregion: str | None = None
-    wound_type: str
-    start_date: date
-    end_date: date | None = None
-    patient_id: int = Field(foreign_key="patients.patient_id")
-    specialist_id: int | None = Field(default=None, foreign_key="specialists.specialist_id", nullable=True)
+""" MEASUREMENT MODEL """
+class Measurement(models.Model):
+    height = models.FloatField(null=True, blank=True)
+    weight = models.FloatField(null=True, blank=True)
+    patient_id = models.ForeignKey(Patients, on_delete=models.CASCADE, related_name='measurements')
+    
+    def __str__(self):
+        return f"Measurements for {self.patient_id.name}"
 
-class WoundsCreate(WoundsBase):
-    pass
+""" COMORBIDITIES MODEL """
+class Comorbidities(models.Model):
+    comorbidity_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=255)
+    
+    def __str__(self):
+        return self.name
 
-class WoundsUpdate(SQLModel):
-    is_active: bool
-    end_date: date | None = None
 
-class WoundsPublic(WoundsBase):
-    wound_id: int
+""" IMAGES MODEL """
+class Images(models.Model):
+    image_id = models.AutoField(primary_key=True)
+    
+    def __str__(self):
+        return f"Image {self.image_id}"
 
-class Wounds(WoundsBase, table = True):
-    wound_id: int = Field(default=None, primary_key=True)
-    created_at: datetime
-    updated_at: datetime
-    is_active: bool
-    patient: "Patients" = Relationship(back_populates="wounds")
-    specialist: Specialists = Relationship(back_populates="wounds")
+""" WOUND MODEL """
+class Wound(models.Model):
+    wound_id = models.AutoField(primary_key=True)
+    patient_id = models.ForeignKey(Patients, on_delete=models.CASCADE, related_name='wounds')
+    specialist_id = models.ForeignKey(Specialists, on_delete=models.SET_NULL, null=True, blank=True, related_name='wounds')
+    region = models.CharField(max_length=100)
+    subregion = models.CharField(max_length=100, null=True, blank=True)
+    type = models.CharField(max_length=50)
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField(null=True, blank=True)
+    created = models.DateTimeField(default=timezone.now)
+    updated = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+    image_id = models.ForeignKey(Images, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    def __str__(self):
+        return f"{self.type} wound - {self.patient_id.name}"
 
-    tracking_records: list["TrackingRecords"] = Relationship(
-        back_populates="wound", cascade_delete=True)
-
-""" TRACKING RECORDS TABLES"""
-class TrackingRecordsBase(SQLModel):
-    wound_length: int
-    wound_width: int
-    track_date: date
-    exudate_amount: str
-    exudate_type: str
-    tissue_type: str 
-    wound_edges: str | None = None
-    skin_around_the_wound: str | None = None
-    had_a_fever: bool | None = None
-    pain_level: str | None = None
-    dressing_changes_per_day: str | None = None
-    guidelines_to_patient: str | None = None
-    extra_notes: str | None = None
-    image_id: int | None = Field(default=None, foreign_key="images.image_id", nullable=True)
-    wound_id: int = Field(foreign_key="wounds.wound_id")
-    specialist_id: int | None = Field(default=None, foreign_key="specialists.specialist_id", nullable=True)
-
-class TrackingRecordsCreate(TrackingRecordsBase):
-    pass
-
-class TrackingRecordsUpdate(SQLModel):
-    wound_length: int | None = None
-    wound_width: int | None = None
-    track_date: date | None = None
-    exudate_amount: str | None = None
-    exudate_type: str | None = None
-    tissue_type: str | None = None
-    wound_edges: str | None = None 
-    skin_around_the_wound: str | None = None 
-    had_a_fever: bool | None = None
-    pain_level: str | None = None
-    dressing_changes_per_day: str | None = None
-    guidelines_to_patient: str | None = None
-    extra_notes: str | None = None
-    image_id: int | None = None
-    is_active: bool | None = None
-
-class TrackingRecordsPublic(TrackingRecordsBase):
-    tracking_record_id: int
-    updated_at: datetime
-
-class TrackingRecords(TrackingRecordsBase, table = True):
-    tracking_record_id: int = Field(default=None, primary_key=True)
-    created_at: datetime
-    updated_at: datetime
-    is_active: bool
-    wound: Wounds = Relationship(back_populates="tracking_records")
-    specialist: Specialists = Relationship(back_populates="tracking_records")
-
-""" DATA MODELS FOR RELATIONSHIPS """
-class PatientsPublicWithWounds(PatientsPublic):
-    wounds: list[WoundsPublic] = []
-
-class WoundsPublicWithTrackingRecords(WoundsPublic):
-    tracking_records: list[TrackingRecordsPublic] = []
-
-class SpecialistsPublicWithTrackingRecords(SpecialistsPublic):
-    tracking_records: list[TrackingRecordsPublic] = []
-
-class SpecialistsPublicWithPatients(SpecialistsPublic):
-    patients: list[PatientsPublic] = []
-
-""" IMAGES TABLES """
-class ImagesBase(SQLModel):
-    extension: str
-
-class ImagesCreate(ImagesBase):
-    pass
-
-class Images(ImagesBase, table = True):
-    image_id: int = Field(default=None, primary_key=True)
+""" OBSERVATION MODEL """
+class Observation(models.Model):
+    comorbidities = models.ManyToManyField(Comorbidities, related_name='observations')
+    patient_id = models.ForeignKey(Patients, on_delete=models.CASCADE, related_name='observations')
+    wound_id = models.ForeignKey(Wound, on_delete=models.CASCADE, related_name='observations', null=True, blank=True)
+    drink_frequency = models.CharField(max_length=20, null=True, blank=True)
+    smoke_frequency = models.CharField(max_length=20, null=True, blank=True)
+    
+    def __str__(self):
+        return f"Observation for {self.patient_id.name}"
+    
+""" TRACKING RECORDS MODEL """
+class TrackingRecords(models.Model):
+    tracking_id = models.AutoField(primary_key=True)
+    length = models.FloatField()
+    width = models.FloatField()
+    track_date = models.DateTimeField()
+    exudate_amount = models.CharField(max_length=50)
+    exudate_type = models.CharField(max_length=50)
+    tissue_type = models.CharField(max_length=50)
+    wound_edges = models.CharField(max_length=100, null=True, blank=True)
+    skin_around = models.CharField(max_length=100, null=True, blank=True)
+    had_a_fever = models.BooleanField(null=True, blank=True)
+    pain_level = models.CharField(max_length=10, null=True, blank=True)
+    image_id = models.ForeignKey(Images, on_delete=models.SET_NULL, null=True, blank=True)
+    wound_id = models.ForeignKey(Wound, on_delete=models.CASCADE, related_name='tracking_records')
+    specialist_id = models.ForeignKey(Specialists, on_delete=models.SET_NULL, null=True, blank=True, related_name='tracking_records')
+    
+    def __str__(self):
+        return f"Tracking Record {self.tracking_id} - {self.track_date}"
