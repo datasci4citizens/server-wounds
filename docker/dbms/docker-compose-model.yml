@@ -1,4 +1,5 @@
 services:
+#mapeamento interno
   db:
     image: postgres
     volumes:
@@ -10,17 +11,19 @@ services:
       POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
-
+      
+#mapeamento externo
 volumes:
   wound-data:
     driver: "local"
     driver_opts:
       type: "none"
-      device: "/home/user/data/pgsql/wounds-db"
+      device: "/home/caiomaia83/diretorio/server-wounds/docker/dbms/diretorio/pgsql/wounds-db"
       o: "bind" 
   wound-impexp:
     driver: "local"
     driver_opts:
       type: "none"
-      device: "/home/user/data/pgsql/wounds-impexp"
-      o: "bind" 
+      device: "/home/caiomaia83/diretorio/server-wounds/docker/dbms/diretorio/pgsql/wounds-impexp"
+      o: "bind"
+
