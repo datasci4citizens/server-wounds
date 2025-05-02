@@ -32,12 +32,16 @@ services:
     volumes:
       - ./docker/.env:/code/.env 
       - ./.env.google:/code/.env.google 
+      - type: bind
+        source: ./tmp/midia
+        target: /code/tmp/midia
   migration:
     image: wounds-server:v0.1
     build: .
     command: python citizens_project/manage.py migrate --noinput
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     volumes:
       - ./docker/.env:/code/.env 
 volumes:

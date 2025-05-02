@@ -1,4 +1,5 @@
-from rest_framework import serializers, viewsets, routers
+from rest_framework import serializers, viewsets, routers, parsers
+
 from django.urls import path, include
 from .models import Specialists, Patients, Measurement, Comorbidities, Images, Wound, Observation, TrackingRecords
 
@@ -65,6 +66,7 @@ class ComorbidityViewSet(viewsets.ModelViewSet):
 class ImageViewSet(viewsets.ModelViewSet):
     queryset = Images.objects.all()
     serializer_class = ImageSerializer
+    parser_classes = [parsers.MultiPartParser]
 
 class WoundViewSet(viewsets.ModelViewSet):
     queryset = Wound.objects.all()
