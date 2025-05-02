@@ -1,4 +1,6 @@
 from django.urls import include, path
+from django.conf import settings
+from django.conf.urls.static import static
 
 from . import views
 
@@ -12,4 +14,4 @@ urlpatterns = [
     path("api/schema/swagger", SpectacularSwaggerView.as_view(), name="schema-swagger-ui"),
     path("api/schema/scalar", scalar_viewer, name="schema-scalar-ui"), 
     path('about/app_cicatrizando/', views.index, name="index"),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

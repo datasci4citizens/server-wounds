@@ -1,5 +1,7 @@
 from django.db import models
 from django.utils import timezone
+import uuid
+import os
 
 # modelo de banco de dados
 
@@ -50,10 +52,18 @@ class Comorbidities(models.Model):
     def __str__(self):
         return self.name
 
+def get_file_path(instance, filename):
+    ext = filename.split('.')[-1]
+    filename = "%s.%s" % (uuid.uuid4(), ext)
+    print(instance)
+    return os.path.join('images', filename)
+
 
 """ IMAGES MODEL """
 class Images(models.Model):
     image_id = models.AutoField(primary_key=True)
+    image = models.ImageField(upload_to=get_file_path)
+
     
     def __str__(self):
         return f"Image {self.image_id}"
