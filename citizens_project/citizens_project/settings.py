@@ -24,8 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-p9un(^14g8vpsh)q_@q3-(9gy@6d)$6$2i1kaz1it5x^c#w&v+'
-
+SECRET_KEY =  os.environ["SERVER_WOUNDS_SECRET_KEY"]
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -43,8 +42,17 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'app_cicatrizando.apps.AppCicatrizandoConfig',  # Your app name
     'rest_framework',  # Django REST framework
+    'drf_spectacular',  # For OpenAPI schema generation
 ]
-
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Wounds API',
+    'VERSION': '0.1.0',
+    'SERVE_INCLUDE_SCHEMA': True,
+}
+  
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

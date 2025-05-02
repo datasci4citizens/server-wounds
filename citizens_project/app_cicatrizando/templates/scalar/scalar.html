@@ -1,0 +1,38 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>{{ title }}</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="shortcut icon" href="{{ scalar_favicon_url }}" />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+    <link rel="stylesheet" href="{% static 'css/scalar.css' %}" />
+  </head>
+  <body>
+    <noscript>Scalar requires Javascript to function. Please enable it to browse the documentation.</noscript>
+    <script id="api-reference"
+            data-url="{{ openapi_url }}"
+            data-proxy-url="{{ scalar_proxy_url }}"></script>
+    {% comment %}
+    {# TODO: Including JS code in a template *will* be tricky! #}
+    {# TODO: Override the whole template, or the only config block. Use `verbatim` tags for the js code. #}
+    <script>
+      var configuration = {
+        authentication: { 
+          hideClientButton: true
+        },
+        theme: 'purple', // if scalar_theme is defined above, the defaults themes will not work.
+      };
+      document.getElementById('api-reference').dataset.configuration = JSON.stringify(configuration);
+    </script>
+    {% endcomment %}
+    <script src="{{ scalar_js_url }}"></script>
+  </body>
+</html>
