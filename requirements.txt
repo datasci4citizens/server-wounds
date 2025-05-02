@@ -4,3 +4,5 @@ python-dotenv==1.1.0
 drf_spectacular==0.28.0
 Pillow==11.2.1
 psycopg2-binary==2.9.10
+djangorestframework_simplejwt==5.5.0
+requests==2.32.3

@@ -15,6 +15,7 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv() 
+load_dotenv(".env.google") 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,6 +27,8 @@ MEDIA_URL = '/media/'
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY =  os.environ["SERVER_WOUNDS_SECRET_KEY"]
+GOOGLE_OAUTH2_CLIENT_ID = os.environ["GOOGLE_CLIENT_ID"]
+GOOGLE_OAUTH2_CLIENT_SECRET = os.environ["GOOGLE_CLIENT_SECRET"]
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -44,9 +47,16 @@ INSTALLED_APPS = [
     'app_cicatrizando.apps.AppCicatrizandoConfig',  # Your app name
     'rest_framework',  # Django REST framework
     'drf_spectacular',  # For OpenAPI schema generation
+    'rest_framework_simplejwt' # For JWT authentication
 ]
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
 }
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Wounds API',

@@ -28,7 +28,10 @@
         authentication: { 
           hideClientButton: true
         },
-        theme: 'purple', // if scalar_theme is defined above, the defaults themes will not work.
+        authentication: {
+          preferredSecurityScheme: 'jwtAuth',
+        },
+        theme: 'default', // if scalar_theme is defined above, the defaults themes will not work.
       };
       document.getElementById('api-reference').dataset.configuration = JSON.stringify(configuration);
     </script>
