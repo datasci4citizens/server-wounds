@@ -44,6 +44,7 @@ services:
         condition: service_healthy
     volumes:
       - ./docker/.env:/code/.env 
+      - ./.env.google:/code/.env.google 
 volumes:
   postgres-data:
   postgres-impexp:
