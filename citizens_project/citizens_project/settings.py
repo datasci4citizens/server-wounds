@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+load_dotenv() 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -75,13 +79,25 @@ WSGI_APPLICATION = 'citizens_project.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 # vamos utilizar o postgres
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
 
+if os.environ.get("SERVER_WOUNDS_DATABASE", None) ==  "POSTGRES":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": "wounds",
+            "USER": os.environ["SERVER_WOUNDS_DB_USER"],
+            "PASSWORD": os.environ["SERVER_WOUNDS_DB_PASSWORD"],
+            "HOST": os.environ["SERVER_WOUNDS_DB_HOST"],
+            "PORT": os.environ["SERVER_WOUNDS_DB_PORT"],
+        }
+    }
+else: 
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR.parent / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
