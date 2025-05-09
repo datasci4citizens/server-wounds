@@ -15,32 +15,36 @@ val_img_dir = "identification_model/validation/images"
 train_label_csv = "identification_model/train/predicted_wound_types.csv"
 val_label_csv = "identification_model/validation/predicted_wound_types.csv"
 
-# Load CSVs with tissue_type
-train_label_df = pd.read_csv(train_label_csv)
-val_label_df = pd.read_csv(val_label_csv)
+# Load string labels
+train_df = pd.read_csv(train_label_csv)
+val_df = pd.read_csv(val_label_csv)
 
-# Create label encoder (str -> int)
-classes = ['Granulation', 'Maceration', 'Slough', 'Necrotic']
-label_to_idx = {label: idx for idx, label in enumerate(classes)}
+# Get unique class names and map them to integers
+class_names = sorted(train_df["tissue_type"].unique())
+name_to_label = {name: idx for idx, name in enumerate(class_names)}
+label_to_name = {idx: name for name, idx in name_to_label.items()}
 
-# Map filenames to class indices
-train_label_map = dict(zip(train_label_df['filename'], train_label_df['tissue_type'].map(label_to_idx)))
-val_label_map = dict(zip(val_label_df['filename'], val_label_df['tissue_type'].map(label_to_idx)))
+# Convert labels to integers
+train_df["label"] = train_df["tissue_type"].map(name_to_label)
+val_df["label"] = val_df["tissue_type"].map(name_to_label)
 
-# Transforms
+train_label_map = dict(zip(train_df["filename"], train_df["label"]))
+val_label_map = dict(zip(val_df["filename"], val_df["label"]))
+
+# Transformations
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ])
 
-# Custom Dataset
+# Dataset class
 class WoundDataset(Dataset):
-    def __init__(self, image_dir, label_map, transform=None):
+    def __init__(self, image_dir, label_map=None, transform=None):
         self.image_dir = image_dir
         self.image_files = sorted([
             f for f in os.listdir(image_dir)
-            if f.lower().endswith(('.jpg', '.jpeg', '.png'))
+            if f.lower().endswith(('.jpg', '.jpeg', '.png')) and f in label_map
         ])
         self.label_map = label_map
         self.transform = transform
@@ -50,11 +54,6 @@ class WoundDataset(Dataset):
 
     def __getitem__(self, idx):
         img_name = self.image_files[idx]
-    
-    # Skip files not in label map
-        if img_name not in self.label_map:
-            return self.__getitem__((idx + 1) % len(self))
-
         img_path = os.path.join(self.image_dir, img_name)
         image = Image.open(img_path).convert("RGB")
         if self.transform:
@@ -62,16 +61,15 @@ class WoundDataset(Dataset):
         label = self.label_map[img_name]
         return image, label
 
-# Load datasets
+# Load data
 train_dataset = WoundDataset(train_img_dir, train_label_map, transform)
 val_dataset = WoundDataset(val_img_dir, val_label_map, transform)
-
 train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False)
 
 # Model
 model = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
-model.fc = nn.Linear(model.fc.in_features, 4)  # 4 classes
+model.fc = nn.Linear(model.fc.in_features, len(class_names))
 model = model.to("cpu")
 
 # Training setup
@@ -102,15 +100,25 @@ with torch.no_grad():
         y_pred.extend(preds)
         y_true.extend(labels.numpy())
 
-# Report
+# Classification report
 print("\nClassification Report:")
-print(classification_report(y_true, y_pred, target_names=classes))
+print(classification_report(y_true, y_pred, target_names=class_names))
 
 # Confusion Matrix
 conf = confusion_matrix(y_true, y_pred)
 plt.figure(figsize=(6, 5))
-sns.heatmap(conf, annot=True, fmt="d", cmap="Blues", xticklabels=classes, yticklabels=classes)
+sns.heatmap(conf, annot=True, fmt="d", cmap="Blues", xticklabels=class_names, yticklabels=class_names)
 plt.xlabel("Predicted")
 plt.ylabel("True")
 plt.title("Confusion Matrix")
 plt.show()
+
+# Save predictions to CSV
+predictions_df = pd.DataFrame({
+    "filename": [val_dataset.image_files[i] for i in range(len(val_dataset))],
+    "true_label": [label_to_name[y] for y in y_true],
+    "predicted_label": [label_to_name[y] for y in y_pred],
+})
+output_csv_path = "identification_model/validation/predicted_classes.csv"
+predictions_df.to_csv(output_csv_path, index=False)
+print(f"Predictions saved to '{output_csv_path}'")
