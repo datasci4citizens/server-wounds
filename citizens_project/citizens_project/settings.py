@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'app_cicatrizando.apps.AppCicatrizandoConfig',  # Your app name
     'rest_framework',  # Django REST framework
     'drf_spectacular',  # For OpenAPI schema generation
-    'rest_framework_simplejwt' # For JWT authentication
+    'rest_framework_simplejwt', # For JWT authentication
+    'corsheaders',  # Adicione esta linha
 ]
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
@@ -65,6 +66,7 @@ SPECTACULAR_SETTINGS = {
 }
   
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # Adicione esta linha no início
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -159,3 +161,32 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Configure as origens permitidas
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",  # Seu frontend
+    "http://127.0.0.1:5173",
+]
+
+# Para desenvolvimento, você pode permitir todas as origens (não recomendado para produção)
+# CORS_ALLOW_ALL_ORIGINS = True
+
+# Permitir cookies nas requisições cross-origin (se necessário)
+CORS_ALLOW_CREDENTIALS = True
+
+# Permitir métodos específicos
+CORS_ALLOWED_METHODS = [
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS',
+]
+
+# Permitir headers específicos
+CORS_ALLOWED_HEADERS = [
+    'Authorization',
+    'Content-Type',
+    'X-Requested-With',
+]
