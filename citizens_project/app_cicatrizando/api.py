@@ -63,15 +63,17 @@ class MeView(viewsets.ViewSet):
 
     def list(self, request):
         user = request.user
-        return Response(
-            {
-                "id": user.id,
-                "username": user.username,
-                "email": user.email,
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-            }
-        )
+        if user.is_anonymous:
+            return Response({"message": "Não autenticado", "authenticated": False})
+        
+        return Response({
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "authenticated": True
+        })
 
 
 class AuthSerializer(serializers.Serializer):
@@ -165,7 +167,7 @@ router.register(r'images', ImageViewSet)
 router.register(r'wounds', WoundViewSet)
 router.register(r'observations', ObservationViewSet)
 router.register(r'tracking-records', TrackingRecordViewSet)
-router.register(r'auth/google', GoogleLoginView, basename='google-login')
+router.register(r'auth/login/google', GoogleLoginView, basename='google-login')
 router.register(r'auth/me', MeView, basename='me')
 # --- URLS ---
 
