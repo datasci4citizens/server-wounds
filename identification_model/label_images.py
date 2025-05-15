@@ -16,11 +16,22 @@ def load_existing_labels():
         reader = csv.reader(f)
         return {row[0]: row[1] for row in reader if len(row) == 2}
 
-# Save label
+# Save a label
 def save_label(image_name, label):
     with open(CSV_FILE, 'a', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
         writer.writerow([image_name, label])
+
+# Remove last label from CSV
+def undo_last_label():
+    if not os.path.exists(CSV_FILE):
+        return
+    with open(CSV_FILE, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+    if lines:
+        lines = lines[:-1]
+        with open(CSV_FILE, 'w', encoding='utf-8') as f:
+            f.writelines(lines)
 
 # GUI class
 class ImageLabeler:
@@ -28,17 +39,27 @@ class ImageLabeler:
         self.master = master
         self.images_to_label = images_to_label
         self.current_index = 0
+        self.history = []
 
-        self.master.protocol("WM_DELETE_WINDOW", self.exit_program)  # Handle exit button
+        self.master.protocol("WM_DELETE_WINDOW", self.exit_program)
         self.master.title("Wound Labeler")
 
         self.label_var = tk.StringVar()
+
         self.image_label = tk.Label(self.master)
         self.image_label.pack()
 
         self.entry = tk.Entry(self.master, textvariable=self.label_var, font=("Arial", 16))
         self.entry.pack(pady=10)
         self.entry.bind("<Return>", self.submit_label)
+
+        # Buttons
+        button_frame = tk.Frame(self.master)
+        button_frame.pack(pady=5)
+
+        tk.Button(button_frame, text="Submit", command=self.submit_label).pack(side=tk.LEFT, padx=5)
+        tk.Button(button_frame, text="Skip", command=self.skip_image).pack(side=tk.LEFT, padx=5)
+        tk.Button(button_frame, text="Undo", command=self.undo_label).pack(side=tk.LEFT, padx=5)
 
         self.load_image()
 
@@ -63,8 +84,21 @@ class ImageLabeler:
         if label:
             image_name = self.images_to_label[self.current_index]
             save_label(image_name, label)
+            self.history.append((self.current_index, image_name))
             self.current_index += 1
             self.load_image()
+
+    def skip_image(self):
+        self.current_index += 1
+        self.load_image()
+
+    def undo_label(self):
+        if not self.history:
+            print("Nothing to undo.")
+            return
+        undo_last_label()
+        self.current_index, _ = self.history.pop()
+        self.load_image()
 
     def exit_program(self):
         self.master.destroy()
