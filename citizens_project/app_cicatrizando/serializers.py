@@ -10,16 +10,25 @@ class SpecialistsSerializer(serializers.ModelSerializer):
         model = Specialists
         fields = '__all__'
 
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, ** kwargs)
+        for field in self.fields.values():
+            field.required = True
+            field.Allow_null = False
+
+
 
 class ComorbiditiesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comorbidities
         fields = '__all__'
 
-
 class PatientComorbiditiesSerializer(serializers.ModelSerializer):
     patient = serializers.StringRelatedField()
     comorbidity = serializers.StringRelatedField()
+
+
 
     class Meta:
         model = PatientComorbidities
@@ -27,11 +36,21 @@ class PatientComorbiditiesSerializer(serializers.ModelSerializer):
 
 
 class PatientsSerializer(serializers.ModelSerializer): 
-    specialist_id = SpecialistsSerializer(read_only=True)
+    specialist_id = serializers.PrimaryKeyRelatedField(
+        queryset=Specialists.objects.all(),
+        required =True
+    )
 
     class Meta:
         model = Patients
         fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, ** kwargs)
+        for field in self.fields.values():
+            field.required = True
+            field.allow_null = False
+
 
 
 class ImagesSerializer(serializers.ModelSerializer):
@@ -52,7 +71,7 @@ class WoundSerializer(serializers.ModelSerializer):
 
 class TrackingRecordsSerializer(serializers.ModelSerializer):
     image_id = ImagesSerializer(read_only=True)
-    wound_id = WoundSerializer(read_only=True)
+    wounds_id = WoundSerializer(read_only=True)
     specialist_id = SpecialistsSerializer(read_only=True)
 
     class Meta:

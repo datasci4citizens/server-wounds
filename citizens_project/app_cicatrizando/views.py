@@ -75,6 +75,11 @@ class SpecialistViewSet(viewsets.ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         # PATCH /specialists/{id}
         return super().partial_update(request, *args, **kwargs)
+    
+    def destroy(self, request, *args, **kwargs):
+        # DELETE 
+        return super().destroy(request, *args, **kwargs)
+
 
 # ====== TRACKING RECORDS ======
 
