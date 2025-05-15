@@ -1,56 +1,14 @@
 from rest_framework import serializers, viewsets, routers, parsers
-
+from .serializers import (SpecialistsSerializer, ComorbiditiesSerializer, PatientsSerializer, \
+                              ImagesSerializer,WoundSerializer, TrackingRecordsSerializer)
 from django.urls import path, include
-from .models import Specialists, Patients, Measurement, Comorbidities, Images, Wound, Observation, TrackingRecords
+from .models import Specialists, Patients, Comorbidities, Images, Wound, TrackingRecords
 from drf_spectacular.utils import extend_schema
 from django.contrib.auth import get_user_model
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from app_cicatrizando.google import google_get_user_data
-
-from .models import *
-# --- SERIALIZERS ---
-
-class SpecialistSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Specialists
-        fields = '__all__'
-
-class PatientSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Patients
-        fields = '__all__'
-
-class MeasurementSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Measurement
-        fields = '__all__'
-
-class ComorbiditySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Comorbidities
-        fields = '__all__'
-
-class ImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Images
-        fields = '__all__'
-
-class WoundSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Wound
-        fields = '__all__'
-
-class ObservationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Observation
-        fields = '__all__'
-
-class TrackingRecordSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TrackingRecords
-        fields = '__all__'
 
 # --- VIEWSETS ---
 
@@ -125,47 +83,38 @@ class GoogleLoginView(viewsets.ViewSet):
 
 class SpecialistViewSet(viewsets.ModelViewSet):
     queryset = Specialists.objects.all()
-    serializer_class = SpecialistSerializer
+    serializer_class = SpecialistsSerializer
 
 class PatientViewSet(viewsets.ModelViewSet):
     queryset = Patients.objects.all()
-    serializer_class = PatientSerializer
+    serializer_class = PatientsSerializer
 
-class MeasurementViewSet(viewsets.ModelViewSet):
-    queryset = Measurement.objects.all()
-    serializer_class = MeasurementSerializer
 
 class ComorbidityViewSet(viewsets.ModelViewSet):
     queryset = Comorbidities.objects.all()
-    serializer_class = ComorbiditySerializer
+    serializer_class = ComorbiditiesSerializer
 AuthTokenResponseSerializer
 class ImageViewSet(viewsets.ModelViewSet):
     queryset = Images.objects.all()
-    serializer_class = ImageSerializer
+    serializer_class = ImagesSerializer
     parser_classes = [parsers.MultiPartParser]
 
 class WoundViewSet(viewsets.ModelViewSet):
     queryset = Wound.objects.all()
     serializer_class = WoundSerializer
 
-class ObservationViewSet(viewsets.ModelViewSet):
-    queryset = Observation.objects.all()
-    serializer_class = ObservationSerializer
-
 class TrackingRecordViewSet(viewsets.ModelViewSet):
     queryset = TrackingRecords.objects.all()
-    serializer_class = TrackingRecordSerializer
+    serializer_class = TrackingRecordsSerializer
 
 # --- ROUTER ---
 
 router = routers.DefaultRouter()
 router.register(r'specialists', SpecialistViewSet)
 router.register(r'patients', PatientViewSet)
-router.register(r'measurements', MeasurementViewSet)
 router.register(r'comorbidities', ComorbidityViewSet)
 router.register(r'images', ImageViewSet)
 router.register(r'wounds', WoundViewSet)
-router.register(r'observations', ObservationViewSet)
 router.register(r'tracking-records', TrackingRecordViewSet)
 router.register(r'auth/login/google', GoogleLoginView, basename='google-login')
 router.register(r'auth/me', MeView, basename='me')
