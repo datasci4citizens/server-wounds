@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - postgres-impexp:/home
+    restart: on-failure:5
+    shm_size: 128mb
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+
+  server:
+    image: wounds-server:v0.1
+    build: 
+      context: .
+    ports:
+      - "8000:8000"
+    environment:
+      POSTGRES_URL: postgresql://postgres:postgres@db:5432/postgres
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - minio_data:/data
+    environment:
+      - MINIO_DEFAULT_BUCKETS="wounds"
+  whodb:
+    image: clidey/whodb
+    environment:
+      WHODB_POSTGRES: '[{"host":"db","user":"postgres","password":"postgres","database":"postgres"}]' 
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres-data:
+  postgres-impexp:
+  minio_data: 
