@@ -1,8 +1,11 @@
+SECRET_KEY = "segredo"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
 import os
 from fastapi import FastAPI
 
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.middleware.sessions import SessionMiddleware
 
 from db.manager import Database
 from auth.oauth_google import login_router
@@ -15,20 +18,13 @@ from api.images_api import images_router
 from dotenv import load_dotenv
 
 load_dotenv()
-
-from dotenv import load_dotenv
-
-load_dotenv()
+load_dotenv(".env.google")
 
 Database.db_engine()
 
 app = FastAPI()
 
 # Modelo de Token
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-app.add_middleware(SessionMiddleware, secret_key=os.getenv("SECRET_KEY"))
 
 app.add_middleware(
     CORSMiddleware,
