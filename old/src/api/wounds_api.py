@@ -11,7 +11,8 @@ from schema.schema import WoundsPublicWithTrackingRecords
 from db.manager import Database
 
 wounds_router = APIRouter(
-    dependencies=[Depends(AuthService.get_current_user)]
+    dependencies=[Depends(AuthService.get_current_user)],
+    tags = ["wounds"]
 )
 BASE_URL_WOUNDS = "/wounds/"
 

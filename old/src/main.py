@@ -16,6 +16,7 @@ from api.tracking_records_api import tracking_records_router
 from api.comorbidities_api import comorbidities_router
 from api.images_api import images_router
 from dotenv import load_dotenv
+from scalar_fastapi import get_scalar_api_reference
 
 load_dotenv()
 load_dotenv(".env.google")
@@ -23,7 +24,7 @@ load_dotenv(".env.minio")
 
 Database.db_engine()
 
-app = FastAPI()
+app = FastAPI(docs_url=None)
 
 # Modelo de Token
 
@@ -34,6 +35,13 @@ app.add_middleware(
     allow_methods=["*"],  # Allows all HTTP methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
 )
+
+@app.get("/docs", include_in_schema=False)
+async def scalar_html():
+    return get_scalar_api_reference(
+        openapi_url=app.openapi_url,
+        title=app.title,
+    )
 
 # origins = [
 #     "http://localhost.tiangolo.com",

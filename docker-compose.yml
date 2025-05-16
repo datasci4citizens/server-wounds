@@ -1,0 +1,63 @@
+services:
+  db:
+    image: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - postgres-impexp:/home
+    restart: on-failure:5
+    shm_size: 128mb
+    environment:
+      POSTGRES_USER: api
+      POSTGRES_PASSWORD: api
+      POSTGRES_DB: wounds
+      PGUSER: api
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $$POSTGRES_DB"]
+      interval: 1s
+      timeout: 5s
+      retries: 5
+  server:
+    image: wounds-server:v0.2
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      migration:
+        condition: service_completed_successfully
+        required: true
+    env_file:
+      - path: ./docker/.env
+        required: true
+      - path: ./.env.google
+        required: true
+    volumes:
+      - type: bind
+        source: ./tmp/midia
+        target: /code/tmp/midia
+  migration:
+    image: wounds-server:v0.2
+    build: .
+    command: python citizens_project/manage.py migrate --noinput
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - path: ./docker/.env
+        required: true
+      - path: ./.env.google
+        required: true
+
+       
+volumes:
+  postgres-data:
+  postgres-impexp:
+  midia:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./midia
+      o: bind

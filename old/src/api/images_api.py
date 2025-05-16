@@ -15,7 +15,10 @@ class ImageUploadResponse(BaseModel):
     upload_url: str
 
 
-images_router = APIRouter(dependencies=[Depends(AuthService.get_current_user)])
+images_router = APIRouter(
+    dependencies=[Depends(AuthService.get_current_user)],
+    tags = ["Images"]
+)
 BASE_URL_IMAGES = "/images/"
 
 
