@@ -107,19 +107,3 @@ class TrackingRecordViewSet(viewsets.ModelViewSet):
     queryset = TrackingRecords.objects.all()
     serializer_class = TrackingRecordsSerializer
 
-# --- ROUTER ---
-
-router = routers.DefaultRouter()
-router.register(r'specialists', SpecialistViewSet)
-router.register(r'patients', PatientViewSet)
-router.register(r'comorbidities', ComorbidityViewSet)
-router.register(r'images', ImageViewSet)
-router.register(r'wounds', WoundViewSet)
-router.register(r'tracking-records', TrackingRecordViewSet)
-router.register(r'auth/login/google', GoogleLoginView, basename='google-login')
-router.register(r'auth/me', MeView, basename='me')
-# --- URLS ---
-
-urlpatterns = [
-    path('', include(router.urls)),
-]
