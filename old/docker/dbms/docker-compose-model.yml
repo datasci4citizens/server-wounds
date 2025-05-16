@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres
+    volumes:
+      - wound-data:/var/lib/postgresql/data
+      - wound-impexp:/home
+    restart: on-failure:5
+    shm_size: 128mb
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+
+volumes:
+  wound-data:
+    driver: "local"
+    driver_opts:
+      type: "none"
+      device: "/home/user/data/pgsql/wounds-db"
+      o: "bind" 
+  wound-impexp:
+    driver: "local"
+    driver_opts:
+      type: "none"
+      device: "/home/user/data/pgsql/wounds-impexp"
+      o: "bind" 
