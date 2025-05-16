@@ -24,15 +24,25 @@ class ComorbiditiesSerializer(serializers.ModelSerializer):
         model = Comorbidities
         fields = '__all__'
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, ** kwargs)
+        for field in self.fields.values():
+            field.required = True
+            field.Allow_null = False
+
 class PatientComorbiditiesSerializer(serializers.ModelSerializer):
     patient = serializers.StringRelatedField()
     comorbidity = serializers.StringRelatedField()
 
-
-
     class Meta:
         model = PatientComorbidities
         fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, ** kwargs)
+        for field in self.fields.values():
+            field.required = True
+            field.Allow_null = False
 
 
 class PatientsSerializer(serializers.ModelSerializer): 
@@ -58,22 +68,40 @@ class ImagesSerializer(serializers.ModelSerializer):
         model = Images
         fields = '__all__'
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, ** kwargs)
+        for field in self.fields.values():
+            field.required = True
+            field.Allow_null = False
+
 
 class WoundSerializer(serializers.ModelSerializer):
-    patient_id = PatientsSerializer(read_only=True)
-    specialist_id = SpecialistsSerializer(read_only=True)
-    image_id = ImagesSerializer(read_only=True)
+    patient_id = serializers.StringRelatedField()
+    specialist_id =  serializers.StringRelatedField() 
+    image_id = serializers.StringRelatedField()
 
     class Meta:
         model = Wound
         fields = '__all__'
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, ** kwargs)
+        for field in self.fields.values():
+            field.required = True
+            field.Allow_null = False
+
 
 class TrackingRecordsSerializer(serializers.ModelSerializer):
-    image_id = ImagesSerializer(read_only=True)
-    wounds_id = WoundSerializer(read_only=True)
-    specialist_id = SpecialistsSerializer(read_only=True)
+    image_id = serializers.StringRelatedField()
+    wounds_id = serializers.StringRelatedField()
+    specialist_id = serializers.StringRelatedField()
 
     class Meta:
         model = TrackingRecords
         fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, ** kwargs)
+        for field in self.fields.values():
+            field.required = True
+            field.Allow_null = False
