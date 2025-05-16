@@ -54,9 +54,9 @@ class ImagesSerializer(serializers.ModelSerializer):
 
 
 class WoundSerializer(serializers.ModelSerializer):
-    patient_id = PatientsSerializer(read_only=True)
-    specialist_id = SpecialistsSerializer(read_only=True)
-    image_id = ImagesSerializer(read_only=True)
+    patient_id = serializers.PrimaryKeyRelatedField(queryset=Patients.objects.all())
+    specialist_id = serializers.PrimaryKeyRelatedField(queryset=Specialists.objects.all())
+    image_id = serializers.PrimaryKeyRelatedField(queryset=Images.objects.all())
 
     class Meta:
         model = Wound
