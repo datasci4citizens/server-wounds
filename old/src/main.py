@@ -19,6 +19,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 load_dotenv(".env.google")
+load_dotenv(".env.minio")
 
 Database.db_engine()
 
