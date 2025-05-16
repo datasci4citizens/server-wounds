@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .models import (
-    Specialists, Patients, Comorbidities, PatientComorbidities,
+    Specialists, Patients, Comorbidities, 
     Images, Wound, TrackingRecords
 )
 
@@ -23,17 +23,10 @@ class ComorbiditiesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comorbidities
         fields = '__all__'
-
-class PatientComorbiditiesSerializer(serializers.ModelSerializer):
-    patient = serializers.StringRelatedField()
-    comorbidity = serializers.StringRelatedField()
+ 
 
 
-
-    class Meta:
-        model = PatientComorbidities
-        fields = '__all__'
-
+ 
 
 class PatientsSerializer(serializers.ModelSerializer): 
     specialist_id = serializers.PrimaryKeyRelatedField(
@@ -51,6 +44,7 @@ class PatientsSerializer(serializers.ModelSerializer):
             field.required = True
             field.allow_null = False
 
+ 
 
 
 class ImagesSerializer(serializers.ModelSerializer):

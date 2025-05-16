@@ -79,31 +79,3 @@ class GoogleLoginView(viewsets.ViewSet):
         }
 
         return Response(response, status=200)
-
-
-class SpecialistViewSet(viewsets.ModelViewSet):
-    queryset = Specialists.objects.all()
-    serializer_class = SpecialistsSerializer
-
-class PatientViewSet(viewsets.ModelViewSet):
-    queryset = Patients.objects.all()
-    serializer_class = PatientsSerializer
-
-
-class ComorbidityViewSet(viewsets.ModelViewSet):
-    queryset = Comorbidities.objects.all()
-    serializer_class = ComorbiditiesSerializer
-AuthTokenResponseSerializer
-class ImageViewSet(viewsets.ModelViewSet):
-    queryset = Images.objects.all()
-    serializer_class = ImagesSerializer
-    parser_classes = [parsers.MultiPartParser]
-
-class WoundViewSet(viewsets.ModelViewSet):
-    queryset = Wound.objects.all()
-    serializer_class = WoundSerializer
-
-class TrackingRecordViewSet(viewsets.ModelViewSet):
-    queryset = TrackingRecords.objects.all()
-    serializer_class = TrackingRecordsSerializer
-
