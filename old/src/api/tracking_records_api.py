@@ -7,7 +7,8 @@ from db.manager import Database
 from schema.schema import TrackingRecords, TrackingRecordsCreate, TrackingRecordsPublic, TrackingRecordsUpdate
 
 tracking_records_router = APIRouter(
-    dependencies=[Depends(AuthService.get_current_user)]
+    dependencies=[Depends(AuthService.get_current_user)],
+    tags = ["tracking_records"]
 )
 BASE_URL_TRACKING_RECORDS = "/tracking-records/"
 

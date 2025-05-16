@@ -10,7 +10,8 @@ from schema.schema import Patients, PatientsCreate, PatientsPublic, PatientsPubl
 from schema.schema import Comorbidities, ComorbiditiesCreate, ComorbiditiesPublic, PatientComorbidities
 
 patients_router = APIRouter(
-    dependencies=[Depends(AuthService.get_current_user)]
+    dependencies=[Depends(AuthService.get_current_user)],
+    tags = ["Patients"]
 )
 BASE_URL_PATIENTS = "/patients/"
 
