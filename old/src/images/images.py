@@ -14,7 +14,7 @@ class Images:
             os.getenv("MINIO_DOMAIN") or "",
             access_key=os.getenv("MINIO_ACCESS_KEY") or "",
             secret_key=os.getenv("MINIO_SECRET_KEY") or "",
-            secure=True,
+            secure=False
         )
 
     # Singleton instance attribute
