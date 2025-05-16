@@ -66,4 +66,3 @@ watchfiles==0.24.0
 websockets==13.0.1
 google_auth_oauthlib==1.2.1
 PyJWT==2.9.0
-PyJWT==2.10.1
