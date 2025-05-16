@@ -15,8 +15,8 @@ class Specialists(models.Model):
     city_character = models.CharField(max_length=255, null=True, blank=True)
     state_character = models.CharField(max_length=2, null=True, blank=True)
     specialist_character = models.CharField(max_length=255, null=True, blank=True)
-    created = models.DateTimeField(default=timezone.now)
-    updated = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.specialist_name
@@ -45,9 +45,10 @@ class Patients(models.Model):
     accept_tcl = models.BooleanField(default=False)
     specialist_id = models.ForeignKey(Specialists, on_delete=models.SET_NULL, null=True, blank=True, related_name='patients')
     hospital_registration = models.CharField(max_length=50, null=True, blank=True)
-    created_at = models.DateTimeField(default=timezone.now)
-    updated_at = models.DateTimeField(auto_now=True)
     comorbidities = models.ManyToManyField(Comorbidities)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
     def __str__(self):
         return self.name
 
@@ -63,7 +64,8 @@ def get_file_path(instance, filename):
 class Images(models.Model):
     image_id = models.AutoField(primary_key=True)
     image = models.ImageField(upload_to=get_file_path)
-
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
         return f"Image {self.image_id}"
@@ -78,10 +80,10 @@ class Wound(models.Model):
     type = models.CharField(max_length=50)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField(null=True, blank=True)
-    created = models.DateTimeField(default=timezone.now)
-    updated = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
     image_id = models.ForeignKey(Images, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
         return f"{self.type} wound - {self.patient_id.name}"
@@ -105,6 +107,8 @@ class TrackingRecords(models.Model):
     image_id = models.ForeignKey(Images, on_delete=models.SET_NULL, null=True, blank=True)
     wound_id = models.ForeignKey(Wound, on_delete=models.CASCADE, related_name='tracking_records')
     specialist_id = models.ForeignKey(Specialists, on_delete=models.SET_NULL, null=True, blank=True, related_name='tracking_records')
-    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
     def __str__(self):
         return f"Tracking Record {self.tracking_id} - {self.track_date}"
