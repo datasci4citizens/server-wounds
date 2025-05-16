@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
 import os
 from dotenv import load_dotenv
@@ -56,7 +57,11 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
+<<<<<<< HEAD
        # 'rest_framework.permissions.IsAuthenticated',
+=======
+        'rest_framework.permissions.AllowAny',
+>>>>>>> c5bd38ecdd473b8af096504908a9a611897982ad
     ]
 }
 SPECTACULAR_SETTINGS = {
@@ -139,6 +144,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/

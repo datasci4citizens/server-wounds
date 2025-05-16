@@ -2,6 +2,8 @@ from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
 
+from app_cicatrizando.api import GoogleLoginView, MeView
+
 from . import views
 
 # from django_scalar.views import scalar_viewer
@@ -14,16 +16,21 @@ from .views import (
     TrackingRecordViewSet, ComorbidityViewSet, ImageViewSet,WoundExcelView
 )
 
+# --- ROUTER ---
+
 router = DefaultRouter()
-router.register(r'patients', PatientViewSet)
 router.register(r'specialists', SpecialistViewSet)
-router.register(r'wounds', WoundViewSet)
-router.register(r'tracking-records', TrackingRecordViewSet)
+router.register(r'patients', PatientViewSet)
 router.register(r'comorbidities', ComorbidityViewSet)
 router.register(r'images', ImageViewSet)
+router.register(r'wounds', WoundViewSet)
+router.register(r'tracking-records', TrackingRecordViewSet)
+router.register(r'auth/login/google', GoogleLoginView, basename='google-login')
+router.register(r'auth/me', MeView, basename='me')
+# --- URLS ---
 
 urlpatterns = [
-    path('api/', include(router.urls)),
+    path('', include(router.urls)),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/schema/swagger", SpectacularSwaggerView.as_view(), name="schema-swagger-ui"),
     path("api/schema/scalar", scalar_viewer, name="schema-scalar-ui"), 

@@ -162,5 +162,6 @@ class WoundExcelView(APIView):
 
 class ComorbidityViewSet(viewsets.ModelViewSet):
     queryset = Comorbidities.objects.all()
+    serializer_class = ComorbiditiesSerializer
     serialize_class = [IsAuthenticated]
 
