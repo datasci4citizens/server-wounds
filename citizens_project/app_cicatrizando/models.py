@@ -21,15 +21,14 @@ class Specialists(models.Model):
     def __str__(self):
         return self.specialist_name
     
-class PatientComorbidities(models.Model):
-    patient = models.ForeignKey('Patients', on_delete=models.CASCADE, related_name='comorbidities')
-    comorbidity = models.ForeignKey('Comorbidities', on_delete=models.CASCADE, related_name='patients')
-
-    class Meta:
-        unique_together = ('patient', 'comorbidity')  # equivalente à chave composta
-
+ 
+""" COMORBIDITIES MODEL """
+class Comorbidities(models.Model):
+    comorbidity_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=255)
+    
     def __str__(self):
-        return f"{self.patient.name} - {self.comorbidity.name}"
+        return self.name
 
 """ PATIENT MODEL """
 class Patients(models.Model):
@@ -48,17 +47,10 @@ class Patients(models.Model):
     hospital_registration = models.CharField(max_length=50, null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
-    
+    comorbidities = models.ManyToManyField(Comorbidities)
     def __str__(self):
         return self.name
 
-""" COMORBIDITIES MODEL """
-class Comorbidities(models.Model):
-    comorbidity_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=255)
-    
-    def __str__(self):
-        return self.name
 
 def get_file_path(instance, filename):
     ext = filename.split('.')[-1]
