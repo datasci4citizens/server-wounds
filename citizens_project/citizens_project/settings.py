@@ -57,11 +57,10 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
-<<<<<<< HEAD
-       # 'rest_framework.permissions.IsAuthenticated',
-=======
+
+        'rest_framework.permissions.IsAuthenticated',
+
         'rest_framework.permissions.AllowAny',
->>>>>>> c5bd38ecdd473b8af096504908a9a611897982ad
     ]
 }
 SPECTACULAR_SETTINGS = {
