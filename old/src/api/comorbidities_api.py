@@ -7,7 +7,8 @@ from db.manager import Database
 from schema.schema import Comorbidities, ComorbiditiesCreate, ComorbiditiesPublic, ComorbiditiesUpdate
 
 comorbidities_router = APIRouter(
-    dependencies=[Depends(AuthService.get_current_user)]
+    dependencies=[Depends(AuthService.get_current_user)],
+    tags = ["Comorbidities"]
 )
 BASE_URL_COMORBIDITIES = "/comorbidities/"
 

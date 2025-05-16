@@ -32,8 +32,8 @@ router.register(r'auth/me', MeView, basename='me')
 urlpatterns = [
     path('', include(router.urls)),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
-    path("api/schema/swagger", SpectacularSwaggerView.as_view(), name="schema-swagger-ui"),
-    path("api/schema/scalar", scalar_viewer, name="schema-scalar-ui"), 
+    path("docs/swagger", SpectacularSwaggerView.as_view(), name="schema-swagger-ui"),
+    path("docs", scalar_viewer, name="schema-scalar-ui"), 
     path('api/wounds/excel/', WoundExcelView.as_view(), name='wounds-excel'),
     
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
