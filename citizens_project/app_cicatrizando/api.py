@@ -9,6 +9,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from app_cicatrizando.google import google_get_user_data
+from .models_omop import Provider
 
 # --- VIEWSETS ---
 
@@ -41,6 +42,10 @@ class AuthTokenResponseSerializer(serializers.Serializer):
     access = serializers.CharField()
     refresh = serializers.CharField()
     role = serializers.CharField()
+    is_new_user = serializers.BooleanField()
+    specialist_id = serializers.IntegerField(allow_null=True)
+    provider_id = serializers.IntegerField(allow_null=True)
+    profile_completion_required = serializers.BooleanField()
 
 class GoogleLoginView(viewsets.ViewSet):
     serializer_class = AuthSerializer
@@ -50,32 +55,60 @@ class GoogleLoginView(viewsets.ViewSet):
     def create(self, request, *args, **kwargs):
         auth_serializer = self.serializer_class(data=request.data)
         auth_serializer.is_valid(raise_exception=True)
-
         validated_data = auth_serializer.validated_data
-
-        # get user data from google
         user_data = google_get_user_data(validated_data)
 
         # Creates user in DB if first time login
-        user, _ = User.objects.get_or_create(
+        user, created = User.objects.get_or_create(
             email=user_data.get("email"),
-            username=user_data.get("email"),
-            first_name=user_data.get("given_name"),
-            last_name=user_data.get("given_name"),
+            defaults={
+                "username": user_data.get("email"),
+                "first_name": user_data.get("given_name"),
+                "last_name": user_data.get("family_name", ""),
+            }
         )
 
-        role = "none"
-        # if Specialists.objects.filter(user=user).exists():
-        #     role = "specialist"
-        # elif Patients.objects.filter(user=user).exists():
-        #     role = "person"
+        # Check for existing specialist record (old model)
+        specialist_id = None
+        specialist_data = None
+        try:
+            specialist = Specialists.objects.get(email=user.email)
+            specialist_id = specialist.specialist_id
+            specialist_data = SpecialistsSerializer(specialist).data
+        except Specialists.DoesNotExist:
+            pass
 
-        # generate jwt token for the user
+        # Check for existing provider record (OMOP model)
+        provider_id = None
+        provider_data = None
+        try:
+            provider = Provider.objects.get(email=user.email)
+            provider_id = provider.provider_id
+            provider_data = {
+                'provider_id': provider.provider_id,
+                'provider_name': provider.provider_name,
+                'specialty': provider.specialty_concept_id
+            }
+        except Provider.DoesNotExist:
+            pass
+        
+        # Determine role and profile completion status
+        is_specialist = specialist_id is not None or provider_id is not None
+        role = "specialist" if is_specialist else "user"
+        profile_completion_required = created or not is_specialist
+
+        # Generate JWT token
         token = RefreshToken.for_user(user)
         response = {
             "access": str(token.access_token),
             "refresh": str(token),
             "role": role,
+            "is_new_user": created,
+            "specialist_id": specialist_id,
+            "provider_id": provider_id,
+            "specialist_data": specialist_data,
+            "provider_data": provider_data,
+            "profile_completion_required": profile_completion_required
         }
 
         return Response(response, status=200)
