@@ -68,17 +68,7 @@ class GoogleLoginView(viewsets.ViewSet):
             }
         )
 
-        # Check for existing specialist record (old model)
-        specialist_id = None
-        specialist_data = None
-        try:
-            specialist = Specialists.objects.get(email=user.email)
-            specialist_id = specialist.specialist_id
-            specialist_data = SpecialistsSerializer(specialist).data
-        except Specialists.DoesNotExist:
-            pass
-
-        # Check for existing provider record (OMOP model)
+        # Check for existing provider record (OMOP model) only
         provider_id = None
         provider_data = None
         try:
@@ -93,9 +83,9 @@ class GoogleLoginView(viewsets.ViewSet):
             pass
         
         # Determine role and profile completion status
-        is_specialist = specialist_id is not None or provider_id is not None
-        role = "specialist" if is_specialist else "user"
-        profile_completion_required = created or not is_specialist
+        is_provider = provider_id is not None
+        role = "specialist" if is_provider else "user"
+        profile_completion_required = created or not is_provider
 
         # Generate JWT token
         token = RefreshToken.for_user(user)
@@ -104,9 +94,8 @@ class GoogleLoginView(viewsets.ViewSet):
             "refresh": str(token),
             "role": role,
             "is_new_user": created,
-            "specialist_id": specialist_id,
+            "specialist_id": None,  # Always None since we no longer check this model
             "provider_id": provider_id,
-            "specialist_data": specialist_data,
             "provider_data": provider_data,
             "profile_completion_required": profile_completion_required
         }
