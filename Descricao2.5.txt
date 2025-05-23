@@ -84,25 +84,25 @@ CONTAINER Patient {
         value_as_number = height
         measurement_cid = CID_HEIGHT
         unit_cid        = CID_CENTIMETER
-        measurement_date = NOW()
+        measurement_date = UPDATE_AT()
     },
     TABLE MEASUREMENT {
         person_id =  patient_id
         value_as_number = weight
         measurement_cid = CID_WEIGHT
         unit_cid = CID_KILOGRAM
-        measurement_date = NOW()
+        measurement_date = UPDATE_AT()
     }, 
     TABLE OBSERVATION {
         person_id = patient_id
         observation_cid = CID_SMOKE_FREQUENCY
-        observation_date = NOW()
+        observation_date = UPDATE_AT()
         value_as_cid = smoke_frequency WHERE ( CID_SMOKE_FREQUENCY -[Has Answer]-> smoke_frequency )
     }
     TABLE OBSERVATION {
         person_id = patient_id
         observation_cid = CID_DRINK_FREQUENCY
-        observation_date = NOW()
+        observation_date = UPDATE_AT()
         value_as_cid = drink_frequency WHERE ( CID_DRINK_FREQUENCY -[Has Answer]-> drink_frequency )
     }
 
@@ -124,7 +124,7 @@ CONTAINER Wound {
     TABLE OBSERVATION {
         person_id            = patient_id
         observation_cid      = CID_WOUND_LOCATION 
-        observation_date     = NOW()
+        observation_date     = UPDATE_AT()
         value_as_cid         = region
         observation_event_id =  wound_id 
     	obs_event_field_cid = CID_PK_CONDITION_OCCURRENCE
