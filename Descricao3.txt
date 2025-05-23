@@ -129,14 +129,14 @@ class MEASUREMENT:
     measurement_concept_id : MEASUREMENT_CONCEPT
     unit_concept_id : MEASUREMENT_UNIT_CONECPT
     value_as_concept_id : FK[CONCEPT]  
-    measurement_date : NOW()
+    measurement_date : UPDATE_AT()
     measurement_event_id : Optional[FK[PROCEDURE_OCURRENCE]]
     meas_event_field_concept_id : Optional[CID_PK_PROCEDURE_OCCURRENCE]
 },
 class OBSERVATION: 
     person_id : int
     observation_concept_id : CID_SMOKE_FREQUENCY | CID_DRINK_FREQUENCY | CID_WOUND_LOCATION | CID_WOUND_CARE_DRESSING_CHANGE
-    observation_date : NOW()
+    observation_date : UPDATE_AT()
     value_as_concept_id :  value_as_concept_id 
                              WHERE (value_as_concept_id  <-[Has Answer]- CID_SMOKE_FREQUENCY )
                                   |  (value_as_concept_id  <-[Subsumes  ]- CID_DEGREE_FINDING ) 

@@ -1,3 +1,32 @@
+# Recomendo ativar o hightlight de python que ajuda a separa as coisas.
+
+# Isso é um arquivo txt porque não esta em nenhuma linguagem especifica, apenas uso ela para conseguir descrever como deve ser a bind do modelo antigo com o novo modelo, 
+# A sintax que estou usando, eu estou criando blocos começando com API, que logo em seguida é o nome da tabela no modelo antigo, e dentro existe uma lista de linhas de tabelas, que servem para descrever que para por exemplo, cada Patient deve ser mapeado para uma linha da tabela PERSON e 2 Linhas de MEASUREMENT e 2 Linhas de OBSERVATION.
+# Dentro de cada existe uma sequencia de linhas, onde na esquerda é o campo da linha da tabela alvo, e a direita os campos ou contantes vindos da tabela antiga , sendo eles marcados por um @
+# EXEMPLO: 
+API Patient {
+    TABLE ROW PERSON {
+		# Isso representa que o person_id deve ser igual ao patient_id
+        person_id   = @patient_id  
+		# Isso representa que provider_id é o specialist_id do paciente, e que esse valor é uma foreing key para PROVIDER
+        provider_id = @specialist_id (FK PROVIDER)
+		# Comento os campos que não são omop
+        accept_tcle  = @accept_tcl # não omop
+    }
+ 
+    TABLE ROW OBSERVATION {
+		# do lado direito em UPPERCASE está um valor de uma constante, não tem @ no começo
+        observation_concept_id    = CID_SMOKE_FREQUENCY
+		# do lado direito a marca UPDATE_AT(), marca que o valor é o valor da ultima atualização da linha
+        observation_date = UPDATE_AT()
+		# O where indica uma condição para aquele valor, definindo os possiveis valores para aquele valor, normalmente baseado num contexto suprior, nesse caso, smoke_frequency precisa ser um Conceito que é uma responsta do conceito CID_SMOKE_FREQUENCY, os possiveis valores são visiveis em: 
+        # https://athena.ohdsi.org/search-terms/terms/1586169
+        value_as_concept_id       = @smoke_frequency WHERE ( CID_SMOKE_FREQUENCY -[Has Answer]-> smoke_frequency )
+    }
+} 
+    
+-------------------------------------------------------------
+
 CID_WOUND = 4168335
 CID_WOUND_MORPH = 4029919
 CID_WOUND_TYPE = 43055265
@@ -40,7 +69,7 @@ CID_WOUND_CARE_DRESSING_CHANGE = 4256346
 
 
 Todos os *_TYPE_CONCEPT_ID possuem valor  CID_EHR
-FROM Specialists {
+API Specialists {
     (l:LOCATION  {
         city  = @city_character
         state = @state_character
@@ -57,7 +86,7 @@ Comorbidities = MATCH (a:CONCEPT {class: ID_DISORDER, domain: ID_CONDITION }) RE
 
 
 
-FROM PatientComorbidities {
+API PatientComorbidities {
     WHERE comorbidity_id in Comorbidities,
     :CONDITION_OCCURRENCE {
         person_id = @patient_id
@@ -67,8 +96,8 @@ FROM PatientComorbidities {
     }
 }
 
-FROM Patient {
-    INSERT PERSON {
+API Patient {
+    TABLE ROW PERSON {
         person_id = @patient_id  
         birth_datetime  = @birthday
         gender_concept_id    = @gender
@@ -79,30 +108,30 @@ FROM Patient {
         phone_number = @phone_number # não omop
         accept_tcl = @accept_tcl # não omop
     }
-    INSERT MEASUREMENT {
+    TABLE ROW MEASUREMENT {
         person_id =  @patient_id
         value_as_number = @height
         measurement_concept_id = CID_HEIGHT
         unit_concept_id = CID_CENTIMETER
-        measurement_date = NOW()
+        measurement_date = UPDATE_AT()
     },
-    INSERT MEASUREMENT {
+    TABLE ROW MEASUREMENT {
         person_id =  @patient_id
         value_as_number = @weight
         measurement_concept_id = CID_WEIGHT
         unit_concept_id = CID_KILOGRAM
-        measurement_date = NOW()
+        measurement_date = UPDATE_AT()
     }, 
-    INSERT OBSERVATION {
+    TABLE ROW OBSERVATION {
         person_id = @patient_id
         observation_concept_id = @CID_SMOKE_FREQUENCY
-        observation_date = NOW()
+        observation_date = UPDATE_AT()
         value_as_concept_id = @smoke_frequency WHERE ( CID_SMOKE_FREQUENCY -[Has Answer]-> smoke_frequency )
     }
-    INSERT OBSERVATION {
+    TABLE ROW OBSERVATION {
         person_id = @patient_id
         observation_concept_id = @CID_DRINK_FREQUENCY
-        observation_date = NOW()
+        observation_date = UPDATE_AT()
         value_as_concept_id = @drink_frequency WHERE ( CID_DRINK_FREQUENCY -[Has Answer]-> drink_frequency )
     }
 
@@ -110,8 +139,8 @@ FROM Patient {
 } 
     
 
-FROM Wound {
-    INSERT CONDITION_OCCURRENCE {
+API Wound {
+    TABLE ROW CONDITION_OCCURRENCE {
         condition_occurrence_id = @wound_id
         person_id = @patient_id (FK PERSON) 
         provider_id = @specialist_id (FK PROVIDER)
@@ -122,16 +151,16 @@ FROM Wound {
 
     }
     
-    INSERT OBSERVATION {
+    TABLE ROW OBSERVATION {
         person_id = @patient_id
         observation_concept_id = @CID_WOUND_LOCATION 
-        observation_date = NOW()
+        observation_date = UPDATE_AT()
         value_as_concept_id = @region WHERE ( region -[Is A]-> CID_SURFACE_REGION )
     }
 
-    INSERT NOTE {
+    TABLE ROW NOTE {
 	    person_id = @patient_id
-        note_date = CREATED_AT()
+        note_date = UPDATE_AT()
         note_class_concept_id = CID_WOUND_IMAGE
         encoding_concept_id = CID_UTF8
         language_concept_id = CID_PORTUGUESE
@@ -143,10 +172,10 @@ FROM Wound {
 
 
 
-FROM TrackingRecords {
-    WITH patient_id = (SELECT co.id FROM CONDITION_OCCURRENCE WHERE  id = @wound_id )
+API TrackingRecords {
+    WITH patient_id = (SELECT co.id API CONDITION_OCCURRENCE WHERE  id = @wound_id )
 
-    INSERT PROCEDURE_OCURRENCE {
+    TABLE ROW PROCEDURE_OCURRENCE {
         person_id = @patient_id
         procedure_occurrence_id = @tracking_id ->  (FK PERSON)
         provider_id = @specialist_id  (FK PROVIDER)
@@ -154,16 +183,16 @@ FROM TrackingRecords {
         procedure_date = @track_date 
     } RETURN po 
 
-    INSERT FACT_RELATION_SHIP {
+    TABLE ROW FACT_RELATION_SHIP {
         domain_concept_id_1 = CID_PK_CONDITION_OCCURRENCE
         fact_id_1 = @wound_id (FK CONDITION)
         relationship_concept_id = CID_CONDITION_RELEVANT_TO
         domain_concept_id_1 = CID_PK_PROCEDURE_OCCURRENCE
         fact_id_2 = @tracking_id (FK CONDITION)
     }
-    INSERT NOTE {
+    TABLE ROW NOTE {
         person_id = @patient_id
-        note_date = CREATED_AT()
+        note_date = UPDATE_AT()
         note_class_concept_id = CID_WOUND_IMAGE
         encoding_concept_id = CID_UTF8
         language_concept_id = CID_PORTUGUESE
@@ -183,51 +212,51 @@ FROM TrackingRecords {
         meas_event_field_concept_id = CID_PK_PROCEDURE_OCCURRENCE
     }
 
-    INSERT MEASUREMENT {
+    TABLE ROW MEASUREMENT {
         value_as_number = @length
         measurement_concept_id = CID_WOUND_LENGTH
         unit_concept_id = CID_CENTIMETER
     },
-    INSERT MEASUREMENT {
+    TABLE ROW MEASUREMENT {
         value_as_number = @width
         measurement_concept_id = CID_WOUND_WIDTH
         unit_concept_id = CID_CENTIMETER
     },
-    INSERT MEASUREMENT {
+    TABLE ROW MEASUREMENT {
         value_as_concept_id = @exudate_amount  WHERE ( CID_EXUDATE_AMOUNT -[Has Answer]-> @exudate_amount ) 
         measurement_concept_id = CID_EXUDATE_AMOUNT
     },
-    INSERT MEASUREMENT {
+    TABLE ROW MEASUREMENT {
         value_as_concept_id = @exudate_type  WHERE ( CID_EXUDATE_APPEARANCE -[Has Answer]-> @exudate_type ) 
         measurement_concept_id = CID_EXUDATE_APPEARANCE
 
     },    
-    INSERT MEASUREMENT {
+    TABLE ROW MEASUREMENT {
         value_as_concept_id = @tissue_type  WHERE ( CID_WOUND_APPEARANCE -[Has Answer]-> @tissue_type ) 
         measurement_concept_id = CID_WOUND_APPEARANCE
     },
-    INSERT MEASUREMENT {
+    TABLE ROW MEASUREMENT {
         value_as_concept_id = @wound_edges  WHERE ( CID_WOUND_EDGE_DESCRIPTION -[Has Answer]-> @wound_edges ) 
         measurement_concept_id = CID_WOUND_EDGE_DESCRIPTION
     },
-    INSERT MEASUREMENT {
+    TABLE ROW MEASUREMENT {
         value_as_concept_id = @skin_around  WHERE ( CID_WOUND_SKIN_AROUND -[Has Answer]-> @skin_around ) 
         measurement_concept_id = CID_WOUND_SKIN_AROUND
     },
-    INSERT MEASUREMENT {
+    TABLE ROW MEASUREMENT {
         value_as_concept_id = @had_a_fever WHERE @had_a_fever in [CID_NEGATIVE, CID_POSITIVE]  
         measurement_concept_id = CID_FEVER
     },
-    INSERT MEASUREMENT {
+    TABLE ROW MEASUREMENT {
         value_as_concept_id = @pain_level  WHERE ( CID_PAIN_SEVERITY -[Has Answer]-> @pain_level ) 
         measurement_concept_id = CID_PAIN_SEVERITY
     },
-    INSERT MEASUREMENT {
+    TABLE ROW MEASUREMENT {
         value_as_concept_id = @dressing_changer_per_day  WHERE ( CID_DEGREE_FINDING -[Subsumes]-> @dressing_changer_per_day ) 
         measurement_concept_id = CID_WOUND_CARE_DRESSING_CHANGE
     },
 
-    INSERT OBSERVATION {
+    TABLE ROW OBSERVATION {
         person_id = @patient_id
         observation_concept_id = CID_WOUND_CARE_DRESSING_CHANGE
         observation_date = UPDATED_AT()
@@ -236,9 +265,9 @@ FROM TrackingRecords {
         value_as_concept_id = @dressing_changer_per_day  WHERE (CID_DEGREE_FINDING -[Subsumes]-> @dressing_changer_per_day ) 
     }
 
-    INSERT NOTE {
+    TABLE ROW NOTE {
         person_id = @patient_id
-        note_date = CREATED_AT()
+        note_date = UPDATE_AT()
         note_class_concept_id = CID_WOUND_CARE_DRESSING_CHANGE
         encoding_concept_id = CID_UTF8
         language_concept_id = CID_PORTUGUESE
@@ -248,9 +277,9 @@ FROM TrackingRecords {
 		
     }
 
-    INSERT NOTE {
+    TABLE ROW NOTE {
         person_id = @patient_id
-        note_date = CREATED_AT()
+        note_date = UPDATE_AT()
         note_class_concept_id = CID_GENERIC_NOTE
         encoding_concept_id = CID_UTF8
         language_concept_id = CID_PORTUGUESE
