@@ -45,7 +45,7 @@ class Patients(models.Model):
     accept_tcl = models.BooleanField(default=False)
     specialist_id = models.ForeignKey(Specialists, on_delete=models.SET_NULL, null=True, blank=True, related_name='patients')
     hospital_registration = models.CharField(max_length=50, null=True, blank=True)
-    comorbidities = models.ManyToManyField(Comorbidities)
+    comorbidities = models.ManyToManyField(Comorbidities, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
