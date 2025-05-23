@@ -1,0 +1,84 @@
+
+Explicação
+---
+TabelaOrigem -> TABELA_OMOP 
+	campo_origem    -> campo_omop 
+    campo_origem2   -> campo_omop2 # comentario 
+    campo_origem3   -> +[TABELA_OMOP2] # Representa, que existira uma linha na tabela especificada apenas para definir esse campo 
+    campo_foo_type  -> +[TABELA_OMOP3#Foo] # Representa que existira uma linha juntando os dois campos que no fim da tabela também tem #Foo
+    campo_foo_value -> +[TABELA_OMOP3#Foo] 
+    campo_bas       -> campo_omop3 (FK TABELA_OMOP4) # Representa que existe um campo na tabela atual, e que esse campo é uma foreing key para a tabela especificada apos FK
+---
+
+Specialists -> PROVIDER:    
+	specialist_id 	-> provider_id
+	specialist_name	-> provider_name
+	birthday		-> year_of_birth 
+	speciality		-> specialty_concept_id (FK CONCEPT)
+	city_character	-> location_id (FK LOCATION)
+	state_character -> location_id (FK LOCATION)
+
+LOCATION 
+	location_id
+	city
+	state
+
+Comorbidities -> CONCEPT 
+	# as comorbidades já existem registrada como concepts
+	
+
+PatientComorbidities -> CONDITION_OCCURRENCE
+    patient_id -> person_id
+    comorbidity_id -> condition_concept_id (FK CONCEPT)
+    + condition_start_date
+    + condition_type_concept_id
+
+Patients -> PERSON
+    patient_id  -> person_id
+    birthday    -> birth_datetime
+    gender      -> gender_concept_id (FK CONCEPT)
+    name        -> name # não omop
+    email       -> email # não omop
+    phone_number-> phone_number # não omop
+    height      -> +[MEASUREMENT] 
+    weight      -> +[MEASUREMENT]
+    smoke_frequency -> +[OBSERVATION]
+    drink_frequency -> +[OBSERVATION]
+    accept_tcl      -> +[OBSERVATION]
+    specialist_id   -> provider_id (FK PROVIDER)
+    hospital_registration -> care_site_id (FK CARE_SITE)
+
+
+ 
+ 
+
+Wound -> CONDITION_ERA 
+    wound_id    -> condition_era_id
+    patient_id  -> person_id (FK PERSON)
+    specialist_id -> provider_id (FK PROVIDER)
+    region      -> +[OBSERVATION]  
+    subregion   -> +[OBSERVATION]  
+    type        -> condition_concept_id 
+    start_date  -> condition_start_date
+    end_date    -> condition_end_date
+    is_active   -> condition_status_concept_id
+    image_id    -> +[NOTE]
+
+TrackingRecords -> PROCEDURE_OCURRENCE
+    wound_id 
+    tracking_id -> condition_occurrence_id (FK PERSON)
+    specialist_id -> provider_id (FK PROVIDER)
+    track_date # TODO
+    image_id -> image_id (FK Image) # Não Omop 
+    length      -> +[MEASUREMENT] 
+    width       -> +[MEASUREMENT] 
+    exudate_amount  -> +[EOBSERVATION#Exadute] 
+    exudate_type    -> +[OBSERVATION#Exadute] 
+    tissue_type     -> +[OBSERVATION]
+    wound_edges     -> +[OBSERVATION]
+    skin_around     -> +[OBSERVATION]
+    had_a_fever     -> +[OBSERVATION]
+    pain_level      -> +[OBSERVATION]
+    dressing_changer_per_day -> +[OBSERVATION]
+    guidelines_to_patient -> +[NOTE]
+    extra_notes     -> +[NOTE]

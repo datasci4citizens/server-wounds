@@ -112,3 +112,5 @@ class TrackingRecords(models.Model):
 
     def __str__(self):
         return f"Tracking Record {self.tracking_id} - {self.track_date}"
+    
+
