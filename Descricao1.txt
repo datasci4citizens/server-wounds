@@ -75,10 +75,10 @@ TrackingRecords -> PROCEDURE_OCURRENCE
     exudate_amount  -> +[EOBSERVATION#Exadute] 
     exudate_type    -> +[OBSERVATION#Exadute] 
     tissue_type     -> +[OBSERVATION]
-    wound_edges     -> +[OBSERVATION]
-    skin_around     -> +[OBSERVATION]
+    wound_edges     -> +[OBSERVATION] 
+    skin_around     -> +[OBSERVATION] # quebrar em dois campos
     had_a_fever     -> +[OBSERVATION]
     pain_level      -> +[OBSERVATION]
-    dressing_changer_per_day -> +[OBSERVATION]
+    dressing_changer_per_day -> +[OBSERVATION] # trocar para valor numerico 
     guidelines_to_patient -> +[NOTE]
     extra_notes     -> +[NOTE]
