@@ -29,14 +29,14 @@ API Patient {
 
 CID_WOUND = 4168335
 CID_WOUND_MORPH = 4029919
-CID_WOUND_TYPE = 43055265
+CID_WOUND_TYPE = 43055265 *
 CID_EHR = 32817
 CID_HEIGHT = 607590
 CID_WEIGHT = 4099154
 CID_CENTIMETER = 8582
 CID_KILOGRAM = 9529
-CID_SMOKE_FREQUENCY = 1586169
-CID_DRINK_FREQUENCY = 1586201
+CID_SMOKE_FREQUENCY = 1586177 !
+CID_DRINK_FREQUENCY = 40771103 !
 CID_CONDITION_ACTIVE = 32902
 CID_CONDITION_INACTIVE = 32906
 CID_SURFACE_REGION = 4027908
@@ -125,8 +125,8 @@ API Patient {
     TABLE ROW OBSERVATION {
         person_id = @patient_id
         observation_concept_id = @CID_SMOKE_FREQUENCY
-        observation_date = UPDATE_AT()
-        value_as_concept_id = @smoke_frequency WHERE ( CID_SMOKE_FREQUENCY -[Has Answer]-> smoke_frequency )
+        observation_date = NOW()
+        value_as_concept_id = @smoke_frequency WHERE ( CID_SMOKE_FREQUENCY -[Has answer (PPI)]-> smoke_frequency )
     }
     TABLE ROW OBSERVATION {
         person_id = @patient_id
@@ -144,7 +144,7 @@ API Wound {
         condition_occurrence_id = @wound_id
         person_id = @patient_id (FK PERSON) 
         provider_id = @specialist_id (FK PROVIDER)
-        condition_concept_id = @type WHERE ( CID_WOUND_TYPE -[Has Answer]-> @type )
+        condition_concept_id = @type WHERE ( CID_WOUND_TYPE -[Has Answer]-> @type ) ?
         condition_start_date = @start_date
         condition_end_date = @end_date
         condition_status_concept_id = @is_active WHERE @is_active in [CID_CONDITION_ACTIVE, CID_CONDITION_INACTIVE]
@@ -222,8 +222,8 @@ API TrackingRecords {
         measurement_concept_id = CID_WOUND_WIDTH
         unit_concept_id = CID_CENTIMETER
     },
-    TABLE ROW MEASUREMENT {
-        value_as_concept_id = @exudate_amount  WHERE ( CID_EXUDATE_AMOUNT -[Has Answer]-> @exudate_amount ) 
+    INSERT MEASUREMENT {
+        value_as_concept_id = @exudate_amount  WHERE ( CID_EXUDATE_AMOUNT -[Has Answer]-> @exudate_amount )  # mapear os da aplicação anterior para omop
         measurement_concept_id = CID_EXUDATE_AMOUNT
     },
     TABLE ROW MEASUREMENT {
@@ -241,7 +241,7 @@ API TrackingRecords {
     },
     TABLE ROW MEASUREMENT {
         value_as_concept_id = @skin_around  WHERE ( CID_WOUND_SKIN_AROUND -[Has Answer]-> @skin_around ) 
-        measurement_concept_id = CID_WOUND_SKIN_AROUND
+        measurement_concept_id = CID_WOUND_SKIN_AROUND 
     },
     TABLE ROW MEASUREMENT {
         value_as_concept_id = @had_a_fever WHERE @had_a_fever in [CID_NEGATIVE, CID_POSITIVE]  
@@ -256,7 +256,9 @@ API TrackingRecords {
         measurement_concept_id = CID_WOUND_CARE_DRESSING_CHANGE
     },
 
-    TABLE ROW OBSERVATION {
+    # TODO adição de odor
+
+    TABLE OBSERVATION {
         person_id = @patient_id
         observation_concept_id = CID_WOUND_CARE_DRESSING_CHANGE
         observation_date = UPDATED_AT()

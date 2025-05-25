@@ -16,7 +16,6 @@ class CareSite(models.Model):
     place_of_service_source_value = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'care_site'
 
 
@@ -34,7 +33,6 @@ class CdmSource(models.Model):
     vocabulary_version = models.CharField(max_length=20)
 
     class Meta:
-        managed = False
         db_table = 'cdm_source'
 
 
@@ -45,7 +43,6 @@ class Cohort(models.Model):
     cohort_end_date = models.DateField()
 
     class Meta:
-        managed = False
         db_table = 'cohort'
 
 
@@ -59,24 +56,22 @@ class CohortDefinition(models.Model):
     cohort_initiation_date = models.DateField(blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'cohort_definition'
 
 
 class Concept(models.Model):
     concept_id = models.IntegerField(primary_key=True)
     concept_name = models.CharField(max_length=255)
-    domain = models.ForeignKey('Domain', models.DO_NOTHING)
-    vocabulary = models.ForeignKey('Vocabulary', models.DO_NOTHING)
-    concept_class = models.ForeignKey('ConceptClass', models.DO_NOTHING)
+    domain = models.ForeignKey('Domain', models.DO_NOTHING, null=True)
+    vocabulary = models.ForeignKey('Vocabulary', models.DO_NOTHING, null=True)
+    concept_class = models.ForeignKey('ConceptClass', models.DO_NOTHING, null=True)
     standard_concept = models.CharField(max_length=1, blank=True, null=True)
-    concept_code = models.CharField(max_length=50)
-    valid_start_date = models.DateField()
-    valid_end_date = models.DateField()
+    concept_code = models.CharField(max_length=50, null=True)
+    valid_start_date = models.DateField(null=True)
+    valid_end_date = models.DateField(null=True)
     invalid_reason = models.CharField(max_length=1, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'concept'
 
 
@@ -87,7 +82,6 @@ class ConceptAncestor(models.Model):
     max_levels_of_separation = models.IntegerField()
 
     class Meta:
-        managed = False
         db_table = 'concept_ancestor'
 
 
@@ -97,7 +91,6 @@ class ConceptClass(models.Model):
     concept_class_concept = models.ForeignKey(Concept, models.DO_NOTHING)
 
     class Meta:
-        managed = False
         db_table = 'concept_class'
 
 
@@ -110,7 +103,6 @@ class ConceptRelationship(models.Model):
     invalid_reason = models.CharField(max_length=1, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'concept_relationship'
 
 
@@ -120,7 +112,6 @@ class ConceptSynonym(models.Model):
     language_concept = models.ForeignKey(Concept, models.DO_NOTHING, related_name='conceptsynonym_language_concept_set')
 
     class Meta:
-        managed = False
         db_table = 'concept_synonym'
 
 
@@ -133,7 +124,6 @@ class ConditionEra(models.Model):
     condition_occurrence_count = models.IntegerField(blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'condition_era'
 
 
@@ -156,7 +146,6 @@ class ConditionOccurrence(models.Model):
     condition_status_source_value = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'condition_occurrence'
 
 
@@ -185,7 +174,6 @@ class Cost(models.Model):
     drg_source_value = models.CharField(max_length=3, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'cost'
 
 
@@ -199,7 +187,6 @@ class Death(models.Model):
     cause_source_concept = models.ForeignKey(Concept, models.DO_NOTHING, related_name='death_cause_source_concept_set', blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'death'
 
 
@@ -225,7 +212,6 @@ class DeviceExposure(models.Model):
     unit_source_concept = models.ForeignKey(Concept, models.DO_NOTHING, related_name='deviceexposure_unit_source_concept_set', blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'device_exposure'
 
 
@@ -235,7 +221,6 @@ class Domain(models.Model):
     domain_concept = models.ForeignKey(Concept, models.DO_NOTHING, related_name='domain_concept_set')
 
     class Meta:
-        managed = False
         db_table = 'domain'
 
 
@@ -249,7 +234,6 @@ class DoseEra(models.Model):
     dose_era_end_date = models.DateField()
 
     class Meta:
-        managed = False
         db_table = 'dose_era'
 
 
@@ -263,7 +247,6 @@ class DrugEra(models.Model):
     gap_days = models.IntegerField(blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'drug_era'
 
 
@@ -293,7 +276,6 @@ class DrugExposure(models.Model):
     dose_unit_source_value = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'drug_exposure'
 
 
@@ -312,7 +294,6 @@ class DrugStrength(models.Model):
     invalid_reason = models.CharField(max_length=1, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'drug_strength'
 
 
@@ -332,7 +313,6 @@ class Episode(models.Model):
     episode_source_concept = models.ForeignKey(Concept, models.DO_NOTHING, related_name='episode_episode_source_concept_set', blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'episode'
 
 
@@ -342,7 +322,6 @@ class EpisodeEvent(models.Model):
     episode_event_field_concept = models.ForeignKey(Concept, models.DO_NOTHING)
 
     class Meta:
-        managed = False
         db_table = 'episode_event'
 
 
@@ -354,7 +333,6 @@ class FactRelationship(models.Model):
     relationship_concept = models.ForeignKey(Concept, models.DO_NOTHING, related_name='factrelationship_relationship_concept_set')
 
     class Meta:
-        managed = False
         db_table = 'fact_relationship'
 
 
@@ -373,7 +351,6 @@ class Location(models.Model):
     longitude = models.DecimalField(max_digits=10, decimal_places=5, blank=True, null=True)  # max_digits and decimal_places have been guessed, as this database handles decimal fields as float
 
     class Meta:
-        managed = False
         db_table = 'location'
 
 
@@ -403,7 +380,6 @@ class Measurement(models.Model):
     meas_event_field_concept = models.ForeignKey(Concept, models.DO_NOTHING, related_name='measurement_meas_event_field_concept_set', blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'measurement'
 
 
@@ -419,7 +395,6 @@ class Metadata(models.Model):
     metadata_datetime = models.DateTimeField(blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'metadata'
 
 
@@ -442,7 +417,6 @@ class Note(models.Model):
     note_event_field_concept = models.ForeignKey(Concept, models.DO_NOTHING, related_name='note_note_event_field_concept_set', blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'note'
 
 
@@ -463,7 +437,6 @@ class NoteNlp(models.Model):
     term_modifiers = models.CharField(max_length=2000, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'note_nlp'
 
 
@@ -491,7 +464,6 @@ class Observation(models.Model):
     obs_event_field_concept = models.ForeignKey(Concept, models.DO_NOTHING, related_name='observation_obs_event_field_concept_set', blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'observation'
 
 
@@ -503,7 +475,6 @@ class ObservationPeriod(models.Model):
     period_type_concept = models.ForeignKey(Concept, models.DO_NOTHING)
 
     class Meta:
-        managed = False
         db_table = 'observation_period'
 
 
@@ -527,7 +498,6 @@ class PayerPlanPeriod(models.Model):
     stop_reason_source_concept = models.ForeignKey(Concept, models.DO_NOTHING, related_name='payerplanperiod_stop_reason_source_concept_set', blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'payer_plan_period'
 
 
@@ -552,7 +522,6 @@ class Person(models.Model):
     ethnicity_source_concept = models.ForeignKey(Concept, models.DO_NOTHING, related_name='person_ethnicity_source_concept_set', blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'person'
 
 
@@ -575,7 +544,6 @@ class ProcedureOccurrence(models.Model):
     modifier_source_value = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'procedure_occurrence'
 
 
@@ -595,7 +563,6 @@ class Provider(models.Model):
     gender_source_concept = models.ForeignKey(Concept, models.DO_NOTHING, related_name='provider_gender_source_concept_set', blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'provider'
 
 
@@ -608,7 +575,6 @@ class Relationship(models.Model):
     relationship_concept = models.ForeignKey(Concept, models.DO_NOTHING)
 
     class Meta:
-        managed = False
         db_table = 'relationship'
 
 
@@ -624,7 +590,6 @@ class SourceToConceptMap(models.Model):
     invalid_reason = models.CharField(max_length=1, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'source_to_concept_map'
 
 
@@ -646,7 +611,6 @@ class Specimen(models.Model):
     disease_status_source_value = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'specimen'
 
 
@@ -672,7 +636,6 @@ class VisitDetail(models.Model):
     visit_occurrence = models.ForeignKey('VisitOccurrence', models.DO_NOTHING)
 
     class Meta:
-        managed = False
         db_table = 'visit_detail'
 
 
@@ -696,7 +659,6 @@ class VisitOccurrence(models.Model):
     preceding_visit_occurrence = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'visit_occurrence'
 
 
@@ -708,6 +670,5 @@ class Vocabulary(models.Model):
     vocabulary_concept = models.ForeignKey(Concept, models.DO_NOTHING, related_name='vocabulary_concept_set')
 
     class Meta:
-        managed = False
         db_table = 'vocabulary'
 

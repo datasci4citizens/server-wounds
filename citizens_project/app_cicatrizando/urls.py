@@ -3,7 +3,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from app_cicatrizando.api import GoogleLoginView, MeView
-
+from . import virtual_views
 from . import views
 from .omop_views import router as omop_router
 
@@ -32,7 +32,8 @@ router.register(r'auth/me', MeView, basename='me')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('omop/', include(omop_router.urls)),
+    path('', include(omop_router.urls)),
+    path('virtual-', include(virtual_views.router.urls)),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("docs/swagger", SpectacularSwaggerView.as_view(), name="schema-swagger-ui"),
     path("docs", scalar_viewer, name="schema-scalar-ui"), 
