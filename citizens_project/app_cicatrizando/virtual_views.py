@@ -73,7 +73,6 @@ class VirtualPatient(VirtualModel):
         observation_date 		= FieldBind("updated_at"),
         observation_type_concept_id = FieldBind(0, const=True),
     )
-print(VirtualPatient.descriptor().debug_str("Patient"))
 
 class VirtualPatientSerializer(VirtualModelSerializer):
     class Meta:

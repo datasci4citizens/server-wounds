@@ -56,7 +56,6 @@ class Patients(models.Model):
 def get_file_path(instance, filename):
     ext = filename.split('.')[-1]
     filename = "%s.%s" % (uuid.uuid4(), ext)
-    print(instance)
     return os.path.join('images', filename)
 
 

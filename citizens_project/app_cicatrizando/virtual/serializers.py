@@ -26,7 +26,6 @@ class VirtualSerializerMetaclass(serializers.SerializerMetaclass):
                 }
             if kwargs.get("validators", None):
                 del kwargs["validators"]
-            print(field, kwargs)
             attrs[virtual_field] = field(**kwargs)
         return super().__new__(cls, name, bases, attrs)
     
