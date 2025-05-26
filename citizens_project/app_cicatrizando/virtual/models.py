@@ -3,10 +3,12 @@ from django.db.models import OuterRef, Subquery
 import django.db.models  as django_models
 from django.db.models import QuerySet
 from dataclasses import dataclass
-from typing import Iterable, Optional, Union
+from typing import Iterable, Optional, TypeVar, Union
+from django.db import transaction
+from django.core.exceptions import ObjectDoesNotExist
 
-
-def all_attr_ofclass(cls, classes : Union[tuple[type], type]):
+T = TypeVar("T")
+def all_attr_ofclass(cls, classes : Union[tuple, type[T]]) -> dict[str, T]:
 	return {
 		attr: getattr(cls, attr)
 		for attr in dir(cls)
@@ -40,6 +42,7 @@ class FieldPath:
 @dataclass
 class VirtualFieldDescriptor:
 	name : str 
+	key : bool
 	db_field_path : FieldPath
 	def db_field_name(self):
 		return self.db_field_path.name
@@ -57,6 +60,10 @@ class VirtualModelDescriptor:
 	def get_fieldbind(self, fieldpath : FieldPath):
 		return self.bindings[fieldpath.table].fields[fieldpath.name]
 
+
+	def keys(self):
+		return { k: v for k,v in self.fields.items() if v.key}
+	
 	def debug_str(self, name):
 		string = f"virtual {name}:\n" 
 		max_len = max(map(lambda a: len(a), self.fields.keys()))
@@ -85,7 +92,7 @@ class VirtualModelDescriptor:
 @dataclass
 class VirtualField:
 	source : Optional[tuple[str, str]] = None
-
+	key : bool = False
 class TableBinding:
 	table : django_models.Model
 	fields : dict[str, FieldBind]
@@ -99,10 +106,16 @@ class TableBinding:
 				continue
 			result[concrete_field] = kwargs.get(field_bind.value, None)
 		return result
-	
+	def row_data_from(self, virtual_data) -> django_models.Model:
+		pk = {
+			k: v.value if v.const else virtual_data[v.value]
+			for k, v in self.keys().items()
+		}
+		return self.table.objects.get(**pk)
 	def keys(self):
 		return { k: v for k,v in self.fields.items() if v.key}
-	
+	def updatable_fields(self) -> str: 
+		return [f.value for f in self.fields.values() if not f.const and not f.key]
 class VirtualModel:
 	@classmethod
 	def descriptor(cls) -> VirtualModelDescriptor:
@@ -122,25 +135,28 @@ class VirtualModel:
 	@classmethod
 	def virtual_fields_descriptor(cls):
 		bindings =  cls._get_tablesbindings()
-		source_fields_tuples = [(av.value, FieldPath(row_name, a))
+		source_fields_tuples = [
+			VirtualFieldDescriptor(
+				name = av.value,
+				db_field_path = FieldPath(row_name, a),
+				key = False
+			)
 			for row_name, binding in bindings.items() 
 			for a, av  in binding.fields.items()
 			if not av.const
 		]
 		source_fields = {}
-		for k, v in source_fields_tuples:
-			if not source_fields.get(k, None):
-				source_fields[k] = v
+		for field in source_fields_tuples:
+			if not source_fields.get(field.name, None):
+				source_fields[field.name] = field
 		virtual_fields = all_attr_ofclass(cls, VirtualField)
 		for k, v in virtual_fields.items():
-			source_fields[k] = FieldPath(v.source[0], v.source[1])
-		return {
-			name: VirtualFieldDescriptor(
-				name = name, 
-				db_field_path = field, 
+			source_fields[k] = VirtualFieldDescriptor(
+				name  = k, 
+				db_field_path = FieldPath(v.source[0], v.source[1]),
+				key = v.key
 			)
-			for name, field in source_fields.items()
-		}
+		return source_fields
 	@staticmethod
 	def annotate_field(last,  desc : "VirtualModelDescriptor",  virtual_field : VirtualFieldDescriptor):
 		keys = desc.bindings[virtual_field.db_field_path.table].keys()
@@ -164,7 +180,55 @@ class VirtualModel:
 			queryset = cls.annotate_field(queryset, desc, virtual_field)
 		queryset = queryset.values(*cls.virtual_fields_descriptor().keys())
 		return queryset
-		
+	@classmethod
+	def get(cls, **pk):
+		pk = {
+			v.db_field_name() : pk[k]
+			for k, v in cls.descriptor().keys().items()
+		}
+		return cls.get_queryset().get(**pk)
 	@classmethod
 	def objects(self):
 		return self.get_queryset()
+
+	@transaction.atomic()
+	@classmethod
+	def create(cls, data):
+		for subtables in cls.descriptor().bindings.values():
+			subtables.table._default_manager.create(
+				**subtables.model_from_data(**data)
+			)
+		return data
+
+	@classmethod
+	@transaction.atomic()
+	def update(cls,data: dict[str, object]):
+		actual = None
+		for k, subtable in cls.descriptor().bindings.items():
+			updatable_fields =	subtable.updatable_fields()
+			if not any(x for x in updatable_fields if x in set(data.keys())):
+				continue
+			print([x for x in updatable_fields if x in set(data.keys())])
+			print(k)
+			try:
+				instance = subtable.row_data_from(data)
+				print(instance.__dict__)
+				for db_field, v in subtable.fields.items():
+					if v.value in data.keys():
+						value = v.value if v.const else data[v.value]
+						setattr(instance, db_field, value)
+				print(instance.__dict__)
+				instance.save(force_update=True)
+			except ObjectDoesNotExist:
+				print("não existe")
+				if(actual == None):
+					actual = cls.get(**data)
+					for field in cls.descriptor().fields.keys():
+						if field in data:
+							actual[field] = data[field]
+
+				subtable.table._default_manager.create(
+					**subtable.model_from_data(**actual)
+				)
+			subtable.model_from_data(**data)
+		return data

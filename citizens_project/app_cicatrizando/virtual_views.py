@@ -23,7 +23,7 @@ TableCreationOrder = [
 ]
 
 class VirtualPatient(VirtualModel):
-    patient_id = VirtualField(source=("person_row","person_id"))
+    patient_id = VirtualField(source=("person_row","person_id"), key=True)
     main_row = "person_row"
     person_row = TableBindings.Person(
         person_id 			 = FieldBind("patient_id", key = True),
@@ -85,6 +85,7 @@ class VirtualPatientViewSet(viewsets.ModelViewSet):
     serializer_class = VirtualPatientSerializer
 
 class VirtualSpecialist(VirtualModel):
+    specialist_id = VirtualField(source=["row_provider", "provider_id"], key=True)
     main_row = "row_provider"
     row_provider = TableBindings.Provider(
         provider_id   = FieldBind("specialist_id", key = True),
