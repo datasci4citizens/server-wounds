@@ -1,84 +1,29 @@
 # views.py
-from ..omop_models import Measurement, Observation, Person, Provider; 
 from django.db.models import OuterRef, Subquery
+import django.db.models  as django_models
+from django.db.models import QuerySet
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Union
 
 
-def attr_isinstaceof(cls, name, test_cls ):
-	return isinstance(getattr(cls, name), test_cls)
-def all_attr_ofclass(cls, classes):
+def all_attr_ofclass(cls, classes : Union[tuple[type], type]):
 	return {
 		attr: getattr(cls, attr)
 		for attr in dir(cls)
-		if any([
-			attr_isinstaceof(cls, attr, c)
-			for c in classes 
-		])
+		if isinstance(getattr(cls, attr), classes)
 	}
-def add_annotate(last, table, target, filters, source):
+def add_annotate(last : QuerySet, table : django_models, target : str, filters : dict[str, object], source : str):
 	return last.annotate(**{
 		target: Subquery(table.objects.all().filter(**filters).values(source)[:1])
 	})
 @dataclass
 class FieldBind:
-	v : object
+	value : object
 	const : bool = False
 	key : bool = False
 
-	def annotate(self, last, row, name, source):
-		fields = all_attr_ofclass(row, [FieldBind])
-		keys = { k: v for k,v in fields.items() if v.key}
-		target = getattr(row, name).v
-		filters = {n: v.v if v.const else OuterRef(source[v.v][1]) for n, v in keys.items()}
-		source = name
-		return add_annotate(last, row.table, target, filters, source)
-	
-	def __str__(self):
-		s = "" 
-		if self.key:
-			s += "*"
-		else:
-			s += " "
-		if self.const:
-			s += "Const("
-		else:
-			s += "Bind("
-		return s + self.v.__str__() +  ")"
-class TableBinding:
-	fields = {}
-	def __init__(self, *args, **kwargs):
-		fields = kwargs
-	def __init__(self, **kwargs):
-		for k, v in kwargs.items():
-			setattr(self, k, v)
-	def model_from_data(self, **kwargs):
 
-		result = {}
-		for concrete_field, field_bind in self.get_fields().items():
-			if field_bind.const:
-				result[concrete_field] = field_bind.v
-				continue
-			result[concrete_field] = kwargs.get(field_bind.v, None)
-		return result
-	def get_fields(self):
-		return all_attr_ofclass(self, [FieldBind])
-	
-TableCreationOrder = [
-	Provider, 
-	Person,
-	Measurement,
-	Observation
-]
-class TableBindings:
-	class Observation(TableBinding):
-		table = Observation
-	class Measurement(TableBinding):
-		table = Measurement
-	class Person(TableBinding):
-		table = Person
-	class Provider(TableBinding):
-		table = Provider
+
 CID_HEIGHT = 1
 CID_CENTIMETER = 2
 CID_WEIGHT = 3
@@ -87,50 +32,138 @@ CID_SMOKE_FREQUENCY = 5
 CID_SMOKE_FREQUENCY = 6
 CID_DRINK_FREQUENCY = 7
 CID_DRINK_FREQUENCY = 8
+
+@dataclass
+class FieldPath:
+	table : str
+	name : str
+@dataclass
+class VirtualFieldDescriptor:
+	name : str 
+	db_field_path : FieldPath
+	def db_field_name(self):
+		return self.db_field_path.name
+	def db_table_name(self):
+		return self.db_field_path.table
+	def db_table_model(self, desc : "VirtualModelDescriptor"):
+		return desc.bindings[self.db_field_path.table].table
+
+@dataclass
+class VirtualModelDescriptor:
+	fields : dict[str, VirtualFieldDescriptor]
+	main_row_name : str
+	bindings : dict[str, "TableBinding"]
+	source : "VirtualModel"
+	def get_fieldbind(self, fieldpath : FieldPath):
+		return self.bindings[fieldpath.table].fields[fieldpath.name]
+
+	def debug_str(self, name):
+		string = f"virtual {name}:\n" 
+		max_len = max(map(lambda a: len(a), self.fields.keys()))
+		for k, v in self.fields.items():
+			path = f"{v.db_field_path.table}.{v.db_field_path.name}"
+			string += "    " + f"{v.name:<{max_len}} <-- {path}" +"\n"
+		for binding_name, binding in self.bindings.items():
+			string += f"    bind {name}:\n" 
+			max_len = max(map(lambda a: len(a), binding.fields.keys()))
+			for k, v in binding.fields.items():
+				connector = ""
+				if(v.const):
+					connector = "==="
+				else:
+					db_source_path = self.fields[v.value].db_field_path
+					if(db_source_path.table == binding_name and db_source_path.name == k):
+						connector = "<->"
+					else:
+						connector = "<--"
+				begin = "  "
+				if(v.key):
+					begin = "* "
+				string +=  "        "+ begin + f"{k:<{max_len}} {connector} {v.value}" +"\n"
+			string += "\n"
+		return string
 @dataclass
 class VirtualField:
 	source : Optional[tuple[str, str]] = None
 
-
+class TableBinding:
+	table : django_models.Model
+	fields : dict[str, FieldBind]
+	def __init__(self, **kwargs : dict[str, FieldBind]):
+		self.fields = kwargs
+	def model_from_data(self , **kwargs):
+		result = {}
+		for concrete_field, field_bind in self.fields.items():
+			if field_bind.const:
+				result[concrete_field] = field_bind.value
+				continue
+			result[concrete_field] = kwargs.get(field_bind.value, None)
+		return result
+	
+	def keys(self):
+		return { k: v for k,v in self.fields.items() if v.key}
+	
 class VirtualModel:
 	@classmethod
-	def descriptor(cls):
-		return {c:
-			all_attr_ofclass(getattr(cls, c), [FieldBind])
-			for c in cls.subtables_attr()
-		};
+	def descriptor(cls) -> VirtualModelDescriptor:
+		return VirtualModelDescriptor(
+			main_row_name =  cls.main_row,
+			bindings = cls._get_tablesbindings(),
+			fields = cls.virtual_fields_descriptor(),
+			source = cls 
+		);
 	@classmethod
-	def subtables_attr(cls):
-		return filter(lambda a: isinstance(getattr(cls, a), TableBinding), dir(cls));
-	@classmethod
-	def get_subtables(cls) -> Iterable[TableBinding]:
-		return map(lambda a : getattr(cls, a), cls.subtables_attr())
+	def _get_tablesbindings(cls) -> dict[str, TableBinding]:
+		return { a : v 
+		  for a, v in cls.__dict__.items()
+		  if isinstance(v, TableBinding)
+		}
 	
 	@classmethod
-	def source_fields(cls):
-		api_descriptor = cls.descriptor()
-		# print(*[str_attrs(c, getattr(Model, c), v) for c, v in api_descriptor.items()], sep = "\n")
-		source_fields_tuples = [(av.v, (c, a))
-			for c,v in api_descriptor.items() 
-			for a, av  in v.items()
+	def virtual_fields_descriptor(cls):
+		bindings =  cls._get_tablesbindings()
+		source_fields_tuples = [(av.value, FieldPath(row_name, a))
+			for row_name, binding in bindings.items() 
+			for a, av  in binding.fields.items()
 			if not av.const
 		]
 		source_fields = {}
 		for k, v in source_fields_tuples:
 			if not source_fields.get(k, None):
 				source_fields[k] = v
-		api_fields = all_attr_ofclass(cls, [VirtualField])
-		for k, v in api_fields.items():
-			source_fields[k] = v.source
-		return source_fields
+		virtual_fields = all_attr_ofclass(cls, VirtualField)
+		for k, v in virtual_fields.items():
+			source_fields[k] = FieldPath(v.source[0], v.source[1])
+		return {
+			name: VirtualFieldDescriptor(
+				name = name, 
+				db_field_path = field, 
+			)
+			for name, field in source_fields.items()
+		}
+	@staticmethod
+	def annotate_field(last,  desc : "VirtualModelDescriptor",  virtual_field : VirtualFieldDescriptor):
+		keys = desc.bindings[virtual_field.db_field_path.table].keys()
+		field = desc.get_fieldbind(virtual_field.db_field_path)
+		target = virtual_field.name
+		filters = { 
+			key_name: 
+				bind.value if bind.const else OuterRef(key_name) 
+			for key_name, bind in keys.items()
+		}
+		source = virtual_field.db_field_path.name
+		return add_annotate(last, virtual_field.db_table_model(desc), target, filters, source)
 	@classmethod
 	def get_queryset(cls):
-		main_row = getattr(cls, cls.main_row)
+		desc = cls.descriptor()
+		main_row = desc.bindings[desc.main_row_name]
+
 		queryset = main_row.table.objects.all() 
-		for k, v in cls.source_fields().items():
-			field = getattr(getattr(cls, v[0]), v[1])
-			queryset = field.annotate(queryset, getattr(cls, v[0]), v[1], cls.source_fields())
-		queryset = queryset.values(*cls.source_fields().keys())
+		
+		for virtual_field in desc.fields.values():
+			print(virtual_field)
+			queryset = cls.annotate_field(queryset, desc, virtual_field)
+		queryset = queryset.values(*cls.virtual_fields_descriptor().keys())
 		return queryset
 		
 	@classmethod
