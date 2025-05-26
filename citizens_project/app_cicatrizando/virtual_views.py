@@ -1,8 +1,6 @@
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from .omop_models import Measurement, Observation, Person, Provider; 
-from rest_framework import serializers
-from django.db.models.fields import Field
+from drf_spectacular.utils import extend_schema
 from .virtual.models import CID_CENTIMETER, CID_DRINK_FREQUENCY, CID_HEIGHT, CID_KILOGRAM, CID_SMOKE_FREQUENCY, CID_WEIGHT, TableBinding, VirtualField, VirtualModel, FieldBind
 from .virtual.serializers import VirtualModelSerializer
 from rest_framework.routers import DefaultRouter
@@ -82,7 +80,7 @@ class VirtualPatientSerializer(VirtualModelSerializer):
         super_model = VirtualPatient
         model = VirtualPatient
         fields = "__all__"
-
+@extend_schema(tags=["virtual-patients"])
 class VirtualPatientViewSet(viewsets.ModelViewSet):
     queryset  = VirtualPatient.objects().all()
     serializer_class = VirtualPatientSerializer
@@ -101,10 +99,11 @@ class VirtualSpecialistSerializer(VirtualModelSerializer):
         super_model = VirtualSpecialist
         fields = "__all__"
 
+@extend_schema(tags=["virtual-specialists"])
 class VirtualSpecialistViewSet(viewsets.ModelViewSet):
     queryset  = VirtualSpecialist.objects().all()
     serializer_class = VirtualSpecialistSerializer
 
 router = DefaultRouter()
-router.register(r'patients', VirtualPatientViewSet)
-router.register(r'specialists', VirtualSpecialistViewSet)
+router.register(r'virtual-patients', VirtualPatientViewSet)
+router.register(r'virtual-specialists', VirtualSpecialistViewSet)
