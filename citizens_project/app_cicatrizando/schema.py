@@ -17,13 +17,11 @@ def custom_postprocessing_hook(result, generator, request, public):
     }
     for tokens in paths:
         values = tag_groups.get(tokens[0], None)
-        print(values)
         if values != None:
             tag_groups[tokens[0]].append(tokens[1])
         else:
             tag_groups['default'].append(tokens[0])
 
-    print(tag_groups)
     result["x-tagGroups"] = [ 
         {
             "name": k, 

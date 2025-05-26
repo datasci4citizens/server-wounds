@@ -161,7 +161,6 @@ class VirtualModel:
 		queryset = main_row.table.objects.all() 
 		
 		for virtual_field in desc.fields.values():
-			print(virtual_field)
 			queryset = cls.annotate_field(queryset, desc, virtual_field)
 		queryset = queryset.values(*cls.virtual_fields_descriptor().keys())
 		return queryset
