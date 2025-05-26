@@ -40,5 +40,4 @@ class VirtualModelSerializer(serializers.Serializer, metaclass=VirtualSerializer
     def update(self, instance, validated_data):
         ModelClass : VirtualModel = self.Meta.super_model
         validated_data = ModelClass.update(validated_data)
-        
         return ModelClass.get(**validated_data)

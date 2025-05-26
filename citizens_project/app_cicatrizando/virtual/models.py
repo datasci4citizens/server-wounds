@@ -191,8 +191,8 @@ class VirtualModel:
 	def objects(self):
 		return self.get_queryset()
 
-	@transaction.atomic()
 	@classmethod
+	@transaction.atomic()
 	def create(cls, data):
 		for subtables in cls.descriptor().bindings.values():
 			subtables.table._default_manager.create(
