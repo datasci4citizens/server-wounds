@@ -34,12 +34,11 @@ class VirtualModelSerializer(serializers.Serializer, metaclass=VirtualSerializer
     @transaction.atomic()
     def create(self, validated_data):
         ModelClass : VirtualModel = self.Meta.super_model
-        
-        for subtables in ModelClass.descriptor().bindings.values():
-            
-            subtables.table._default_manager.create(
-                **subtables.model_from_data(**validated_data)
-            )
+        validated_data = ModelClass.create(validated_data)
         return validated_data
 
-
+    def update(self, instance, validated_data):
+        ModelClass : VirtualModel = self.Meta.super_model
+        validated_data = ModelClass.update(validated_data)
+        
+        return ModelClass.get(**validated_data)
