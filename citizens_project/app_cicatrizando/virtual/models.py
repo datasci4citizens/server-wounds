@@ -26,15 +26,6 @@ class FieldBind:
 
 
 
-CID_HEIGHT = 1
-CID_CENTIMETER = 2
-CID_WEIGHT = 3
-CID_KILOGRAM = 4
-CID_SMOKE_FREQUENCY = 5
-CID_SMOKE_FREQUENCY = 6
-CID_DRINK_FREQUENCY = 7
-CID_DRINK_FREQUENCY = 8
-
 @dataclass
 class FieldPath:
 	table : str
@@ -164,7 +155,7 @@ class VirtualModel:
 		target = virtual_field.name
 		filters = { 
 			key_name: 
-				bind.value if bind.const else OuterRef(key_name) 
+				bind.value if bind.const else OuterRef(desc.fields[bind.value].db_field_name()) 
 			for key_name, bind in keys.items()
 		}
 		source = virtual_field.db_field_path.name
