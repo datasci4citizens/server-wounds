@@ -3,11 +3,12 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from app_cicatrizando.api import GoogleLoginView, MeView
-
+from . import virtual_views
 from . import views
+from .omop_views import router as omop_router
 
 # from django_scalar.views import scalar_viewer
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 from app_cicatrizando.scalar import scalar_viewer
 
 from rest_framework.routers import DefaultRouter
@@ -31,9 +32,12 @@ router.register(r'auth/me', MeView, basename='me')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('omop/', include(omop_router.urls)),
+    path('virtual/', include(virtual_views.router.urls)),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
-    path("api/schema/swagger", SpectacularSwaggerView.as_view(), name="schema-swagger-ui"),
-    path("api/schema/scalar", scalar_viewer, name="schema-scalar-ui"), 
+    path("docs/redoc", SpectacularRedocView.as_view(), name="redoc"),
+    path("docs/swagger", SpectacularSwaggerView.as_view(), name="schema-swagger-ui"),
+    path("docs", scalar_viewer, name="schema-scalar-ui"), 
     path('api/wounds/excel/', WoundExcelView.as_view(), name='wounds-excel'),
     
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

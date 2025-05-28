@@ -199,3 +199,12 @@ CORS_ALLOWED_HEADERS = [
     'Content-Type',
     'X-Requested-With',
 ]
+
+SPECTACULAR_SETTINGS = {
+    "EXTENSIONS_ROOT": {
+    },
+    'POSTPROCESSING_HOOKS': [
+        'drf_spectacular.hooks.postprocess_schema_enums',
+        'app_cicatrizando.schema.custom_postprocessing_hook'
+    ],
+}
