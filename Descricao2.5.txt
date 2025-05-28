@@ -212,26 +212,16 @@ CONTAINER TrackingRecords {
         value_as_cid = dressing_changer_per_day  WHERE ( CID_DEGREE_FINDING -[Subsumes]-> dressing_changer_per_day ) 
         measurement_cid = CID_WOUND_CARE_DRESSING_CHANGE
     },
-
-    TABLE OBSERVATION {
-        person_id = patient_id
-        observation_cid = CID_WOUND_CARE_DRESSING_CHANGE
-        observation_date = UPDATED_AT()
-        observation_event_id = tracking_id
-        obs_event_field_cid = CID_PK_PROCEDURE_OCCURRENCE
-        value_as_cid = dressing_changer_per_day  WHERE (CID_DEGREE_FINDING -[Subsumes]-> dressing_changer_per_day ) 
-    }
-
+    
     TABLE NOTE {
         person_id = patient_id
         note_date = CREATED_AT()
-        note_class_cid = CID_WOUND_CARE_DRESSING_CHANGE
+        note_class_cid = CID_WOUND_MANAGEMENT_NOTE
         encoding_cid = CID_UTF8
         language_cid = CID_PORTUGUESE
         note_text = guidelines_to_patient
 		note_event_id = tracking_id
 		note_event_field_cid = CID_PK_PROCEDURE_OCCURRENCE
-		
     }
 
     TABLE NOTE {
