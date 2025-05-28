@@ -57,12 +57,17 @@ class GoogleLoginView(viewsets.ViewSet):
         user_data = google_get_user_data(validated_data)
 
         # Creates user in DB if first time login
-        user, _ = User.objects.get_or_create(
-            email=user_data.get("email"),
-            username=user_data.get("email"),
-            first_name=user_data.get("given_name"),
-            last_name=user_data.get("given_name"),
-        )
+        # First try to get user by email
+        try:
+            user = User.objects.get(email=user_data.get("email"))
+        except User.DoesNotExist:
+            # If user doesn't exist, create a new one
+            user = User.objects.create(
+                email=user_data.get("email"),
+                username=user_data.get("email"),
+                first_name=user_data.get("given_name"),
+                last_name=user_data.get("family_name"),  # Fixed the last_name field to use family_name
+            )
 
         role = "none"
         # if Specialists.objects.filter(user=user).exists():
