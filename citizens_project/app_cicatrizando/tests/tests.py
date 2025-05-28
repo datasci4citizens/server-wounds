@@ -118,7 +118,7 @@ class OMOPMappingTests(TestCase):
         )
 
     def test_patients_to_omop_person_mapping(self):
-        """Test mapping from legacy Patients to OMOP Person via VirtualPatient."""
+        """Test mapping from legacy Patients to OMOP Person"""
         # Create VirtualPatient instance from patient data
         patient_data = {
             'patient_id': self.patient.patient_id,
@@ -137,7 +137,7 @@ class OMOPMappingTests(TestCase):
         self.assertEqual(vpatient_obj['care_site_id'], self.patient.hospital_registration)
 
     def test_patients_to_omop_measurement_mapping(self):
-        """Test mapping from Patients to OMOP Measurement (height/weight) via VirtualPatient."""
+        """Test mapping from Patients to OMOP Measurement"""
         patient_data = {
             'patient_id': self.patient.patient_id,
             'height': self.patient.height,
@@ -153,7 +153,7 @@ class OMOPMappingTests(TestCase):
         self.assertEqual(weight_row['value_as_number'], self.patient.weight)
 
     def test_patients_to_omop_observation_mapping(self):
-        """Test mapping from Patients to OMOP Observation (smoke/drink frequency) via VirtualPatient."""
+        """Test mapping from Patients to OMOP Observation"""
         patient_data = {
             'patient_id': self.patient.patient_id,
             'smoke_frequency': self.patient.smoke_frequency,
@@ -169,7 +169,7 @@ class OMOPMappingTests(TestCase):
         self.assertEqual(drink_obs['value_as_concept_id'], self.patient.drink_frequency)
 
     def test_wound_to_omop_condition_occurrence_mapping(self):
-        """Test mapping from Wound to OMOP ConditionOccurrence via VirtualWound."""
+        """Test mapping from Wound to OMOP ConditionOccurrence"""
         from ..virtual_views import VirtualWound
         wound_data = {
             'wound_id': 1,
@@ -186,7 +186,7 @@ class OMOPMappingTests(TestCase):
         self.assertEqual(cond_row['condition_occurrence_id'], 1)
 
     def test_wound_to_omop_note_mapping(self):
-        """Test mapping from Wound to OMOP Note via VirtualWound."""
+        """Test mapping from Wound to OMOP Note"""
         from ..virtual_views import VirtualWound
         wound_data = {
             'patient_id': self.patient.patient_id,
