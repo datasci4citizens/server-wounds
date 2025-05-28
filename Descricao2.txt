@@ -270,7 +270,7 @@ API TrackingRecords {
     TABLE ROW NOTE {
         person_id = @patient_id
         note_date = UPDATE_AT()
-        note_class_concept_id = CID_WOUND_CARE_DRESSING_CHANGE
+        note_class_concept_id = CID_GENERIC_NOTE
         encoding_concept_id = CID_UTF8
         language_concept_id = CID_PORTUGUESE
         note_text = @guidelines_to_patient
