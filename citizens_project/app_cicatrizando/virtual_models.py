@@ -62,7 +62,7 @@ class VirtualPatient(VirtualModel):
         gender_concept_id	 = FieldBind("gender"),
         provider_id			 = FieldBind("specialist_id"),
         care_site_id		 = FieldBind("hospital_registration"),
-        #name 				 = APIBind("name"), # não omop
+        #nam     e 				 = APIBind("name"), # não omop
         #email 				 = APIBind("email"), # não omop
         #phone_number 		 = APIBind("phone_number"), # não omop
         #accept_tcl 		 = APIBind("accept_tcl") # não omop
@@ -102,15 +102,6 @@ class VirtualPatient(VirtualModel):
         observation_type_concept_id = FieldBind(CID_NULL, const=True),
     )
 
-class VirtualPatientSerializer(VirtualModelSerializer):
-    class Meta:
-        super_model = VirtualPatient
-        model = VirtualPatient
-        fields = "__all__"
-@extend_schema(tags=["virtual-patients"])
-class VirtualPatientViewSet(viewsets.ModelViewSet):
-    queryset  = VirtualPatient.objects().all()
-    serializer_class = VirtualPatientSerializer
 
 class VirtualSpecialist(VirtualModel):
     specialist_id = VirtualField(source=["row_provider", "provider_id"], key=True)
@@ -252,3 +243,5 @@ class VirtualTrackingRecords(VirtualModel):
         note_event_field_concept_id = FieldBind(CID_PK_PROCEDURE_OCCURRENCE, const=True),
         note_type_concept_id = FieldBind(CID_NULL, const=True),
     )
+
+print(VirtualPatient.descriptor().debug_str())

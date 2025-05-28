@@ -1,6 +1,5 @@
 # Register your models here.
 from django.contrib import admin
-from .models import Specialists, Comorbidities, Patients, Images, Wound, TrackingRecords
 from .omop_models import (
     CareSite, Concept,
     ConceptClass, ConceptSynonym, ConditionOccurrence, Domain,
@@ -9,12 +8,6 @@ from .omop_models import (
     ProcedureOccurrence, Provider, Relationship, VisitOccurrence, Vocabulary
 )
 
-admin.site.register(Specialists)
-admin.site.register(Comorbidities)
-admin.site.register(Patients)
-admin.site.register(Images)
-admin.site.register(Wound)
-admin.site.register(TrackingRecords)
 
 # Register OMOP models
 admin.site.register(CareSite)
