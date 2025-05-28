@@ -21,19 +21,10 @@ from .virtual.serializers import VirtualModelSerializer
 from rest_framework.routers import DefaultRouter
 from .virtual_models import (VirtualSpecialist, VirtualWound, VirtualTrackingRecords, VirtualPatientViewSet)
 from .virtual_serializers import (VirtualSpecialistSerializer, VirtualWoundSerializer, VirtualTrackingRecordsSerializer)
+from.virtual_views import(VirtualPatientViewSet, VirtualSpecialistViewSet, VirtualWoundViewSet, VirtualTrackingRecordsViewSet)
 
-
-@extend_schema(tags=["virtual-specialists"])
-class VirtualSpecialistViewSet(viewsets.ModelViewSet):
-    queryset  = VirtualSpecialist.objects().all()
-    serializer_class = VirtualSpecialistSerializer
-
-@extend_schema(tags=["virtual-wounds"])
-class VirtualWoundViewSet(viewsets.ModelViewSet):
-    queryset = VirtualWound.objects().all()
-    serializer_class = VirtualWoundSerializer
-
-@extend_schema(tags=["virtual-tracking-records"])
-class VirtualTrackingRecordsViewSet(viewsets.ModelViewSet):
-    queryset = VirtualTrackingRecords.objects().all()
-    serializer_class = VirtualTrackingRecordsSerializer
+router = DefaultRouter()
+router.register(r'virtual-patients', VirtualPatientViewSet)
+router.register(r'virtual-specialists', VirtualSpecialistViewSet)
+router.register(r'virtual-wounds', VirtualWoundViewSet)
+router.register(r'virtual-tracking-records', VirtualTrackingRecordsViewSet)

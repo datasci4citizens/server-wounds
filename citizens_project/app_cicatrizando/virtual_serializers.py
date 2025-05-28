@@ -20,20 +20,30 @@ from .virtual.models import (
 from .virtual.serializers import VirtualModelSerializer
 from rest_framework.routers import DefaultRouter
 from .virtual_models import (VirtualSpecialist, VirtualWound, VirtualTrackingRecords, VirtualPatientViewSet)
-from .virtual_serializers import (VirtualSpecialistSerializer, VirtualWoundSerializer, VirtualTrackingRecordsSerializer)
 
+for const_name in all_attr_ofclass(omop_ids, int):
+    try:
+        Concept.objects.get_or_create(
+            concept_id=  getattr(omop_ids, const_name),
+            concept_name= const_name
+        )
+        print(const_name, getattr(omop_ids, const_name))
+    except:
+        print("deu erro", const_name)
 
-@extend_schema(tags=["virtual-specialists"])
-class VirtualSpecialistViewSet(viewsets.ModelViewSet):
-    queryset  = VirtualSpecialist.objects().all()
-    serializer_class = VirtualSpecialistSerializer
+class VirtualSpecialistSerializer(VirtualModelSerializer):
+    class Meta:
+        super_model = VirtualSpecialist
+        fields = "__all__"
 
-@extend_schema(tags=["virtual-wounds"])
-class VirtualWoundViewSet(viewsets.ModelViewSet):
-    queryset = VirtualWound.objects().all()
-    serializer_class = VirtualWoundSerializer
+class VirtualWoundSerializer(VirtualModelSerializer):
+    class Meta:
+        super_model = VirtualWound
+        model = VirtualWound
+        fields = "__all__"
 
-@extend_schema(tags=["virtual-tracking-records"])
-class VirtualTrackingRecordsViewSet(viewsets.ModelViewSet):
-    queryset = VirtualTrackingRecords.objects().all()
-    serializer_class = VirtualTrackingRecordsSerializer
+class VirtualTrackingRecordsSerializer(VirtualModelSerializer):
+    class Meta:
+        super_model = VirtualTrackingRecords
+        model = VirtualTrackingRecords
+        fields = "__all__"
