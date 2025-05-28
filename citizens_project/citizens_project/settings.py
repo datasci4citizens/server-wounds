@@ -61,7 +61,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
 
         # Comentar para permitir acesso público
-        # 'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.AllowAny',
     ]
 }
 SPECTACULAR_SETTINGS = {
