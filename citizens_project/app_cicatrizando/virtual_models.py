@@ -1,10 +1,10 @@
 from rest_framework import viewsets
-from .omop_models import (
+from .omop.omop_models import (
     Measurement, Observation, Person, Provider, 
     ConditionOccurrence, ProcedureOccurrence, Note, FactRelationship, Concept
 )
 from drf_spectacular.utils import extend_schema
-from .omop_ids  import (
+from .omop.omop_ids  import (
     CID_CENTIMETER, CID_DRINK_FREQUENCY, CID_HEIGHT, CID_KILOGRAM, CID_NULL, CID_SMOKE_FREQUENCY, 
     CID_WEIGHT, CID_WOUND_MANAGEMENT_NOTE, CID_WOUND_TYPE, CID_CONDITION_ACTIVE, CID_CONDITION_INACTIVE, CID_WOUND_LOCATION,
     CID_SURFACE_REGION, CID_WOUND_IMAGE, CID_UTF8, CID_PORTUGUESE, CID_PK_CONDITION_OCCURRENCE,
@@ -13,11 +13,11 @@ from .omop_ids  import (
     CID_FEVER, CID_NEGATIVE, CID_POSITIVE, CID_PAIN_SEVERITY, CID_DEGREE_FINDING, 
     CID_WOUND_CARE_DRESSING_CHANGE, CID_GENERIC_NOTE, CID_WOUND_LENGTH, CID_WOUND_WIDTH
 )
-from . import omop_ids
-from .virtual.models import (
-    TableBinding, VirtualField, VirtualModel, FieldBind, all_attr_ofclass
+from .omop import omop_ids
+from .django_virtualmodels.models import (
+    TableBinding, VirtualField, VirtualModel, FieldBind
 )
-from .virtual.serializers import VirtualModelSerializer
+from .django_virtualmodels.serializers import VirtualModelSerializer
 from rest_framework.routers import DefaultRouter
 
 
@@ -54,51 +54,50 @@ class VirtualPatient(VirtualModel):
     patient_id = VirtualField(source=("person_row","person_id"), key=True)
     main_row = "person_row"
     person_row = TableBindings.Person(
-        person_id 			 = FieldBind("patient_id", key = True),
-        birth_datetime  	 = FieldBind("birthday"),
+        person_id            = FieldBind("patient_id", key = True),
+        birth_datetime       = FieldBind("birthday"),
         year_of_birth        = FieldBind(CID_NULL, const=True),
         race_concept_id      = FieldBind(CID_NULL, const=True),
         ethnicity_concept_id = FieldBind(CID_NULL, const=True),
-        gender_concept_id	 = FieldBind("gender"),
-        provider_id			 = FieldBind("specialist_id"),
-        care_site_id		 = FieldBind("hospital_registration"),
-        #nam     e 				 = APIBind("name"), # não omop
-        #email 				 = APIBind("email"), # não omop
-        #phone_number 		 = APIBind("phone_number"), # não omop
-        #accept_tcl 		 = APIBind("accept_tcl") # não omop
+        gender_concept_id    = FieldBind("gender"),
+        provider_id          = FieldBind("specialist_id"),
+        care_site_id         = FieldBind("hospital_registration"),
+        #name                = APIBind("name"), # não omop
+        #phone_number        = APIBind("phone_number"), # não omop
+        #accept_tcl          = APIBind("accept_tcl") # não omop
     )
     
     height_row = TableBindings.Measurement( 
-        person_id 			= FieldBind("patient_id", key = True),
-        value_as_number 	= FieldBind("height"),
+        person_id              = FieldBind("patient_id", key = True),
+        value_as_number        = FieldBind("height"),
         measurement_concept_id = FieldBind(CID_HEIGHT, const=True, key = True),
-        unit_concept_id 	= FieldBind(CID_CENTIMETER, const=True),
-        measurement_date 	= FieldBind("updated_at"),
+        unit_concept_id        = FieldBind(CID_CENTIMETER, const=True),
+        measurement_date       = FieldBind("updated_at"),
         measurement_type_concept_id = FieldBind(CID_NULL, const=True),
     )
     
     weight_row = TableBindings.Measurement(
-        person_id 			= FieldBind("patient_id", key = True),
-        value_as_number 	= FieldBind("weight"),
+        person_id              = FieldBind("patient_id", key = True),
+        value_as_number        = FieldBind("weight"),
         measurement_concept_id = FieldBind(CID_WEIGHT, const=True, key = True),
-        unit_concept_id	    = FieldBind(CID_KILOGRAM, const=True),
-        measurement_date	= FieldBind("updated_at"),
+        unit_concept_id        = FieldBind(CID_KILOGRAM, const=True),
+        measurement_date       = FieldBind("updated_at"),
         measurement_type_concept_id = FieldBind(CID_NULL, const=True),
     )
 
     smoke_frequency = TableBindings.Observation(
-        person_id 				= FieldBind("patient_id", key = True),
-        observation_concept_id 	= FieldBind(CID_SMOKE_FREQUENCY, const=True, key = True),
-        value_as_concept_id		= FieldBind("smoke_frequency"),
-        observation_date 		= FieldBind("updated_at"),
+        person_id                   = FieldBind("patient_id", key = True),
+        observation_concept_id      = FieldBind(CID_SMOKE_FREQUENCY, const=True, key = True),
+        value_as_concept_id         = FieldBind("smoke_frequency"),
+        observation_date            = FieldBind("updated_at"),
         observation_type_concept_id = FieldBind(CID_NULL, const=True),
     )
 
     drink_frequency = TableBindings.Observation(
-        person_id 				= FieldBind("patient_id", key = True),
-        observation_concept_id 	= FieldBind(CID_DRINK_FREQUENCY, const=True, key = True),
-        value_as_concept_id 	= FieldBind("drink_frequency"),
-        observation_date 		= FieldBind("updated_at"),
+        person_id                   = FieldBind("patient_id", key = True),
+        observation_concept_id      = FieldBind(CID_DRINK_FREQUENCY, const=True, key = True),
+        value_as_concept_id         = FieldBind("drink_frequency"),
+        observation_date            = FieldBind("updated_at"),
         observation_type_concept_id = FieldBind(CID_NULL, const=True),
     )
 
@@ -243,5 +242,3 @@ class VirtualTrackingRecords(VirtualModel):
         note_event_field_concept_id = FieldBind(CID_PK_PROCEDURE_OCCURRENCE, const=True),
         note_type_concept_id = FieldBind(CID_NULL, const=True),
     )
-
-print(VirtualPatient.descriptor().debug_str())

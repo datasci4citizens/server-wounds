@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'drf_spectacular',  # For OpenAPI schema generation
     'rest_framework_simplejwt', # For JWT authentication
     'corsheaders',  # Adicione esta linha
+    'django_dbml'
 ]
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',

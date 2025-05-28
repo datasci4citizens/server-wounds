@@ -1,11 +1,11 @@
-from .omop_models import (
+from .omop.omop_models import (
     Concept
 )
-from . import omop_ids
-from .virtual.models import (
+from .omop import omop_ids
+from .django_virtualmodels.models import (
     all_attr_ofclass
 )
-from .virtual.serializers import VirtualModelSerializer
+from .django_virtualmodels.serializers import VirtualModelSerializer
 from .virtual_models import (VirtualSpecialist, VirtualWound, VirtualTrackingRecords, VirtualPatient)
 
 for const_name in all_attr_ofclass(omop_ids, int):
@@ -14,9 +14,8 @@ for const_name in all_attr_ofclass(omop_ids, int):
             concept_id=  getattr(omop_ids, const_name),
             concept_name= const_name
         )
-        print(const_name, getattr(omop_ids, const_name))
     except:
-        print("deu erro", const_name)
+        pass
 
 class VirtualSpecialistSerializer(VirtualModelSerializer):
     class Meta:

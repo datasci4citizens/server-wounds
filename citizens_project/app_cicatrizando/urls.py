@@ -4,7 +4,7 @@ from django.conf.urls.static import static
 
 from app_cicatrizando.api import GoogleLoginView, MeView
 from . import virtual_urls
-from .omop_views import router as omop_router
+from .omop.omop_views import router as omop_router
 
 # from django_scalar.views import scalar_viewer
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView

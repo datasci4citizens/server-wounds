@@ -16,7 +16,7 @@ from ..models import (
     Wound, Comorbidities
 )
 from ..virtual_views import VirtualPatient
-from ..omop_models import Person
+from ..omop.omop_models import Person
 
 class APITests(TestCase):
     def setUp(self):
