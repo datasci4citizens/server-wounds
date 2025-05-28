@@ -19,7 +19,6 @@ def google_get_access_token(code: str, redirect_uri: str) -> str:
         "redirect_uri": redirect_uri,
         "grant_type": "authorization_code",
     }
-    print(settings.GOOGLE_OAUTH2_CLIENT_ID, settings.GOOGLE_OAUTH2_CLIENT_SECRET)
 
     response = requests.post(GOOGLE_ACCESS_TOKEN_OBTAIN_URL, data=data)
     if not response.ok:

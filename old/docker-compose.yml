@@ -13,10 +13,13 @@ services:
 
   server:
     image: wounds-server:v0.1
+    env_file:
+      - .env.google
+      - .env.minio
     build: 
       context: .
     ports:
-      - "8001:8000"
+      - "8001:8001"
     environment:
       POSTGRES_URL: postgresql://postgres:postgres@db:5432/postgres
   minio:

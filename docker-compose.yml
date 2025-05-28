@@ -19,7 +19,7 @@ services:
       timeout: 5s
       retries: 5
   server:
-    image: wounds-server:v0.1
+    image: wounds-server:v0.2
     build: .
     ports:
       - "8000:8000"
@@ -39,7 +39,7 @@ services:
         source: ./tmp/midia
         target: /code/tmp/midia
   migration:
-    image: wounds-server:v0.1
+    image: wounds-server:v0.2
     build: .
     command: python citizens_project/manage.py migrate --noinput
     depends_on:

@@ -7,7 +7,8 @@ from db.manager import Database
 from schema.schema import Patients, Specialists, SpecialistsCreate, SpecialistsPublic, SpecialistsUpdate, SpecialistsPublicWithTrackingRecords,SpecialistsPublicWithPatients
 
 specialist_router = APIRouter(
-    dependencies=[Depends(AuthService.get_current_user)]
+    dependencies=[Depends(AuthService.get_current_user)],
+    tags = ["specialist"]
 )
 BASE_URL_SPECIALISTS = "/specialists/"
 
