@@ -6,7 +6,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from app_cicatrizando.google import google_get_user_data
-from .omop_models import Provider
+from .omop.omop_models import Provider
 
 
 # --- VIEWSETS ---

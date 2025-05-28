@@ -1,6 +1,6 @@
 # Register your models here.
 from django.contrib import admin
-from .omop_models import (
+from .omop.omop_models import (
     CareSite, Concept,
     ConceptClass, ConceptSynonym, ConditionOccurrence, Domain,
     FactRelationship, Location, Measurement, Note, 
