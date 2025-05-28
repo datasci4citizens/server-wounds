@@ -47,7 +47,7 @@ class VirtualModelDescriptor:
 	fields : dict[str, VirtualFieldDescriptor]
 	main_row_name : str
 	bindings : dict[str, "TableBinding"]
-	source : "VirtualModel"
+	source : type["VirtualModel"]
 	def get_fieldbind(self, fieldpath : FieldPath):
 		return self.bindings[fieldpath.table].fields[fieldpath.name]
 
@@ -55,14 +55,15 @@ class VirtualModelDescriptor:
 	def keys(self):
 		return { k: v for k,v in self.fields.items() if v.key}
 	
-	def debug_str(self, name):
-		string = f"virtual {name}:\n" 
+	def debug_str(self):
+		
+		string = f"virtual {self.source.__name__}:\n" 
 		max_len = max(map(lambda a: len(a), self.fields.keys()))
 		for k, v in self.fields.items():
 			path = f"{v.db_field_path.table}.{v.db_field_path.name}"
 			string += "    " + f"{v.name:<{max_len}} <-- {path}" +"\n"
 		for binding_name, binding in self.bindings.items():
-			string += f"    bind {name}:\n" 
+			string += f"    bind {binding_name}:\n" 
 			max_len = max(map(lambda a: len(a), binding.fields.keys()))
 			for k, v in binding.fields.items():
 				connector = ""

@@ -1,8 +1,5 @@
 from rest_framework import serializers, viewsets, routers, parsers
-from .serializers import (SpecialistsSerializer, ComorbiditiesSerializer, PatientsSerializer, \
-                              ImagesSerializer,WoundSerializer, TrackingRecordsSerializer)
 from django.urls import path, include
-from .models import Specialists, Patients, Comorbidities, Images, Wound, TrackingRecords
 from drf_spectacular.utils import extend_schema
 from django.contrib.auth import get_user_model
 from rest_framework.permissions import AllowAny, IsAuthenticated
