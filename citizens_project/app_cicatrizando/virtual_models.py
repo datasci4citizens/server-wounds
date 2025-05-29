@@ -2,7 +2,7 @@ from rest_framework import viewsets
 
 from .models import PatientNonClinicalInfos
 from .omop.omop_models import (
-    Measurement, Observation, Person, Provider, 
+    Location, Measurement, Observation, Person, Provider, 
     ConditionOccurrence, ProcedureOccurrence, Note, FactRelationship, Concept
 )
 from drf_spectacular.utils import extend_schema
@@ -42,6 +42,9 @@ class TableBindings:
         table = Note
     class FactRelationship(TableBinding):
         table = FactRelationship
+    class Location(TableBinding):
+        table = Location
+
 
 TableCreationOrder = [
     Provider,
@@ -55,9 +58,24 @@ TableCreationOrder = [
 ]
 
 class VirtualPatient(VirtualModel):
-    patient_id = VirtualField(source=("person_row","person_id"), key=True)
-    main_row = "person_row"
-    person_row = TableBindings.Person(
+    patient_id = VirtualField(source=("row_person","person_id"), key=True)
+    name                  = VirtualField(source=("row_nonclinicalinfos", "name"))
+    gender                = VirtualField(source=("row_person", "gender_concept_id"))
+    birthday              = VirtualField(source=("row_person", "birth_datetime"))
+    specialist_id         = VirtualField(source=("row_person", "provider_id"))
+    hospital_registration = VirtualField(source=("row_person", "care_site_id"))
+    phone_number          = VirtualField(source=("row_nonclinicalinfos", "phone_number"))
+    weight                = VirtualField(source=("row_weight", "value_as_number"))
+    height                = VirtualField(source=("row_height", "value_as_number"))
+    accept_tcl            = VirtualField(source=("row_nonclinicalinfos", "accept_tcl"))
+    smoke_frequency       = VirtualField(source=("row_smoke_frequency", "value_as_concept_id"))
+    drink_frequency       = VirtualField(source=("row_drink_frequency", "value_as_concept_id"))
+    # TODO comorbidities  
+    # TODO comorbidities_to_add  
+    updated_at            = VirtualField(source=("row_height", "measurement_date"))
+    main_row = "row_person"
+    # TODO EMAIL
+    row_person = TableBindings.Person(
         person_id            = FieldBind("patient_id", key = True),
         birth_datetime       = FieldBind("birthday"),
         year_of_birth        = FieldBind(CID_NULL, const=True),
@@ -74,7 +92,7 @@ class VirtualPatient(VirtualModel):
         accept_tcl   = FieldBind("accept_tcl"),
     )
     
-    height_row = TableBindings.Measurement( 
+    row_height = TableBindings.Measurement( 
         person_id              = FieldBind("patient_id", key = True),
         value_as_number        = FieldBind("height"),
         measurement_concept_id = FieldBind(CID_HEIGHT, const=True, key = True),
@@ -83,7 +101,7 @@ class VirtualPatient(VirtualModel):
         measurement_type_concept_id = FieldBind(CID_NULL, const=True),
     )
     
-    weight_row = TableBindings.Measurement(
+    row_weight = TableBindings.Measurement(
         person_id              = FieldBind("patient_id", key = True),
         value_as_number        = FieldBind("weight"),
         measurement_concept_id = FieldBind(CID_WEIGHT, const=True, key = True),
@@ -92,7 +110,7 @@ class VirtualPatient(VirtualModel):
         measurement_type_concept_id = FieldBind(CID_NULL, const=True),
     )
 
-    smoke_frequency = TableBindings.Observation(
+    row_smoke_frequency = TableBindings.Observation(
         person_id                   = FieldBind("patient_id", key = True),
         observation_concept_id      = FieldBind(CID_SMOKE_FREQUENCY, const=True, key = True),
         value_as_concept_id         = FieldBind("smoke_frequency"),
@@ -100,7 +118,7 @@ class VirtualPatient(VirtualModel):
         observation_type_concept_id = FieldBind(CID_NULL, const=True),
     )
 
-    drink_frequency = TableBindings.Observation(
+    row_drink_frequency = TableBindings.Observation(
         person_id                   = FieldBind("patient_id", key = True),
         observation_concept_id      = FieldBind(CID_DRINK_FREQUENCY, const=True, key = True),
         value_as_concept_id         = FieldBind("drink_frequency"),
@@ -108,33 +126,45 @@ class VirtualPatient(VirtualModel):
         observation_type_concept_id = FieldBind(CID_NULL, const=True),
     )
 
-
 class VirtualSpecialist(VirtualModel):
-    specialist_id = VirtualField(source=["row_provider", "provider_id"], key=True)
+    specialist_id   = VirtualField(source=("row_provider", "provider_id"), key=True)
+    specialist_name = VirtualField(source=("row_provider", "provider_name"))
+    # TODO email
+    # TODO city
+    # TODO state
+    birthday        = VirtualField(source=("row_provider", "year_of_birth"))
+    speciality      = VirtualField(source=("row_provider", "specialty_concept_id"))
     main_row = "row_provider"
     row_provider = TableBindings.Provider(
         provider_id   = FieldBind("specialist_id", key = True),
         provider_name = FieldBind("specialist_name"),
         year_of_birth = FieldBind("birthday"),
-        care_site_id   = FieldBind("site"),
         specialty_concept_id   = FieldBind("speciality")
     )
 class VirtualWound(VirtualModel):
-    wound_id = VirtualField(source=("condition_row", "condition_occurrence_id"), key=True)
-    main_row = "condition_row"
-    
-    condition_row = TableBindings.ConditionOccurrence(
+    wound_id      = VirtualField(source=("row_condition", "condition_occurrence_id"), key=True)
+    region        = VirtualField(source=("row_region", "value_as_concept_id"))
+    wound_type    = VirtualField(source=("row_condition", "condition_concept_id")) 
+    start_date    = VirtualField(source=("row_condition", "condition_start_date"))
+    end_date      = VirtualField(source=("row_condition", "condition_end_date"))
+    is_active     = VirtualField(source=("row_condition", "condition_status_concept_id"))
+    image_id      = VirtualField(source=("row_image", "note_text"))
+    patient_id    = VirtualField(source=("row_condition", "person_id"))
+    specialist_id = VirtualField(source=("row_condition", "provider_id"))
+    updated_at    = VirtualField(source=("row_region", "observation_date"))
+    main_row = "row_condition"
+    row_condition = TableBindings.ConditionOccurrence(
         condition_occurrence_id = FieldBind("wound_id", key=True),
         person_id = FieldBind("patient_id"),
         provider_id = FieldBind("specialist_id"),
-        condition_concept_id = FieldBind(CID_WOUND_TYPE, const=True),
+        condition_concept_id = FieldBind("wound_type"),
         condition_start_date = FieldBind("start_date"),
         condition_end_date = FieldBind("end_date"),
         condition_status_concept_id = FieldBind("is_active"),
         condition_type_concept_id = FieldBind(CID_NULL, const=True),
     )
     
-    observation_row = TableBindings.Observation(
+    row_region = TableBindings.Observation(
         person_id = FieldBind("patient_id", key=True),
         observation_concept_id = FieldBind(CID_WOUND_LOCATION, const=True, key=True),
         observation_date = FieldBind("updated_at"),
@@ -144,7 +174,7 @@ class VirtualWound(VirtualModel):
         obs_event_field_concept_id = FieldBind(CID_PK_CONDITION_OCCURRENCE, const=True),
     )
     
-    note_row = TableBindings.Note(
+    row_image = TableBindings.Note(
         person_id = FieldBind("patient_id", key=True),
         note_date = FieldBind("updated_at"),
         note_class_concept_id = FieldBind(CID_WOUND_IMAGE, const=True, key=True),
@@ -180,10 +210,29 @@ def _tr_measurement_value_number(virtual: str, concept: int, cid_unit : int):
         unit_concept_id = FieldBind(cid_unit, const = True)
     )    
 class VirtualTrackingRecords(VirtualModel):
-    tracking_id = VirtualField(source=("procedure_row", "procedure_occurrence_id"), key=True)
-    main_row = "procedure_row"
+    tracking_id = VirtualField(source=("row_procedure", "procedure_occurrence_id"), key=True)
+    patient_id               = VirtualField(source=("row_procedure", "person_id"))
+    specialist_id            = VirtualField(source=("row_procedure", "provider_id"))
+    track_date               = VirtualField(source=("row_procedure", "procedure_date"))
+    wound_id                 = VirtualField(source=("row_fact_relation", "fact_id_1"))
+    updated_at               = VirtualField(source=("row_length", "measurement_date"))
+    length                   = VirtualField(source=("row_length", "value_as_number"))
+    width                    = VirtualField(source=("row_width", "value_as_number"))
+    exudate_amount           = VirtualField(source=("row_exudate_amount", "value_as_concept_id"))
+    exudate_type             = VirtualField(source=("row_exudate_type", "value_as_concept_id"))
+    tissue_type              = VirtualField(source=("row_tissue_type", "value_as_concept_id"))
+    wound_edges              = VirtualField(source=("row_wound_edges", "value_as_concept_id"))
+    skin_around              = VirtualField(source=("row_skin_around", "value_as_concept_id"))
+    had_a_fever              = VirtualField(source=("row_had_a_fever", "value_as_concept_id"))
+    pain_level               = VirtualField(source=("row_pain_level", "value_as_concept_id"))
+    dressing_changes_per_day = VirtualField(source=("row_dressing_changes_per_day", "value_as_concept_id"))
+    image_id                 = VirtualField(source=("row_image", "note_text"))
+    guidelines_to_patient    = VirtualField(source=("row_guidelines_note", "note_text"))
+    extra_notes              = VirtualField(source=("row_extra_notes", "note_text"))
+
+    main_row = "row_procedure"
     
-    procedure_row = TableBindings.ProcedureOccurrence(
+    row_procedure = TableBindings.ProcedureOccurrence(
         procedure_occurrence_id = FieldBind("tracking_id", key=True),
         person_id = FieldBind("patient_id", key=True),
         provider_id = FieldBind("specialist_id", key=True),
@@ -192,7 +241,7 @@ class VirtualTrackingRecords(VirtualModel):
         procedure_type_concept_id = FieldBind(CID_NULL, const=True),
     )
     
-    fact_relation_row = TableBindings.FactRelationship(
+    row_fact_relation = TableBindings.FactRelationship(
         domain_concept_id_1_id = FieldBind(CID_PK_CONDITION_OCCURRENCE, const=True),
         fact_id_1 = FieldBind("wound_id"),
         relationship_concept_id = FieldBind(CID_CONDITION_RELEVANT_TO, const=True, key=True),
@@ -201,20 +250,19 @@ class VirtualTrackingRecords(VirtualModel):
     )
     
     # Measurements
-    length_measurement = _tr_measurement_value_number("length", CID_WOUND_LENGTH, CID_CENTIMETER),
-    width_measurement  = _tr_measurement_value_number("width", CID_WOUND_WIDTH, CID_CENTIMETER)
-    
-    exudate_amount_measurement  = _tr_measurement_value_cid("exudate_amount", CID_EXUDATE_AMOUNT)
-    exudate_type_measurement    = _tr_measurement_value_cid("exudate_type", CID_EXUDATE_APPEARANCE)    
-    tissue_type_measurement     = _tr_measurement_value_cid("tissue_type", CID_WOUND_APPEARANCE)
-    wound_edges_measurement     = _tr_measurement_value_cid("wound_edges", CID_WOUND_EDGE_DESCRIPTION)
-    skin_around_measurement     = _tr_measurement_value_cid("skin_around", CID_WOUND_SKIN_AROUND)
-    had_a_fever_measurement     = _tr_measurement_value_cid("had_a_fever", CID_FEVER)
-    pain_level_measurement      = _tr_measurement_value_cid("pain_level", CID_PAIN_SEVERITY)
-    dressing_changes_per_day_measurement = _tr_measurement_value_cid("dressing_changes_per_day", CID_WOUND_CARE_DRESSING_CHANGE)
+    row_length         = _tr_measurement_value_number("length", CID_WOUND_LENGTH, CID_CENTIMETER)
+    row_width          = _tr_measurement_value_number("width", CID_WOUND_WIDTH, CID_CENTIMETER)
+    row_exudate_amount = _tr_measurement_value_cid("exudate_amount", CID_EXUDATE_AMOUNT)
+    row_exudate_type   = _tr_measurement_value_cid("exudate_type", CID_EXUDATE_APPEARANCE)    
+    row_tissue_type    = _tr_measurement_value_cid("tissue_type", CID_WOUND_APPEARANCE)
+    row_wound_edges    = _tr_measurement_value_cid("wound_edges", CID_WOUND_EDGE_DESCRIPTION)
+    row_skin_around    = _tr_measurement_value_cid("skin_around", CID_WOUND_SKIN_AROUND)
+    row_had_a_fever    = _tr_measurement_value_cid("had_a_fever", CID_FEVER)
+    row_pain_level     = _tr_measurement_value_cid("pain_level", CID_PAIN_SEVERITY)
+    row_dressing_changes_per_day= _tr_measurement_value_cid("dressing_changes_per_day", CID_WOUND_CARE_DRESSING_CHANGE)
 
     # Notes
-    image_note = TableBindings.Note(
+    row_image = TableBindings.Note(
         person_id = FieldBind("patient_id"),
         note_date = FieldBind("updated_at"),
         note_class_concept_id = FieldBind(CID_WOUND_IMAGE, const=True),
@@ -226,7 +274,7 @@ class VirtualTrackingRecords(VirtualModel):
         note_type_concept_id = FieldBind(CID_NULL, const=True),
     )
     
-    guidelines_note = TableBindings.Note(
+    row_guidelines_note = TableBindings.Note(
         person_id = FieldBind("patient_id"),
         note_date = FieldBind("updated_at"),
         note_class_concept_id = FieldBind(CID_WOUND_MANAGEMENT_NOTE, const=True, key = True),
@@ -238,7 +286,7 @@ class VirtualTrackingRecords(VirtualModel):
         note_type_concept_id = FieldBind(CID_NULL, const=True),
     )
 
-    extra_notes_note = TableBindings.Note(
+    row_extra_notes = TableBindings.Note(
         person_id = FieldBind("patient_id"),
         note_date = FieldBind("updated_at"),
         note_class_concept_id = FieldBind(CID_GENERIC_NOTE, const=True, key = True),
@@ -249,3 +297,6 @@ class VirtualTrackingRecords(VirtualModel):
         note_event_field_concept_id = FieldBind(CID_PK_PROCEDURE_OCCURRENCE, const=True),
         note_type_concept_id = FieldBind(CID_NULL, const=True),
     )
+
+# TODO class Comorbidities
+print(VirtualWound.descriptor().debug_str())

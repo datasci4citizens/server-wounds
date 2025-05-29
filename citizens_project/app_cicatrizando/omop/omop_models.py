@@ -86,7 +86,7 @@ class FactRelationship(models.Model):
         db_table = 'fact_relationship'
 
 class Location(models.Model):
-    location_id = models.IntegerField(primary_key=True)
+    location_id = models.AutoField(primary_key=True)
     address_1 = models.CharField(max_length=50, blank=True, null=True)
     address_2 = models.CharField(max_length=50, blank=True, null=True)
     city = models.CharField(max_length=50, blank=True, null=True)
