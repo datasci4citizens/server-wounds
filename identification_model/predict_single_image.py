@@ -7,7 +7,7 @@ import os
 
 def predict_image_class(img_path, model_path="wound_classifier_best.pth", label_csv_path="identification_model/labels.csv"):
     # Load label mappings
-    img_path = "identification_model/validation/images/" + img_path
+    img_path = "identification_model/all_images/" + img_path
     df = pd.read_csv(label_csv_path)
     class_names = sorted(df["tissue_type"].unique())
     name_to_label = {name: idx for idx, name in enumerate(class_names)}
