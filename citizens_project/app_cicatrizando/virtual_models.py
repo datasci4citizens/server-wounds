@@ -1,4 +1,6 @@
 from rest_framework import viewsets
+
+from .models import PatientNonClinicalInfos
 from .omop.omop_models import (
     Measurement, Observation, Person, Provider, 
     ConditionOccurrence, ProcedureOccurrence, Note, FactRelationship, Concept
@@ -28,6 +30,8 @@ class TableBindings:
         table = Measurement
     class Person(TableBinding):
         table = Person
+    class PatientNonClinicalInfos(TableBinding):
+        table = PatientNonClinicalInfos
     class Provider(TableBinding):
         table = Provider
     class ConditionOccurrence(TableBinding):
@@ -62,9 +66,12 @@ class VirtualPatient(VirtualModel):
         gender_concept_id    = FieldBind("gender"),
         provider_id          = FieldBind("specialist_id"),
         care_site_id         = FieldBind("hospital_registration"),
-        #name                = APIBind("name"), # não omop
-        #phone_number        = APIBind("phone_number"), # não omop
-        #accept_tcl          = APIBind("accept_tcl") # não omop
+    )
+    row_nonclinicalinfos = TableBindings.PatientNonClinicalInfos(
+        person_id    = FieldBind("patient_id"),
+        name         = FieldBind("name"),
+        phone_number = FieldBind("phone_number"),
+        accept_tcl   = FieldBind("accept_tcl"),
     )
     
     height_row = TableBindings.Measurement( 
