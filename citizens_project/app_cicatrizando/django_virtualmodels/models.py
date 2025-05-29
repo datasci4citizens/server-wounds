@@ -60,8 +60,8 @@ class VirtualModelDescriptor:
 		string = f"virtual {self.source.__name__}:\n" 
 		max_len = max(map(lambda a: len(a), self.fields.keys()))
 		for k, v in self.fields.items():
-			path = f"{v.db_field_path.table}.{v.db_field_path.name}"
-			string += "    " + f"{v.name:<{max_len}} <-- {path}" +"\n"
+			path = f"VirtualField(source=(\"{v.db_field_path.table}\", \"{v.db_field_path.name}\"))"
+			string += "    " + f"{v.name:<{max_len}} = {path}" +"\n"
 		for binding_name, binding in self.bindings.items():
 			string += f"    bind {binding_name}:\n" 
 			max_len = max(map(lambda a: len(a), binding.fields.keys()))
