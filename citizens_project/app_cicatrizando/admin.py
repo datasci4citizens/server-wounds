@@ -1,5 +1,7 @@
 # Register your models here.
 from django.contrib import admin
+
+from .models import PatientNonClinicalInfos
 from .omop.omop_models import (
     CareSite, Concept,
     ConceptClass, ConceptSynonym, ConditionOccurrence, Domain,
@@ -30,3 +32,5 @@ admin.site.register(ConceptClass)
 admin.site.register(ConceptSynonym)
 admin.site.register(Relationship)
 admin.site.register(Vocabulary)
+
+admin.site.register(PatientNonClinicalInfos)
