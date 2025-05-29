@@ -70,10 +70,11 @@ class GoogleLoginView(viewsets.ViewSet):
             )
 
         role = "none"
-        # if Specialists.objects.filter(user=user).exists():
-        #     role = "specialist"
-        # elif Patients.objects.filter(user=user).exists():
-        #     role = "person"
+        # Check if the user exists in Specialists or Patients based on email
+        if Specialists.objects.filter(email=user.email).exists():
+            role = "specialist"
+        elif Patients.objects.filter(email=user.email).exists():
+            role = "patient"
 
         # generate jwt token for the user
         token = RefreshToken.for_user(user)
