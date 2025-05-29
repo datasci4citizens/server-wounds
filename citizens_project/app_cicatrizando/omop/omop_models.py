@@ -86,7 +86,7 @@ class FactRelationship(models.Model):
         db_table = 'fact_relationship'
 
 class Location(models.Model):
-    location_id = models.AutoField(primary_key=True)
+    location_id = models.IntegerField(primary_key=True)
     address_1 = models.CharField(max_length=50, blank=True, null=True)
     address_2 = models.CharField(max_length=50, blank=True, null=True)
     city = models.CharField(max_length=50, blank=True, null=True)
@@ -102,7 +102,7 @@ class Location(models.Model):
 
 
 class Measurement(models.Model):
-    measurement_id = models.IntegerField(primary_key=True)
+    measurement_id = models.AutoField(primary_key=True)
     person = models.ForeignKey('Person', models.DO_NOTHING)
     measurement_concept = models.ForeignKey(Concept, models.DO_NOTHING)
     measurement_date = models.DateField()
@@ -125,7 +125,7 @@ class Measurement(models.Model):
 
 
 class Note(models.Model):
-    note_id = models.IntegerField(primary_key=True)
+    note_id = models.AutoField(primary_key=True)
     person = models.ForeignKey('Person', models.DO_NOTHING)
     note_date = models.DateField()
     note_datetime = models.DateTimeField(blank=True, null=True)
@@ -144,7 +144,7 @@ class Note(models.Model):
         db_table = 'note'
 
 class Observation(models.Model):
-    observation_id = models.IntegerField(primary_key=True)
+    observation_id = models.AutoField(primary_key=True)
     person = models.ForeignKey('Person', models.DO_NOTHING)
     observation_concept = models.ForeignKey(Concept, models.DO_NOTHING)
     observation_date = models.DateField()
