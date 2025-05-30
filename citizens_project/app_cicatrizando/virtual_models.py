@@ -130,10 +130,10 @@ class VirtualSpecialist(VirtualModel):
     specialist_id   = VirtualField(source=("row_provider", "provider_id"), key=True)
     specialist_name = VirtualField(source=("row_provider", "provider_name"))
     # TODO email
-    # TODO city
-    # TODO state
     birthday        = VirtualField(source=("row_provider", "year_of_birth"))
     speciality      = VirtualField(source=("row_provider", "specialty_concept_id"))
+    city            = VirtualField(source=("row_location", "city"))
+    state           = VirtualField(source=("row_location", "state"))
     main_row = "row_provider"
     row_provider = TableBindings.Provider(
         provider_id   = FieldBind("specialist_id", key = True),
@@ -141,6 +141,13 @@ class VirtualSpecialist(VirtualModel):
         year_of_birth = FieldBind("birthday"),
         specialty_concept_id   = FieldBind("speciality")
     )
+
+    row_location =  TableBindings.Location(
+        location_id = FieldBind("specialist_id", key=True),
+        city        = FieldBind("city"),  
+        state       = FieldBind("state"),  
+    )
+
 class VirtualWound(VirtualModel):
     wound_id      = VirtualField(source=("row_condition", "condition_occurrence_id"), key=True)
     region        = VirtualField(source=("row_region", "value_as_concept_id"))
@@ -155,36 +162,35 @@ class VirtualWound(VirtualModel):
     main_row = "row_condition"
     row_condition = TableBindings.ConditionOccurrence(
         condition_occurrence_id = FieldBind("wound_id", key=True),
-        person_id = FieldBind("patient_id"),
-        provider_id = FieldBind("specialist_id"),
-        condition_concept_id = FieldBind("wound_type"),
-        condition_start_date = FieldBind("start_date"),
-        condition_end_date = FieldBind("end_date"),
+        person_id                   = FieldBind("patient_id"),
+        provider_id                 = FieldBind("specialist_id"),
+        condition_concept_id        = FieldBind("wound_type"),
+        condition_start_date        = FieldBind("start_date"),
+        condition_end_date          = FieldBind("end_date"),
         condition_status_concept_id = FieldBind("is_active"),
-        condition_type_concept_id = FieldBind(CID_NULL, const=True),
+        condition_type_concept_id   = FieldBind(CID_NULL, const=True),
     )
     
     row_region = TableBindings.Observation(
-        person_id = FieldBind("patient_id", key=True),
-        observation_concept_id = FieldBind(CID_WOUND_LOCATION, const=True, key=True),
-        observation_date = FieldBind("updated_at"),
-        value_as_concept_id = FieldBind("region"),
+        person_id                   = FieldBind("patient_id", key=True),
+        observation_concept_id      = FieldBind(CID_WOUND_LOCATION, const=True, key=True),
+        observation_date            = FieldBind("updated_at"),
+        value_as_concept_id         = FieldBind("region"),
+        observation_event_id        = FieldBind("wound_id", key=True),
+        obs_event_field_concept_id  = FieldBind(CID_PK_CONDITION_OCCURRENCE, const=True),
         observation_type_concept_id = FieldBind(CID_NULL, const=True),
-        observation_event_id = FieldBind("wound_id", key=True),
-        obs_event_field_concept_id = FieldBind(CID_PK_CONDITION_OCCURRENCE, const=True),
     )
     
     row_image = TableBindings.Note(
-        person_id = FieldBind("patient_id", key=True),
-        note_date = FieldBind("updated_at"),
-        note_class_concept_id = FieldBind(CID_WOUND_IMAGE, const=True, key=True),
-        encoding_concept_id = FieldBind(CID_UTF8, const=True),
-        language_concept_id = FieldBind(CID_PORTUGUESE, const=True),
-        note_text = FieldBind("image_id"),
-        note_event_id = FieldBind("wound_id", key=True),
+        person_id                   = FieldBind("patient_id", key=True),
+        note_date                   = FieldBind("updated_at"),
+        note_class_concept_id       = FieldBind(CID_WOUND_IMAGE, const=True, key=True),
+        encoding_concept_id         = FieldBind(CID_UTF8, const=True),
+        language_concept_id         = FieldBind(CID_PORTUGUESE, const=True),
+        note_text                   = FieldBind("image_id"),
+        note_event_id               = FieldBind("wound_id", key=True),
         note_event_field_concept_id = FieldBind(CID_PK_CONDITION_OCCURRENCE, const=True),
-        note_type_concept_id = FieldBind(CID_NULL, const=True),
-
+        note_type_concept_id        = FieldBind(CID_NULL, const=True),
     )
 
 
@@ -299,4 +305,3 @@ class VirtualTrackingRecords(VirtualModel):
     )
 
 # TODO class Comorbidities
-print(VirtualWound.descriptor().debug_str())
