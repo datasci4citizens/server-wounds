@@ -42,7 +42,7 @@ Run the model:
 python wound_identification_supervised_model.py
 ~~~
 
-Ouput:
+Ouput:  
 The best model is saved as wound_classifier_best.pth
 
 
