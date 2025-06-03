@@ -130,10 +130,10 @@ class VirtualSpecialist(VirtualModel):
     specialist_id   = VirtualField(source=("row_provider", "provider_id"), key=True)
     specialist_name = VirtualField(source=("row_provider", "provider_name"))
     # TODO email
-    birthday        = VirtualField(source=("row_provider", "year_of_birth"))
-    speciality      = VirtualField(source=("row_provider", "specialty_concept_id"))
-    city            = VirtualField(source=("row_location", "city"))
-    state           = VirtualField(source=("row_location", "state"))
+    birthday        = VirtualField(source=("row_provider", "year_of_birth"), null=True)
+    speciality      = VirtualField(source=("row_provider", "specialty_concept_id"), null=True)
+    city            = VirtualField(source=("row_location", "city"), null=True)
+    state           = VirtualField(source=("row_location", "state"), null=True)
     main_row = "row_provider"
     row_provider = TableBindings.Provider(
         provider_id   = FieldBind("specialist_id", key = True),
