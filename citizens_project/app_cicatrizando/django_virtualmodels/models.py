@@ -34,6 +34,7 @@ class FieldPath:
 class VirtualFieldDescriptor:
 	name : str 
 	key : bool
+	null : bool
 	db_field_path : FieldPath
 	def db_field_name(self):
 		return self.db_field_path.name
@@ -85,6 +86,7 @@ class VirtualModelDescriptor:
 class VirtualField:
 	source : Optional[tuple[str, str]] = None
 	key : bool = False
+	null : bool =  False
 class TableBinding:
 	table : django_models.Model
 	fields : dict[str, FieldBind]
@@ -131,7 +133,8 @@ class VirtualModel:
 			VirtualFieldDescriptor(
 				name = av.value,
 				db_field_path = FieldPath(row_name, a),
-				key = False
+				key = False, 
+				null= False
 			)
 			for row_name, binding in bindings.items() 
 			for a, av  in binding.fields.items()
@@ -146,7 +149,8 @@ class VirtualModel:
 			source_fields[k] = VirtualFieldDescriptor(
 				name  = k, 
 				db_field_path = FieldPath(v.source[0], v.source[1]),
-				key = v.key
+				key = v.key,
+				null = v.null
 			)
 		return source_fields
 	@staticmethod

@@ -208,7 +208,7 @@ class ProcedureOccurrence(models.Model):
 
 
 class Provider(models.Model):
-    provider_id = models.IntegerField(primary_key=True)
+    provider_id = models.AutoField(primary_key=True)
     provider_name = models.CharField(max_length=255, blank=True, null=True)
     npi = models.CharField(max_length=20, blank=True, null=True)
     dea = models.CharField(max_length=20, blank=True, null=True)
