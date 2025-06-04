@@ -20,7 +20,7 @@ filename,tissue_type
 0019.png,necrose
 0020.png,granulacao
 0021.png,necrose
-0022.png,maceracao
+0022.png,ni
 0023.png,granulacao
 0024.png,granulacao
 0025.png,necrose
@@ -34,7 +34,7 @@ filename,tissue_type
 0033.png,esfacelo
 0034.png,ni
 0035.png,necrose
-0036.png,maceracao
+0036.png,ni
 0037.png,epitelizacao
 0038.png,epitelizacao
 0039.png,necrose
@@ -44,14 +44,14 @@ filename,tissue_type
 0043.png,necrose
 0044.png,ni
 0045.png,esfacelo
-0046.png,maceracao
+0046.png,ni
 0047.png,granulacao
 0048.png,necrose
 0049.png,esfacelo
 0050.png,necrose
 0051.png,necrose
 0052.png,necrose
-0053.png,maceracao
+0053.png,ni
 0054.png,granulacao
 0055.png,esfacelo
 0056.png,necrose
@@ -65,7 +65,7 @@ filename,tissue_type
 0064.png,granulacao
 0065.png,necrose
 0066.png,granulacao
-0067.png,maceracao
+0067.png,ni
 0068.png,necrose
 0069.png,granulacao
 0070.png,granulacao
@@ -73,7 +73,7 @@ filename,tissue_type
 0072.png,granulacao
 0073.png,esfacelo
 0074.png,esfacelo
-0075.png,infeccao
+0075.png,ni
 0076.png,esfacelo
 0077.png,granulacao
 0078.png,granulacao
@@ -251,7 +251,7 @@ filename,tissue_type
 0250.png,esfacelo
 0251.png,ni
 0252.png,necrose
-0253.png,tendao
+0253.png,ni
 0254.png,ni
 0255.png,granulacao
 0256.png,granulacao
@@ -347,7 +347,7 @@ filename,tissue_type
 0346.png,granulacao
 0347.png,ni
 0348.png,granulacao
-0349.png,infeccao
+0349.png,ni
 0350.png,granulacao
 0351.png,granulacao
 0352.png,granulacao
@@ -440,7 +440,7 @@ filename,tissue_type
 0439.png,granulacao
 0440.png,granulacao
 0441.png,granulacao
-0442.png,tendao
+0442.png,ni
 0443.png,necrose
 0444.png,granulacao
 0445.png,granulacao
@@ -521,7 +521,7 @@ filename,tissue_type
 0520.png,granulacao
 0521.png,necrose
 0522.png,necrose
-0523.png,tendao
+0523.png,ni
 0524.png,esfacelo
 0525.png,granulacao
 0526.png,granulacao
@@ -587,7 +587,7 @@ filename,tissue_type
 0586.png,esfacelo
 0587.png,granulacao
 0588.png,ni
-0589.png,tendao
+0589.png,ni
 0590.png,granulacao
 0591.png,ni
 0592.png,esfacelo
@@ -775,7 +775,7 @@ filename,tissue_type
 0774.png,granulacao
 0775.png,esfacelo
 0776.png,ni
-0777.png,tendao
+0777.png,ni
 0778.png,granulacao
 0779.png,necrose
 0780.png,ni
@@ -869,11 +869,11 @@ filename,tissue_type
 0868.png,granulacao
 0869.png,ni
 0870.png,ni
-0871.png,tendao
+0871.png,ni
 0872.png,granulacao
 0873.png,esfacelo
 0874.png,granulacao
-0875.png,tendao
+0875.png,ni
 0876.png,ni
 0877.png,granulacao
 0878.png,necrose
@@ -1066,7 +1066,7 @@ filename,tissue_type
 1137.png,granulacao
 1139.png,granulacao
 1140.png,granulacao
-1143.png,infeccao
+1143.png,ni
 1144.png,granulacao
 1152.png,granulacao
 1156.png,esfacelo
@@ -1209,3 +1209,679 @@ filename,tissue_type
 1473.png,granulacao
 1475.png,granulacao
 1476.png,ni
+Alz (331).jpg,esfacelo
+Alz (332).jpg,granulacao
+Alz (333).jpg,granulacao
+Alz (334).jpg,ni
+Alz (335).jpg,granulacao
+Alz (336).JPG,ni
+Alz (337).jpg,granulacao
+Alz (338).jpg,granulacao
+Alz (339).jpg,ni
+Alz (340).jpg,esfacelo
+Alz (341).JPG,ni
+Alz (342).jpg,ni
+Alz (343).jpg,ni
+Alz (344).jpg,esfacelo
+Alz (345).jpg,granulacao
+Alz (346).jpg,granulacao
+Alz (347).jpg,ni
+Alz (348).jpg,granulacao
+Alz (349).jpg,granulacao
+Alz (350).jpg,ni
+Alz (351).jpg,granulacao
+Alz (352).jpg,ni
+Alz (353).JPG,ni
+Alz (354).jpg,granulacao
+Alz (355).png,ni
+Alz (356).jpg,ni
+MH_1.jpg,granulacao
+MH_10.jpg,granulacao
+MH_11.jpg,granulacao
+MH_12.jpg,ni
+MH_13.jpg,ni
+MH_14.jpg,ni
+MH_15.jpg,ni
+MH_16.jpg,ni
+MH_17.jpg,ni
+MH_18.jpg,granulacao
+MH_19.jpg,granulacao
+MH_2.jpg,ni
+MH_20.jpg,granulacao
+MH_21.jpg,granulacao
+MH_22.jpg,esfacelo
+MH_23.jpg,ni
+MH_24.jpg,ni
+MH_25.jpg,granulacao
+MH_26.jpg,granulacao
+MH_27.jpg,granulacao
+MH_28.jpg,granulacao
+MH_29.jpg,granulacao
+MH_3.jpg,ni
+MH_30.jpg,granulacao
+MH_31.jpg,granulacao
+MH_32.jpg,granulacao
+MH_33.jpg,ni
+MH_34.jpg,ni
+MH_35.jpg,ni
+MH_36.jpg,ni
+MH_37.jpg,necrose
+MH_38.jpg,esfacelo
+MH_39.jpg,granulacao
+MH_4.jpg,granulacao
+MH_40.jpg,granulacao
+MH_41.jpg,esfacelo
+MH_42.jpg,granulacao
+MH_43.jpg,granulacao
+MH_44.jpg,epitelizacao
+MH_45.jpg,granulacao
+MH_46.jpg,esfacelo
+MH_47.jpg,granulacao
+MH_48.jpg,ni
+MH_49.jpg,esfacelo
+MH_5.jpg,ni
+MH_50.jpg,esfacelo
+MH_51.jpg,esfacelo
+MH_6.jpg,ni
+MH_7.jpg,ni
+MH_8.jpg,ni
+MH_9.jpg,ni
+Paciente C_ APR2.jpg,ni
+Paciente C_AFS1.jpg,ni
+Paciente C_AFS2.jpg,ni
+Paciente C_APR1.jpg,ni
+Paciente C_APR3.jpg,granulacao
+Paciente C_CAF1.jpg,ni
+Paciente C_CAF2.jpg,ni
+Paciente C_CAF3.jpg,ni
+Paciente C_CAF4.jpg,ni
+Paciente C_CAF5.jpg,ni
+Paciente C_CAF6.jpg,ni
+Paciente C_CC1.jpg,ni
+Paciente C_CC2.jpg,ni
+Paciente C_CC3.jpg,ni
+Paciente C_CC4.jpg,ni
+Paciente C_CC5.jpg,ni
+Paciente C_CC6.jpg,ni
+Paciente C_CWRM1.jpg,ni
+Paciente C_CWRM10.jpg,ni
+Paciente C_CWRM11.jpg,ni
+Paciente C_CWRM12.jpg,ni
+Paciente C_CWRM13.jpg,ni
+Paciente C_CWRM14.jpg,ni
+Paciente C_CWRM15.jpg,ni
+Paciente C_CWRM16.jpg,ni
+Paciente C_CWRM17.jpg,ni
+Paciente C_CWRM18.jpg,ni
+Paciente C_CWRM19.jpg,ni
+Paciente C_CWRM2.jpg,ni
+Paciente C_CWRM20.jpg,ni
+Paciente C_CWRM21.jpg,ni
+Paciente C_CWRM22.jpg,ni
+Paciente C_CWRM23.jpg,ni
+Paciente C_CWRM24.jpg,esfacelo
+Paciente C_CWRM25.jpg,ni
+Paciente C_CWRM3.jpg,ni
+Paciente C_CWRM4.jpg,ni
+Paciente C_CWRM5.jpg,ni
+Paciente C_CWRM6.jpg,ni
+Paciente C_CWRM7.jpg,ni
+Paciente C_CWRM8.jpg,ni
+Paciente C_CWRM9.jpg,ni
+Paciente C_FT1.jpg,ni
+Paciente C_FT2.jpg,ni
+PacienteB_AM_05 T0.JPG,esfacelo
+PacienteB_AM_05 T4.JPG,ni
+PacienteB_AM_05 T8.JPG,epitelizacao
+PacienteB_CCSA_01 T0.JPG,ni
+PacienteB_CCSA_01 T4.JPG,ni
+PacienteB_CCSA_01 T8.JPG,granulacao
+PacienteB_CCSA_02 T0.JPG,esfacelo
+PacienteB_CCSA_02 T7.JPG,epitelizacao
+PacienteB_CPA_13 T0.png,esfacelo
+PacienteB_CPA_13 T2.png,esfacelo
+PacienteB_CPA_13 T4.JPG,granulacao
+PacienteB_CRRD_04 T1.png,granulacao
+PacienteB_CRRD_04 T4.png,granulacao
+PacienteB_CRRD_04 T8.png,granulacao
+PacienteB_JNS_09 T0.JPG,granulacao
+PacienteB_JNS_09 T4.JPG,granulacao
+PacienteB_JNS_09 T8.JPG,ni
+PacienteB_PEA_16 T0.JPG,ni
+PacienteB_PEA_16 T4.JPG,ni
+PacienteB_TSO_06 T0.png,granulacao
+PacienteB_TSO_06 T10.png,granulacao
+PacienteB_TSO_06 T4.png,granulacao
+PacienteB_VFS_10 T0.png,granulacao
+PacienteB_VFS_10 T4.png,granulacao
+PacienteB_VFS_10 T8.png,granulacao
+PacienteC_JAL1.jpg,ni
+PacienteC_JAL2.jpg,epitelizacao
+PacienteC_JAL3.jpg,ni
+PacienteC_JAL4.jpg,granulacao
+PacienteC_JEMP1.jpg,granulacao
+PacienteC_JEMP2.jpg,granulacao
+PacienteC_JEMP3.jpg,granulacao
+PacienteC_JEMP4.jpg,granulacao
+PacienteC_JEMP5.jpg,granulacao
+PacienteC_JMC1.jpg,necrose
+PacienteC_JMC2.jpg,ni
+PacienteC_LCR1.jpg,ni
+PacienteC_LEL1.jpg,ni
+PacienteC_LEL2.jpg,ni
+PacienteC_LEL3.jpg,ni
+PacienteC_LEL4.jpg,ni
+PacienteC_MARR1.jpg,ni
+PacienteC_MARR10.jpg,ni
+PacienteC_MARR11.jpg,ni
+PacienteC_MARR12.jpg,granulacao
+PacienteC_MARR13.jpg,granulacao
+PacienteC_MARR2.jpg,ni
+PacienteC_MARR3.jpg,ni
+PacienteC_MARR4.jpg,granulacao
+PacienteC_MARR5.jpg,granulacao
+PacienteC_MARR6.jpg,ni
+PacienteC_MARR7.jpg,ni
+PacienteC_MARR8.jpg,granulacao
+PacienteC_MARR9.jpg,ni
+PacienteC_MEB1.jpg,necrose
+PacienteC_MEB10.jpg,granulacao
+PacienteC_MEB11.jpg,esfacelo
+PacienteC_MEB12.jpg,esfacelo
+PacienteC_MEB13.jpg,esfacelo
+PacienteC_MEB14.jpg,esfacelo
+PacienteC_MEB15.jpg,esfacelo
+PacienteC_MEB16.jpg,esfacelo
+PacienteC_MEB17.jpg,esfacelo
+PacienteC_MEB18.jpg,esfacelo
+PacienteC_MEB19.jpg,esfacelo
+PacienteC_MEB2.jpg,necrose
+PacienteC_MEB20.jpg,ni
+PacienteC_MEB21.jpg,ni
+PacienteC_MEB22.jpg,ni
+PacienteC_MEB23.jpg,ni
+PacienteC_MEB24.jpg,ni
+PacienteC_MEB25.jpg,ni
+PacienteC_MEB26.jpg,ni
+PacienteC_MEB27.jpg,ni
+PacienteC_MEB28.jpg,ni
+PacienteC_MEB3.jpg,ni
+PacienteC_MEB4.jpg,esfacelo
+PacienteC_MEB5.jpg,esfacelo
+PacienteC_MEB6.jpg,esfacelo
+PacienteC_MEB7.jpg,esfacelo
+PacienteC_MEB8.jpg,esfacelo
+PacienteC_MEB9.jpg,esfacelo
+PacienteC_MFL1.jpg,ni
+PacienteC_MFL2.jpg,ni
+PacienteC_MGFL1.jpg,ni
+PacienteC_MGFL2.jpg,ni
+PacienteC_MGFL3.jpg,granulacao
+PacienteC_MGFL4.jpg,granulacao
+PacienteC_MRFO1.jpg,ni
+PacienteC_MRFO10.jpg,ni
+PacienteC_MRFO11.jpg,ni
+PacienteC_MRFO12.jpg,ni
+PacienteC_MRFO13.jpg,ni
+PacienteC_MRFO14.jpg,ni
+PacienteC_MRFO15.jpg,ni
+PacienteC_MRFO16.jpg,ni
+PacienteC_MRFO17.jpg,ni
+PacienteC_MRFO18.jpg,ni
+PacienteC_MRFO2.jpg,ni
+PacienteC_MRFO3.jpg,granulacao
+PacienteC_MRFO4.jpg,ni
+PacienteC_MRFO5.jpg,granulacao
+PacienteC_MRFO6.jpg,granulacao
+PacienteC_MRFO7.jpg,ni
+PacienteC_MRFO8.jpg,ni
+PacienteC_MRFO9.jpg,ni
+PacienteC_outro1.jpg,ni
+PacienteC_outro2.jpg,necrose
+PacienteC_outro3.jpg,granulacao
+PacienteC_outro4.jpg,esfacelo
+PacienteC_outro5.jpg,ni
+PacienteC_outro6.jpg,ni
+PAcienteC_outro7.jpg,ni
+PacienteC_PAA1.jpg,necrose
+PacienteC_PAA2.jpg,necrose
+PacienteC_PAA3.jpg,necrose
+PacienteC_PAA4.jpg,necrose
+PacienteC_PAA5.jpg,necrose
+PacienteC_PAA6.jpg,necrose
+PacienteC_PAA7.jpg,necrose
+PacienteC_RBDO1.jpg,ni
+PacienteC_RBDO2.jpg,ni
+PacienteC_RBDO3.jpg,ni
+PacienteC_RBDO4.jpg,ni
+PacienteC_RBDO5.jpg,ni
+PacienteC_SAAmp.1.jpg,ni
+PacienteC_SAAmp.2.jpg,ni
+PacienteC_SAAmp.3.jpg,ni
+PacienteC_SAAmp.4.jpg,ni
+PacienteC_SAAmp.5.jpg,ni
+PacienteC_SAAmp.6.jpg,ni
+PacienteC_SAAmp.7.jpg,ni
+PacienteC_SROC1.jpg,ni
+PacienteC_SROC10.jpg,ni
+PacienteC_SROC11.jpg,ni
+PacienteC_SROC12.jpg,ni
+PacienteC_SROC13.jpg,ni
+PacienteC_SROC14.jpg,ni
+PacienteC_SROC15.jpg,ni
+PacienteC_SROC16.jpg,ni
+PacienteC_SROC17.jpg,ni
+PacienteC_SROC18.jpg,ni
+PacienteC_SROC19.jpg,ni
+PacienteC_SROC2.jpg,ni
+PacienteC_SROC20.jpg,ni
+PacienteC_SROC21.jpg,ni
+PacienteC_SROC22.jpg,ni
+PacienteC_SROC23.jpg,ni
+PacienteC_SROC24.jpg,ni
+PacienteC_SROC25.jpg,ni
+PacienteC_SROC26.jpg,ni
+PacienteC_SROC27.jpg,ni
+PacienteC_SROC28.jpg,ni
+PacienteC_SROC29.jpg,ni
+PacienteC_SROC3.jpg,ni
+PacienteC_SROC30.jpg,ni
+PacienteC_SROC31.jpg,ni
+PacienteC_SROC32.jpg,ni
+PacienteC_SROC33.jpg,ni
+PacienteC_SROC34.jpg,ni
+PacienteC_SROC35.jpg,ni
+PacienteC_SROC36.jpg,ni
+PacienteC_SROC37.jpg,ni
+PacienteC_SROC38.jpg,ni
+PacienteC_SROC4.jpg,ni
+PacienteC_SROC5.jpg,ni
+PacienteC_SROC6.jpg,ni
+PacienteC_SROC7.jpg,ni
+PacienteC_SROC8.jpg,ni
+PacienteC_SROC9.jpg,ni
+PacienteC_SRTO1.jpg,esfacelo
+PacienteC_SRTO2.jpg,esfacelo
+PacienteC_VCN1.jpg,granulacao
+PacienteC_VCN2.jpg,granulacao
+PacienteC_VCN3.jpg,ni
+PacienteC_VCN4.jpg,granulacao
+PacienteC_VCN5.jpg,granulacao
+PacienteC_VCN6.jpg,ni
+PacienteC_VCN7.jpg,granulacao
+PacienteC_VCN8.jpg,granulacao
+PacienteC_VCN9.jpg,granulacao
+PacienteC_WM_amp1.jpg,ni
+PacienteC_WM_amp2.jpg,ni
+PacienteC_WM_amp3.jpg,ni
+toes-0001.jpg,ni
+toes-0002.jpg,ni
+toes-0003.jpg,ni
+toes-0004.jpg,ni
+toes-0005.jpg,ni
+toes-0006.jpg,ni
+toes-0007.jpg,ni
+toes-0008.jpg,ni
+toes-0009.jpg,ni
+toes-0010.jpg,ni
+toes-0011.jpg,ni
+toes-0013.jpg,esfacelo
+toes-0014.jpg,ni
+toes-0015.jpg,ni
+toes-0016.jpg,esfacelo
+toes-0018.jpg,granulacao
+toes-0019.jpg,esfacelo
+toes-0020.jpg,esfacelo
+toes-0021.jpg,necrose
+toes-0022.jpg,ni
+toes-0023.jpg,ni
+toes-0024.jpg,ni
+toes-0025.jpg,ni
+toes-0029.jpg,ni
+toes-0030.jpg,ni
+toes-0031.jpg,ni
+toes-0032.jpg,ni
+toes-0035.jpg,ni
+toes-0036.jpg,ni
+toes-0039.jpg,ni
+toes-0040.jpg,ni
+toes-0041.jpg,ni
+toes-0042.jpg,ni
+toes-00431.jpg,ni
+1.jpg,esfacelo
+11 T0.JPG,granulacao
+11 T4.JPG,granulacao
+11 T8.JPG,granulacao
+2.jpg,esfacelo
+3.jpg,esfacelo
+4.jpg,esfacelo
+5.jpg,esfacelo
+Alz (1).png,granulacao
+Alz (10).jpg,ni
+Alz (100).jpg,granulacao
+Alz (101).jpg,esfacelo
+Alz (102).jpg,ni
+Alz (103).jpg,ni
+Alz (104).jpg,ni
+Alz (105).jpg,esfacelo
+Alz (106).jpg,granulacao
+Alz (107).jpg,ni
+Alz (108).jpg,ni
+Alz (109).jpg,ni
+Alz (11).jpg,ni
+Alz (110).jpg,ni
+Alz (111).jpg,ni
+Alz (112).jpg,ni
+Alz (113).jpg,ni
+Alz (114).jpg,granulacao
+Alz (115).jpg,granulacao
+Alz (116).jpg,granulacao
+Alz (117).jpg,ni
+Alz (118).jpg,ni
+Alz (119).jpg,ni
+Alz (120).jpg,ni
+Alz (121).jpg,ni
+Alz (122).jpg,ni
+Alz (123).jpg,ni
+Alz (124).jpg,ni
+Alz (125).jpg,ni
+Alz (126).jpg,ni
+Alz (127).jpg,ni
+Alz (128).jpg,ni
+Alz (129).jpg,ni
+Alz (13).jpg,granulacao
+Alz (130).jpg,esfacelo
+Alz (131).jpg,necrose
+Alz (132).jpg,esfacelo
+Alz (133).jpg,esfacelo
+Alz (134).jpg,granulacao
+Alz (135).jpg,granulacao
+Alz (136).jpg,ni
+Alz (137).jpg,ni
+Alz (138).jpg,granulacao
+Alz (139).jpg,ni
+Alz (14).jpg,ni
+Alz (140).jpg,necrose
+Alz (141).jpg,ni
+Alz (142).jpg,necrose
+Alz (143).jpg,ni
+Alz (144).jpg,necrose
+Alz (145).jpg,ni
+Alz (146).jpg,esfacelo
+Alz (147).jpg,ni
+Alz (148).jpg,ni
+Alz (149).jpg,ni
+Alz (15).jpg,esfacelo
+Alz (150).jpg,ni
+Alz (151).jpg,ni
+Alz (152).jpg,esfacelo
+Alz (153).jpg,granulacao
+Alz (154).jpg,esfacelo
+Alz (155).jpg,granulacao
+Alz (156).jpg,esfacelo
+Alz (157).jpg,ni
+Alz (158).jpg,ni
+Alz (159).jpg,esfacelo
+Alz (16).jpg,ni
+Alz (160).jpg,ni
+Alz (161).jpg,granulacao
+Alz (162).jpg,esfacelo
+Alz (163).jpg,esfacelo
+Alz (164).jpg,granulacao
+Alz (165).jpg,ni
+Alz (166).jpg,ni
+Alz (167).jpg,ni
+Alz (168).jpg,ni
+Alz (169).jpg,granulacao
+Alz (17).jpg,granulacao
+Alz (170).jpg,esfacelo
+Alz (171).jpg,esfacelo
+Alz (172).jpg,esfacelo
+Alz (173).jpg,ni
+Alz (174).jpg,granulacao
+Alz (175).jpg,ni
+Alz (176).jpg,necrose
+Alz (177).jpg,ni
+Alz (178).jpg,ni
+Alz (179).jpg,necrose
+Alz (18).jpg,ni
+Alz (180).jpg,ni
+Alz (181).jpg,ni
+Alz (182).jpg,ni
+Alz (183).jpg,ni
+Alz (184).jpg,granulacao
+Alz (185).jpg,ni
+Alz (186).jpg,ni
+Alz (187).jpg,ni
+Alz (188).jpg,ni
+Alz (189).jpg,granulacao
+Alz (19).jpg,ni
+Alz (190).jpg,ni
+Alz (191).jpg,ni
+Alz (192).jpg,granulacao
+Alz (193).jpg,granulacao
+Alz (194).jpg,granulacao
+Alz (195).jpg,ni
+Alz (196).jpg,ni
+Alz (197).jpg,ni
+Alz (198).jpg,ni
+Alz (199).jpg,ni
+Alz (2).png,granulacao
+Alz (20).JPG,granulacao
+Alz (200).jpg,granulacao
+Alz (201).jpg,granulacao
+Alz (202).jpg,granulacao
+Alz (203).jpg,granulacao
+Alz (204).jpg,ni
+Alz (205).jpg,ni
+Alz (206).jpg,ni
+Alz (207).jpg,granulacao
+Alz (208).jpg,ni
+Alz (209).jpg,granulacao
+Alz (21).jpg,ni
+Alz (210).jpg,ni
+Alz (211).jpg,granulacao
+Alz (212).jpg,ni
+Alz (213).jpg,granulacao
+Alz (214).jpg,ni
+Alz (215).jpg,esfacelo
+Alz (216).jpg,ni
+Alz (217).jpg,granulacao
+Alz (218).jpg,ni
+Alz (219).jpg,ni
+Alz (22).jpg,ni
+Alz (220).jpg,ni
+Alz (221).jpg,ni
+Alz (222).jpg,ni
+Alz (223).jpg,ni
+Alz (224).jpg,granulacao
+Alz (225).jpg,ni
+Alz (226).jpg,ni
+Alz (227).jpg,ni
+Alz (228).jpg,ni
+Alz (229).jpg,ni
+Alz (23).jpg,ni
+Alz (230).jpg,ni
+Alz (231).jpg,ni
+Alz (232).jpg,ni
+Alz (233).jpg,ni
+Alz (234).jpg,ni
+Alz (235).jpg,ni
+Alz (236).jpg,ni
+Alz (237).jpg,ni
+Alz (238).jpg,ni
+Alz (239).jpg,ni
+Alz (24).jpg,granulacao
+Alz (240).jpg,ni
+Alz (241).jpg,ni
+Alz (242).jpg,ni
+Alz (243).jpg,ni
+Alz (244).jpg,ni
+Alz (245).jpg,ni
+Alz (246).jpg,ni
+Alz (247).jpg,esfacelo
+Alz (248).jpg,ni
+Alz (249).jpg,ni
+Alz (25).jpg,granulacao
+Alz (250).jpg,ni
+Alz (251).jpg,ni
+Alz (252).jpg,ni
+Alz (253).jpg,ni
+Alz (254).jpg,granulacao
+Alz (255).jpg,ni
+Alz (256).jpg,ni
+Alz (257).jpg,ni
+Alz (258).jpg,ni
+Alz (259).jpg,ni
+Alz (26).jpg,ni
+Alz (260).jpg,ni
+Alz (261).jpg,ni
+Alz (262).jpg,ni
+Alz (263).jpg,ni
+Alz (264).jpg,ni
+Alz (265).jpg,ni
+Alz (266).jpg,ni
+Alz (267).jpg,ni
+Alz (268).jpg,ni
+Alz (269).jpg,ni
+Alz (27).jpg,ni
+Alz (270).jpg,ni
+Alz (271).jpg,ni
+Alz (272).jpg,ni
+Alz (273).jpg,ni
+Alz (274).jpg,ni
+Alz (275).jpg,ni
+Alz (276).jpg,ni
+Alz (277).jpg,ni
+Alz (278).jpg,necrose
+Alz (279).jpg,necrose
+Alz (28).jpg,granulacao
+Alz (280).jpg,ni
+Alz (281).jpg,ni
+Alz (282).jpg,ni
+Alz (283).jpg,ni
+Alz (284).jpg,ni
+Alz (285).jpg,ni
+Alz (286).jpg,ni
+Alz (287).jpg,ni
+Alz (288).jpg,ni
+Alz (289).jpg,ni
+Alz (29).jpg,granulacao
+Alz (290).jpg,ni
+Alz (291).jpg,ni
+Alz (292).jpg,ni
+Alz (293).jpg,ni
+Alz (294).jpg,ni
+Alz (295).jpg,ni
+Alz (296).jpg,esfacelo
+Alz (297).jpg,ni
+Alz (298).jpg,ni
+Alz (299).jpg,ni
+Alz (3).png,ni
+Alz (30).JPG,ni
+Alz (300).jpg,ni
+Alz (301).jpg,ni
+Alz (302).jpg,ni
+Alz (303).jpg,ni
+Alz (304).jpg,ni
+Alz (305).jpg,ni
+Alz (306).jpg,ni
+Alz (307).jpg,esfacelo
+Alz (308).jpg,granulacao
+Alz (309).jpg,ni
+Alz (31).jpg,granulacao
+Alz (310).jpg,esfacelo
+Alz (311).jpg,ni
+Alz (312).jpg,necrose
+Alz (313).jpg,ni
+Alz (314).jpg,granulacao
+Alz (315).jpg,granulacao
+Alz (316).jpg,granulacao
+Alz (317).jpg,ni
+Alz (318).jpg,ni
+Alz (319).jpg,ni
+Alz (32).jpg,ni
+Alz (320).jpg,ni
+Alz (321).jpg,esfacelo
+Alz (322).jpg,ni
+Alz (323).jpg,ni
+Alz (324).jpg,ni
+Alz (325).jpg,ni
+Alz (326).jpg,granulacao
+Alz (327).jpg,ni
+Alz (328).jpg,granulacao
+Alz (329).jpg,granulacao
+Alz (33).jpg,ni
+Alz (330).jpg,ni
+Alz (34).jpg,ni
+Alz (35).jpg,ni
+Alz (36).jpg,ni
+Alz (37).jpg,ni
+Alz (38).jpg,granulacao
+Alz (39).jpg,necrose
+Alz (4).jpg,ni
+Alz (40).jpg,granulacao
+Alz (41).jpg,ni
+Alz (42).jpg,esfacelo
+Alz (43).jpg,ni
+Alz (44).jpg,ni
+Alz (45).jpg,granulacao
+Alz (46).jpg,ni
+Alz (47).jpg,esfacelo
+Alz (48).jpg,ni
+Alz (49).jpg,necrose
+Alz (5).jpg,ni
+Alz (50).jpg,ni
+Alz (51).jpg,ni
+Alz (52).jpg,granulacao
+Alz (53).jpg,granulacao
+Alz (54).jpg,granulacao
+Alz (55).jpg,granulacao
+Alz (56).jpg,necrose
+Alz (57).jpg,ni
+Alz (58).jpg,ni
+Alz (59).jpg,ni
+Alz (6).jpg,ni
+Alz (60).jpg,ni
+Alz (61).jpg,ni
+Alz (62).jpg,ni
+Alz (63).jpg,ni
+Alz (64).jpg,necrose
+Alz (65).jpg,ni
+Alz (66).jpg,ni
+Alz (67).jpg,ni
+Alz (68).jpg,ni
+Alz (69).jpg,ni
+Alz (7).jpg,ni
+Alz (70).jpg,ni
+Alz (71).jpg,ni
+Alz (72).jpg,ni
+Alz (73).jpg,ni
+Alz (74).jpg,ni
+Alz (75).jpg,ni
+Alz (76).jpg,ni
+Alz (77).jpg,ni
+Alz (78).jpg,ni
+Alz (79).jpg,ni
+Alz (8).jpg,ni
+Alz (80).jpg,granulacao
+Alz (81).jpg,ni
+Alz (82).jpg,ni
+Alz (83).jpg,granulacao
+Alz (84).jpg,esfacelo
+Alz (85).jpg,ni
+Alz (86).jpg,esfacelo
+Alz (87).jpg,necrose
+Alz (88).jpg,granulacao
+Alz (89).jpg,ni
+Alz (9).jpg,necrose
+Alz (90).jpg,ni
+Alz (91).jpg,esfacelo
+Alz (92).jpg,granulacao
+Alz (93).jpg,granulacao
+Alz (94).jpg,ni
+Alz (95).jpg,granulacao
+Alz (96).jpg,esfacelo
+Alz (97).jpg,ni
+Alz (98).jpg,ni
+Alz (99).jpg,ni

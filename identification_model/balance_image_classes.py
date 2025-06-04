@@ -37,7 +37,7 @@ split_counts = {"train": [], "validation": [], "test": []}
 for cls, group in df.groupby("tissue_type"):
     group = group.sample(frac=1, random_state=42)  # Shuffle
     total = len(group)
-    n_train = max(int(total * 0.5), 1)
+    n_train = max(int(total * 0.75), 1)
     n_val_test = total - n_train
     n_val = n_test = n_val_test // 2
     if n_val_test % 2 != 0:
