@@ -25,10 +25,10 @@ class VirtualSpecialistSerializer(serializers.Serializer):
     specialist_id   = serializers.IntegerField(read_only=True)
     specialist_name = serializers.CharField()
     email           = serializers.EmailField()
-    birthday        = serializers.DateField(required=False)
-    speciality      = serializers.IntegerField(required=False)
-    city            = serializers.CharField(required=False)
-    state           = serializers.CharField(required=False)
+    birthday        = serializers.DateField(allow_null=True, required=False)
+    speciality      = serializers.IntegerField(allow_null=True, required=False)
+    city            = serializers.CharField(allow_null=True, required=False)
+    state           = serializers.CharField(allow_null=True, required=False)
 
     @transaction.atomic()
     def create(self, validated_data):
