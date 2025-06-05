@@ -10,6 +10,7 @@ from .virtual_models import (VirtualSpecialist, VirtualWound, VirtualTrackingRec
 from rest_framework import serializers
 from django.db import transaction
 from django.contrib.auth import get_user_model
+from datetime import datetime
 User = get_user_model()
 
 for const_name in all_attr_ofclass(omop_ids, int):
@@ -57,7 +58,6 @@ class VirtualSpecialistSerializer(serializers.Serializer):
         }
 
     def update(self, instance, validated_data : dict[str, object]):
-        print(*instance.__dict__.items())
 
         validated_data["specialist_id"] =  instance["provider_id"]
         updatable_fields = [
@@ -73,12 +73,44 @@ class VirtualSpecialistSerializer(serializers.Serializer):
             if field in validated_data.keys()
         })
         return VirtualSpecialist.get(**validated_data)
-class VirtualPatientSerializer(VirtualModelSerializer):
-    class Meta:
-        super_model = VirtualPatient
-        model = VirtualPatient
-        fields = "__all__"
+class VirtualPatientSerializer(serializers.Serializer):
+    patient_id            = serializers.IntegerField(read_only=True)
+    name                  = serializers.CharField()
+    gender                = serializers.IntegerField()
+    birthday              = serializers.DateField()
+    specialist_id         = serializers.IntegerField()
+    hospital_registration = serializers.CharField()
+    phone_number          = serializers.CharField()
+    weight                = serializers.FloatField()
+    height                = serializers.FloatField()
+    accept_tcl            = serializers.BooleanField()
+    smoke_frequency       = serializers.IntegerField(required=False)
+    drink_frequency       = serializers.IntegerField(required=False)
 
+    email                 = serializers.EmailField()
+    comorbidities         = serializers.ListField(child=serializers.IntegerField(), allow_empty= True)
+    comorbidities_to_add  = serializers.ListField(child=serializers.CharField(), allow_empty= True)
+    @transaction.atomic()
+    def create(self, validated_data):
+        virtual_patient_fields  = [
+            "name",
+            "gender",
+            "birthday",
+            "specialist_id",
+            "phone_number",
+            "weight",
+            "height",
+            "accept_tcl",
+            "smoke_frequency",
+            "drink_frequency"
+        ]
+        data = {
+            field: validated_data[field]
+            for field in virtual_patient_fields
+        }
+        data["updated_at"] = datetime.now()
+        validated_data = VirtualPatient.create(data)
+        return {}  
 class VirtualWoundSerializer(VirtualModelSerializer):
     class Meta:
         super_model = VirtualWound

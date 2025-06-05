@@ -178,7 +178,7 @@ class ObservationPeriod(models.Model):
         db_table = 'observation_period'
 
 class Person(models.Model):
-    person_id = models.IntegerField(primary_key=True)
+    person_id = models.AutoField(primary_key=True)
     gender_concept = models.ForeignKey(Concept, models.DO_NOTHING)
     year_of_birth = models.IntegerField()
     birth_datetime = models.DateTimeField(blank=True, null=True)
@@ -187,7 +187,8 @@ class Person(models.Model):
     location = models.ForeignKey(Location, models.DO_NOTHING, blank=True, null=True)
     provider = models.ForeignKey('Provider', models.DO_NOTHING, blank=True, null=True)
     care_site = models.ForeignKey(CareSite, models.DO_NOTHING, blank=True, null=True)
-
+    person_care_site_registration = models.CharField(null=True)
+    person_user_id = models.ForeignKey(User, models.DO_NOTHING, null=True)
     class Meta:
         db_table = 'person'
 

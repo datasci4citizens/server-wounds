@@ -196,13 +196,12 @@ class VirtualModel:
 	@classmethod
 	@transaction.atomic()
 	def create(cls, data):
-		result = {}
+		result = {**data}
 		for subtables in cls.descriptor().bindings.values():
 			model_data = subtables.table._default_manager.create(
-				**subtables.model_from_data(**data)
+				**subtables.model_from_data(**result)
 			)
 			subtables.model_to_data(result, model_data)
-			print(result)
 		return result
 
 	@classmethod
@@ -213,19 +212,14 @@ class VirtualModel:
 			updatable_fields =	subtable.updatable_fields()
 			if not any(x for x in updatable_fields if x in set(data.keys())):
 				continue
-			print([x for x in updatable_fields if x in set(data.keys())])
-			print(k)
 			try:
 				instance = subtable.row_data_from(data)
-				print(instance.__dict__)
 				for db_field, v in subtable.fields.items():
 					if v.value in data.keys():
 						value = v.value if v.const else data[v.value]
 						setattr(instance, db_field, value)
-				print(instance.__dict__)
 				instance.save(force_update=True)
 			except ObjectDoesNotExist:
-				print("não existe")
 				if(actual == None):
 					actual = cls.get(**data)
 					for field in cls.descriptor().fields.keys():

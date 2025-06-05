@@ -63,27 +63,28 @@ class VirtualPatient(VirtualModel):
     gender                = VirtualField(source=("row_person", "gender_concept_id"))
     birthday              = VirtualField(source=("row_person", "birth_datetime"))
     specialist_id         = VirtualField(source=("row_person", "provider_id"))
-    hospital_registration = VirtualField(source=("row_person", "care_site_id"))
+    hospital_registration = VirtualField(source=("row_person", "person_care_site_registration"))
     phone_number          = VirtualField(source=("row_nonclinicalinfos", "phone_number"))
     weight                = VirtualField(source=("row_weight", "value_as_number"))
     height                = VirtualField(source=("row_height", "value_as_number"))
     accept_tcl            = VirtualField(source=("row_nonclinicalinfos", "accept_tcl"))
     smoke_frequency       = VirtualField(source=("row_smoke_frequency", "value_as_concept_id"))
     drink_frequency       = VirtualField(source=("row_drink_frequency", "value_as_concept_id"))
+    user_id               = VirtualField(source=("row_person", "person_user_id"))
     # TODO comorbidities  
     # TODO comorbidities_to_add  
     updated_at            = VirtualField(source=("row_height", "measurement_date"))
     main_row = "row_person"
-    # TODO EMAIL
     row_person = TableBindings.Person(
-        person_id            = FieldBind("patient_id", key = True),
-        birth_datetime       = FieldBind("birthday"),
-        year_of_birth        = FieldBind(CID_NULL, const=True),
-        race_concept_id      = FieldBind(CID_NULL, const=True),
-        ethnicity_concept_id = FieldBind(CID_NULL, const=True),
-        gender_concept_id    = FieldBind("gender"),
-        provider_id          = FieldBind("specialist_id"),
-        care_site_id         = FieldBind("hospital_registration"),
+        person_id                     = FieldBind("patient_id", key = True),
+        birth_datetime                = FieldBind("birthday"),
+        year_of_birth                 = FieldBind(CID_NULL, const=True),
+        race_concept_id               = FieldBind(CID_NULL, const=True),
+        ethnicity_concept_id          = FieldBind(CID_NULL, const=True),
+        gender_concept_id             = FieldBind("gender"),
+        provider_id                   = FieldBind("specialist_id"),
+        person_care_site_registration = FieldBind("hospital_registration"),
+        person_user_id                = FieldBind("user_id")
     )
     row_nonclinicalinfos = TableBindings.PatientNonClinicalInfos(
         person_id    = FieldBind("patient_id"),
