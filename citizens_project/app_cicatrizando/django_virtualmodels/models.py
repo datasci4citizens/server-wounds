@@ -185,7 +185,7 @@ class VirtualModel:
 	@classmethod
 	def get(cls, **pk):
 		pk = {
-			v.db_field_name() : pk[k]
+			k : pk[k]
 			for k, v in cls.descriptor().keys().items()
 		}
 		return cls.get_queryset().get(**pk)
