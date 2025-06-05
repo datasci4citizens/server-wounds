@@ -6,6 +6,9 @@
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class CareSite(models.Model):
     care_site_id = models.IntegerField(primary_key=True)
@@ -214,9 +217,9 @@ class Provider(models.Model):
     dea = models.CharField(max_length=20, blank=True, null=True)
     specialty_concept = models.ForeignKey(Concept, models.DO_NOTHING, blank=True, null=True)
     care_site = models.ForeignKey(CareSite, models.DO_NOTHING, blank=True, null=True)
-    year_of_birth = models.IntegerField(blank=True, null=True)
+    provider_birthday = models.DateField(null=True)
     gender_concept = models.ForeignKey(Concept, models.DO_NOTHING, related_name='provider_gender_concept_set', blank=True, null=True)
-
+    provider_user = models.ForeignKey(User, models.DO_NOTHING, blank=True, null=True)
     class Meta:
         db_table = 'provider'
 
