@@ -1,5 +1,6 @@
 from .omop.omop_models import (
-    Concept
+    Concept,
+    Observation
 )
 from .omop import omop_ids
 from .django_virtualmodels.models import (
@@ -78,16 +79,16 @@ class VirtualPatientSerializer(serializers.Serializer):
     name                  = serializers.CharField()
     gender                = serializers.IntegerField()
     birthday              = serializers.DateField()
-    specialist_id         = serializers.IntegerField()
-    hospital_registration = serializers.CharField()
-    phone_number          = serializers.CharField()
-    weight                = serializers.FloatField()
-    height                = serializers.FloatField()
-    accept_tcl            = serializers.BooleanField()
-    smoke_frequency       = serializers.IntegerField(required=False)
-    drink_frequency       = serializers.IntegerField(required=False)
+    specialist_id         = serializers.IntegerField(allow_null=True, required=False)
+    hospital_registration = serializers.CharField(allow_null=True, required=False)
+    phone_number          = serializers.CharField(allow_null=True, required=False)
+    weight                = serializers.FloatField(allow_null=True, required=False)
+    height                = serializers.FloatField(allow_null=True, required=False)
+    accept_tcl            = serializers.BooleanField(required=False)
+    smoke_frequency       = serializers.IntegerField(allow_null=True, required=False)
+    drink_frequency       = serializers.IntegerField(allow_null=True, required=False)
 
-    email                 = serializers.EmailField()
+    email                 = serializers.EmailField(read_only=True)
     comorbidities         = serializers.ListField(child=serializers.IntegerField(), allow_empty= True)
     comorbidities_to_add  = serializers.ListField(child=serializers.CharField(), allow_empty= True)
     @transaction.atomic()
@@ -109,8 +110,29 @@ class VirtualPatientSerializer(serializers.Serializer):
             for field in virtual_patient_fields
         }
         data["updated_at"] = datetime.now()
-        validated_data = VirtualPatient.create(data)
-        return {}  
+        
+        result = VirtualPatient.create(data)
+        
+        print(result)
+        for c in set(validated_data["comorbidities"]):
+            obs = Observation.objects.create(
+                person_id = result["patient_id"],
+                observation_concept_id =  omop_ids.CID_COMORBIDITY,
+                observation_type_concept_id = omop_ids.CID_EHR,
+                value_as_concept_id = c,
+                observation_date = data["updated_at"]
+            )
+        for c in set(validated_data["comorbidities_to_add"]):
+            obs = Observation.objects.create(
+                person_id = result["patient_id"],
+                observation_concept_id =  omop_ids.CID_COMORBIDITY,
+                observation_type_concept_id = omop_ids.CID_EHR,
+                value_as_string = c,
+                observation_date = data["updated_at"]
+            )
+        
+        return result
+
 class VirtualWoundSerializer(VirtualModelSerializer):
     class Meta:
         super_model = VirtualWound

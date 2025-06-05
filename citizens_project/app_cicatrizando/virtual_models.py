@@ -126,7 +126,18 @@ class VirtualPatient(VirtualModel):
         observation_date            = FieldBind("updated_at"),
         observation_type_concept_id = FieldBind(CID_NULL, const=True),
     )
+    @classmethod
+    def get_comorbidities(cls, patient_id : int):
+        queryset = Observation.objects.all().filter(person_id=patient_id, observation_concept_id=omop_ids.CID_COMORBIDITY)
+        comorbidities = []
+        comorbidities_to_add = []
+        print({"person_id":queryset, "observation_concept_id": omop_ids.CID_COMORBIDITY})
+        for c in queryset.filter(value_as_concept_id__isnull=False):
+            comorbidities.append(c.value_as_concept_id)
 
+        for c in queryset.filter(value_as_concept_id__isnull=True):
+            comorbidities_to_add.append(c.value_as_string)
+        return (comorbidities, comorbidities_to_add)
 class VirtualSpecialist(VirtualModel):
     specialist_id   = VirtualField(source=("row_provider", "provider_id"), key=True)
     specialist_name = VirtualField(source=("row_provider", "provider_name"))
