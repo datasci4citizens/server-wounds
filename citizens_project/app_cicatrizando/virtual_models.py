@@ -129,8 +129,8 @@ class VirtualPatient(VirtualModel):
 class VirtualSpecialist(VirtualModel):
     specialist_id   = VirtualField(source=("row_provider", "provider_id"), key=True)
     specialist_name = VirtualField(source=("row_provider", "provider_name"))
-    # TODO email
-    birthday        = VirtualField(source=("row_provider", "year_of_birth"), null=True)
+    user_id         = VirtualField(source=("row_provider", "provider_user_id")), 
+    birthday        = VirtualField(source=("row_provider", "provider_birthday"), null=True)
     speciality      = VirtualField(source=("row_provider", "specialty_concept_id"), null=True)
     city            = VirtualField(source=("row_location", "city"), null=True)
     state           = VirtualField(source=("row_location", "state"), null=True)
@@ -138,7 +138,8 @@ class VirtualSpecialist(VirtualModel):
     row_provider = TableBindings.Provider(
         provider_id   = FieldBind("specialist_id", key = True),
         provider_name = FieldBind("specialist_name"),
-        year_of_birth = FieldBind("birthday"),
+        provider_birthday = FieldBind("birthday"),
+        provider_user_id = FieldBind("user_id"),
         specialty_concept_id   = FieldBind("speciality")
     )
 

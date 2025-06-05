@@ -100,6 +100,12 @@ class TableBinding:
 				continue
 			result[concrete_field] = kwargs.get(field_bind.value, None)
 		return result
+	def model_to_data(self ,data, model : django_models.Model):
+		for concrete_field, field_bind in self.fields.items():
+			if field_bind.const:
+				continue
+			data[field_bind.value] = getattr(model, concrete_field)
+
 	def row_data_from(self, virtual_data) -> django_models.Model:
 		pk = {
 			k: v.value if v.const else virtual_data[v.value]
@@ -190,11 +196,14 @@ class VirtualModel:
 	@classmethod
 	@transaction.atomic()
 	def create(cls, data):
+		result = {}
 		for subtables in cls.descriptor().bindings.values():
-			subtables.table._default_manager.create(
+			model_data = subtables.table._default_manager.create(
 				**subtables.model_from_data(**data)
 			)
-		return data
+			subtables.model_to_data(result, model_data)
+			print(result)
+		return result
 
 	@classmethod
 	@transaction.atomic()
