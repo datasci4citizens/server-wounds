@@ -136,45 +136,7 @@ class VirtualPatientSerializer(serializers.Serializer):
             raise serializers.ValidationError("A altura deve ser um valor positivo.")
         return value
     
-    def validate_smoke_frequency(self, value):
-        if value:
-            try:
-                concept = Concept.objects.get(concept_id=value)
-                if concept.standard_concept != 'S':
-                    raise serializers.ValidationError(
-                        f"O Concept ID '{value}' para frequência de fumo não é um conceito padrão OMOP."
-                    )
-            except Concept.DoesNotExist:
-                raise serializers.ValidationError(f"O Concept ID '{value}' para frequência de fumo não foi encontrado.")
-        return value
-    
-    def validate_drink_frequency(self, value):
-        if value:
-            try:
-                concept = Concept.objects.get(concept_id=value)
-                if concept.standard_concept != 'S':
-                    raise serializers.ValidationError(
-                        f"O Concept ID '{value}' para frequência de bebida não é um conceito padrão OMOP."
-                    )
-                # Adicione validação de domínio/vocabulário se necessário
-                # if concept.domain_id != omop_ids.CID_DOMAIN_DRINK_FREQUENCY:
-                #    raise serializers.ValidationError("Domínio de frequência de bebida inválido.")
-            except Concept.DoesNotExist:
-                raise serializers.ValidationError(f"O Concept ID '{value}' para frequência de bebida não foi encontrado.")
-        return value
 
-    def validate_comorbidities(self, value):
-        # Percorre cada Concept ID na lista
-        for concept_id in value:
-            try:
-                concept = Concept.objects.get(concept_id=concept_id)
-                if concept.standard_concept != 'S':
-                    raise serializers.ValidationError(
-                        f"Comorbidade com Concept ID '{concept_id}' não é um conceito padrão OMOP."
-                    )
-            except Concept.DoesNotExist:
-                raise serializers.ValidationError(f"Comorbidade com Concept ID '{concept_id}' não encontrada na base de conceitos OMOP.")
-        return value
     
     def validate_accept_tcl(self, value):
         if self.context.get('request') and self.context['request'].method == 'POST':
