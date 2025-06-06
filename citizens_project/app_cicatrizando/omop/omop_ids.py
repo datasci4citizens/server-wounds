@@ -3,6 +3,28 @@ CID_WOUND = 4168335
 CID_WOUND_MORPH = 4029919
 CID_WOUND_TYPE = 43055265  # *
 
+# Gender concepts - based on OMOP standard concepts
+# Reference: https://athena.ohdsi.org/search-terms/terms?domain=Gender&standardConcept=Standard
+CID_GENDER_MALE = 8507
+CID_GENDER_FEMALE = 8532
+CID_GENDER_UNKNOWN = 8551
+CID_GENDER_OTHER = 8521
+
+# Race concepts - based on OMOP standard concepts
+# Reference: https://athena.ohdsi.org/search-terms/terms?domain=Race&standardConcept=Standard
+CID_RACE_WHITE = 8527
+CID_RACE_BLACK = 8516
+CID_RACE_ASIAN = 8515
+CID_RACE_NATIVE = 8657
+CID_RACE_OTHER = 8552
+CID_RACE_UNKNOWN = 9178
+
+# Ethnicity concepts - based on OMOP standard concepts
+# Reference: https://athena.ohdsi.org/search-terms/terms?domain=Ethnicity&standardConcept=Standard
+CID_ETHNICITY_HISPANIC = 38003563
+CID_ETHNICITY_NOT_HISPANIC = 38003564
+CID_ETHNICITY_UNKNOWN = 0
+
 # Wound types
 CID_WOUND_ABRASION = 45882866
 CID_WOUND_AVULSION = 45877493
@@ -114,6 +136,16 @@ CID_GENERIC_NOTE = 3030653
 CID_WOUND_CARE_DRESSING_CHANGE = 4256346
 CID_NOME = 45766362
 CID_TCLE = 2000000000
+
+# Comorbidades comuns
+CID_DIABETES = 100001
+CID_HIPERTENSAO = 100002
+CID_OBESIDADE = 100003
+CID_DPOC = 100004
+CID_INSUFICIENCIA_CARDIACA = 100005
+CID_CANCER = 100006
+CID_ASMA = 100007
+CID_DOENCA_RENAL_CRONICA = 100008
 
 # Concept sets
 CONDITION_STATE = [CID_CONDITION_ACTIVE, CID_CONDITION_INACTIVE]
