@@ -23,6 +23,7 @@ from dataclasses import dataclass
 from typing import Iterable, Optional, TypeVar, Union
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Case, Value, When, F
 
 T = TypeVar("T")
 def all_attr_ofclass(cls, classes : Union[tuple, type[T]]) -> dict[str, T]:
@@ -31,10 +32,28 @@ def all_attr_ofclass(cls, classes : Union[tuple, type[T]]) -> dict[str, T]:
 		for attr in dir(cls)
 		if isinstance(getattr(cls, attr), classes)
 	}
-def add_annotate(last : QuerySet, table : django_models, target : str, filters : dict[str, object], source : str):
-	return last.annotate(**{
-		target: Subquery(table.objects.all().filter(**filters).values(source)[:1])
-	})
+
+@dataclass
+class ChoiceMap[T, U]:
+	choices : list[tuple[T, U]]
+	def virtual_to_db(self, virtual_value : T):
+		for virtual, db in self.choices:
+			if virtual == virtual_value:
+				return db 
+	def db_to_virtual(self, db_value : U):
+		for virtual, db in self.choices:
+			if db == db_value:
+				return virtual
+	def django_case(self, field_name):
+		whens = []
+		for virtual_value, db_value in self.choices:
+			whens.append(When(**{field_name: db_value, "then": Value(virtual_value)}))
+		return Case(*whens)
+	def virtual_values(self):
+		return list(map(lambda choice: choice[0], self.choices))
+	def db_values(self):
+		return list(map(lambda choice: choice[1], self.choices))
+
 @dataclass
 class FieldBind:
 	"""Um bind para um valor, onde o valor pode ser contante sempre o mesmo ou uma string para o campo virtual que deve ser conectado"""
@@ -47,7 +66,6 @@ class FieldBind:
 	
 	key : bool = False
 	"""Flag indicando que bind é uma chave primaria do bind, ou seja, deve ser oferecida quando for feito uma busca para conseguir encontrar a linha correspondente"""
-
 
 @dataclass
 class FieldPath:
@@ -68,7 +86,7 @@ class VirtualFieldDescriptor:
 	key : bool
 	"""Flag indicando se o campo virtual é faz parte da chave primaria ou não"""
 	null : bool
-
+	choicemap : Optional[ChoiceMap] 
 	db_field_path : FieldPath
 	"""Caminho para o campo fisico de onde deve ser feito leitura de informações
 	Um campo virtual pode definir valores de muitos campos fisicos em linhas filhas, porém é nescessario uma tabela de onde se deve obter o valor na leitura.
@@ -83,7 +101,12 @@ class VirtualFieldDescriptor:
 	def db_table_model(self, desc : "VirtualModelDescriptor"):
 		"""Retorna o Model do django que está atrelado o modelo fisico de onde deve ser feito a leitura do campo"""
 		return desc.bindings[self.db_field_path.table].table
-
+	def validate(self, value) -> str:
+		if not self.null and value == None:
+			return "Campo não pode ser nulo"
+		if self.choicemap != None and value not in  self.choicemap.virtual_values():
+			return f"Campos não é uma escolha valida entre as opções [{", ".join(self.choicemap.virtual_values())}]"
+		return None
 @dataclass
 class VirtualModelDescriptor:
 	"""Descreve as informações de um modelo virtual"""
@@ -139,6 +162,7 @@ class VirtualField:
 	key : bool = False
 	"""Indica se o campo virtual faz parte da chave do modelo virtual"""
 	null : bool =  False
+	choicemap : Optional[ChoiceMap] = None
 
 class TableBinding:
 	"""Define uma binding entre um modelo virtual e uma linha em uma tabela"""
@@ -204,7 +228,8 @@ class VirtualModel:
 				name = av.value,
 				db_field_path = FieldPath(row_name, a),
 				key = False, 
-				null= False
+				null= False,
+				choicemap=None
 			)
 			for row_name, binding in bindings.items() 
 			for a, av  in binding.fields.items()
@@ -220,7 +245,8 @@ class VirtualModel:
 				name  = k, 
 				db_field_path = FieldPath(v.source[0], v.source[1]),
 				key = v.key,
-				null = v.null
+				null = v.null,
+				choicemap=v.choicemap
 			)
 		return source_fields
 	@staticmethod
@@ -235,7 +261,22 @@ class VirtualModel:
 			for key_name, bind in keys.items()
 		}
 		source = virtual_field.db_field_path.name
-		return add_annotate(last, virtual_field.db_table_model(desc), target, filters, source)
+		table = virtual_field.db_table_model(desc)
+		subqueryset = table.objects.all().filter(**filters).values(source)[:1]
+		subquery = Subquery(subqueryset)
+		value = subquery
+		if virtual_field.choicemap != None:
+			
+			value = Subquery(table.objects.all()
+				.filter(**filters)
+				.annotate(**{"___mapped": virtual_field.choicemap.django_case(source)})
+				.values("___mapped")[:1]
+			)
+			
+
+		return last.annotate(**{
+			target: value  
+		})
 	@classmethod
 	def get_queryset(cls):
 		"""Cria um queryset, do modelo virtual, que descreve como deve ser feita a leitura dos campos virtuais no banco de dados"""
@@ -260,11 +301,17 @@ class VirtualModel:
 	def objects(self):
 		"""retorna o queryset do modelo virtual, esse metodo existe para a interface publica da classe se assemelhar a de um django model"""
 		return self.get_queryset()
-
+	@classmethod
+	def _map_virtual_to_db(cls, data):
+		result = {**data}
+		for field_name, field_desc in cls.descriptor().fields.items():
+			if field_desc.choicemap is not None:
+				result[field_name]  = field_desc.choicemap.virtual_to_db(result[field_name])
+		return result
 	@classmethod
 	@transaction.atomic()
 	def create(cls, data):
-		result = {**data}
+		result = {**cls._map_virtual_to_db(data)}
 		"""Adiciona a informação dos dados do modelo virtual no banco de dados, é usado transactions, então caso aconteça alguma falha na criação é acontece rollback e não é feita a criação incompleta"""
 		for subtables in cls.descriptor().bindings.values():
 			model_data = subtables.table._default_manager.create(
