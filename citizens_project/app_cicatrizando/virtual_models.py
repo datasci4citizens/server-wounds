@@ -1,3 +1,4 @@
+import datetime
 from rest_framework import viewsets
 
 from .models import PatientNonClinicalInfos
@@ -44,6 +45,7 @@ class TableBindings:
         table = FactRelationship
     class Location(TableBinding):
         table = Location
+
 
 
 TableCreationOrder = [
@@ -304,4 +306,21 @@ class VirtualTrackingRecords(VirtualModel):
         note_type_concept_id = FieldBind(CID_NULL, const=True),
     )
 
-# TODO class Comorbidities
+class VirtualComorbidity(VirtualModel):
+    comorbidity_id = VirtualField(source=("row_observation", "observation_id"), key=True)
+    patient_id     = VirtualField(source=("row_observation", "person_id"))
+    specialist_id  = VirtualField(source=("row_observation", "provider_id"))
+    comorbidity_type = VirtualField(source=("row_observation", "value_as_concept_id"))
+    # A data é gerada automaticamente quando a comorbidade é criada
+
+    main_row = "row_observation"
+    
+    row_observation = TableBindings.Observation(
+        observation_id = FieldBind("comorbidity_id", key=True),
+        person_id = FieldBind("patient_id", key=True),
+        provider_id = FieldBind("specialist_id", key=True),
+        observation_concept_id = FieldBind(CID_COMORBIDITY, const=True),
+        value_as_concept_id = FieldBind("comorbidity_type", key=True),
+        observation_date = FieldBind(datetime.datetime.now(), const=True),
+        observation_type_concept_id = FieldBind(CID_NULL, const=True),
+    )
