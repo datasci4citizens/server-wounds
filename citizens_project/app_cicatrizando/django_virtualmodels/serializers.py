@@ -12,18 +12,20 @@ class VirtualSerializerMetaclass(serializers.SerializerMetaclass):
             return super().__new__(cls, name, bases, attrs)
         sm : VirtualModel = attrs["Meta"].super_model
         desc  = sm.descriptor()
-        for virtual_field, field_bind in desc.fields.items():
+        for virtual_field, field_desc in desc.fields.items():
             
-            model  = field_bind.db_table_model(desc)
-            model_field = model._meta.get_field(field_bind.db_field_name())
+            model  = field_desc.db_table_model(desc)
+            model_field = model._meta.get_field(field_desc.db_field_name())
             field, kwargs = serializers.ModelSerializer() \
-                .build_standard_field(field_bind.db_field_name(), model_field)
+                .build_standard_field(field_desc.db_field_name(), model_field)
             if(issubclass(field, serializers.ModelField)):
                 field = serializers.IntegerField
                 kwargs = {
                     "read_only": kwargs.get("read_only"),
                     "allow_null": kwargs.get("allow_null")
                 }
+            if not kwargs.get("read_only", False):
+                kwargs["required"] = not field_desc.null
             if kwargs.get("validators", None):
                 del kwargs["validators"]
             attrs[virtual_field] = field(**kwargs)
