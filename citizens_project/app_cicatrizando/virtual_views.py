@@ -26,8 +26,9 @@ class VirtualPatientViewSet(viewsets.ViewSet):
     def create(self, request, *args, **kwargs):
         serializer = VirtualPatientSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.create(serializer.validated_data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        data = serializer.create(serializer.validated_data)
+        VirtualPatient._map_virtual_to_db
+        return Response(data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
         serializer.save()
