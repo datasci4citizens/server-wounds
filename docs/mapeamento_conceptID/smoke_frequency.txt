@@ -1,0 +1,15 @@
+Smoke Frequency{
+
+    0: nunca --> never: 1704063 
+        (Answer	Standard	Valid	Observation	PPI)
+
+    1: pregresso --> occasionally: 35821727 
+        (Answer	Standard	Valid	Observation	UK Biobank)
+
+    2: até 10 cigarros por dia --> 10 or less: 45876412     
+        (Answer	Standard	Valid	Meas Value	LOINC)
+
+    3: mais que 10 cigarros por dia --> 10 or more: 35815091
+        (Answer	Standard	Valid	Observation	UK Biobank)
+
+}
