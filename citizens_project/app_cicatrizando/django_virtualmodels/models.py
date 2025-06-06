@@ -67,6 +67,7 @@ class VirtualFieldDescriptor:
 
 	key : bool
 	"""Flag indicando se o campo virtual é faz parte da chave primaria ou não"""
+	null : bool
 
 	db_field_path : FieldPath
 	"""Caminho para o campo fisico de onde deve ser feito leitura de informações
@@ -137,6 +138,7 @@ class VirtualField:
 	"""Indica o caminho para campo em um dos bindings que deve ser usado de fonte da informação quando é feito leitura do campo, o primeiro valor é o nome do binding e o segundo valor é o nome do campo fisico no binding"""
 	key : bool = False
 	"""Indica se o campo virtual faz parte da chave do modelo virtual"""
+	null : bool =  False
 
 class TableBinding:
 	"""Define uma binding entre um modelo virtual e uma linha em uma tabela"""
@@ -155,6 +157,12 @@ class TableBinding:
 				continue
 			result[concrete_field] = kwargs.get(field_bind.value, None)
 		return result
+	def model_to_data(self ,data, model : django_models.Model):
+		for concrete_field, field_bind in self.fields.items():
+			if field_bind.const:
+				continue
+			data[field_bind.value] = getattr(model, concrete_field)
+
 	def row_data_from(self, virtual_data) -> django_models.Model:
 		"""A partir dos dados do modelo virtual, retorna o Modelo fisico do binding que está no momento armazenado no banco de dados"""
 		pk = {
@@ -195,7 +203,8 @@ class VirtualModel:
 			VirtualFieldDescriptor(
 				name = av.value,
 				db_field_path = FieldPath(row_name, a),
-				key = False
+				key = False, 
+				null= False
 			)
 			for row_name, binding in bindings.items() 
 			for a, av  in binding.fields.items()
@@ -210,7 +219,8 @@ class VirtualModel:
 			source_fields[k] = VirtualFieldDescriptor(
 				name  = k, 
 				db_field_path = FieldPath(v.source[0], v.source[1]),
-				key = v.key
+				key = v.key,
+				null = v.null
 			)
 		return source_fields
 	@staticmethod
@@ -242,7 +252,7 @@ class VirtualModel:
 	def get(cls, **pk):
 		"""A partir da chave primaria de um modelo virtual, retorna o valor do respectivo objeto"""
 		pk = {
-			v.db_field_name() : pk[k]
+			k : pk[k]
 			for k, v in cls.descriptor().keys().items()
 		}
 		return cls.get_queryset().get(**pk)
@@ -254,12 +264,14 @@ class VirtualModel:
 	@classmethod
 	@transaction.atomic()
 	def create(cls, data):
+		result = {**data}
 		"""Adiciona a informação dos dados do modelo virtual no banco de dados, é usado transactions, então caso aconteça alguma falha na criação é acontece rollback e não é feita a criação incompleta"""
 		for subtables in cls.descriptor().bindings.values():
-			subtables.table._default_manager.create(
-				**subtables.model_from_data(**data)
+			model_data = subtables.table._default_manager.create(
+				**subtables.model_from_data(**result)
 			)
-		return data
+			subtables.model_to_data(result, model_data)
+		return result
 
 	@classmethod
 	@transaction.atomic()
@@ -271,19 +283,14 @@ class VirtualModel:
 			updatable_fields =	subtable.updatable_fields()
 			if not any(x for x in updatable_fields if x in set(data.keys())):
 				continue
-			print([x for x in updatable_fields if x in set(data.keys())])
-			print(k)
 			try:
 				instance = subtable.row_data_from(data)
-				print(instance.__dict__)
 				for db_field, v in subtable.fields.items():
 					if v.value in data.keys():
 						value = v.value if v.const else data[v.value]
 						setattr(instance, db_field, value)
-				print(instance.__dict__)
 				instance.save(force_update=True)
 			except ObjectDoesNotExist:
-				print("não existe")
 				if(actual == None):
 					actual = cls.get(**data)
 					for field in cls.descriptor().fields.keys():

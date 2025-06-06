@@ -1,5 +1,8 @@
+from datetime import date
+from django.core.validators import RegexValidator
 from .omop.omop_models import (
-    Concept
+    Concept,
+    Observation
 )
 from .omop import omop_ids
 from .django_virtualmodels.models import (
@@ -7,6 +10,7 @@ from .django_virtualmodels.models import (
 )
 from .django_virtualmodels.serializers import VirtualModelSerializer
 from .virtual_models import (VirtualSpecialist, VirtualWound, VirtualTrackingRecords, VirtualPatient, VirtualComorbidity)
+
 from rest_framework import serializers
 from django.db import transaction
 from django.contrib.auth import get_user_model
@@ -22,24 +26,244 @@ for const_name in all_attr_ofclass(omop_ids, int):
     except:
         pass
 
-class VirtualSpecialistSerializer(VirtualModelSerializer):
-    class Meta:
-        super_model = VirtualSpecialist
-        fields = "__all__"
+class VirtualSpecialistSerializer(serializers.Serializer):
+    specialist_id   = serializers.IntegerField(read_only=True)
+    specialist_name = serializers.CharField(max_length = 255)
+    email           = serializers.EmailField(max_length = 255)
+    birthday        = serializers.DateField(allow_null=True, required=False)
+    speciality      = serializers.IntegerField(allow_null=True, required=False)
+    city            = serializers.CharField(allow_null=True, required=False, max_length = 100)
+    state           = serializers.CharField(allow_null=True, required=False, max_length = 100)
 
-class VirtualPatientSerializer(VirtualModelSerializer):
-    class Meta:
-        super_model = VirtualPatient
-        model = VirtualPatient
-        fields = "__all__"
+    def validate_email(self, value):
+        # valida se o email ja nao esta em uso
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Este e-mail já está em uso.")
+        return value
+    
+    def validate_speciality(self, value):
+        try:
+            Concept.objects.get(concept_id=value)
+                
+        except Concept.DoesNotExist:
+            raise serializers.ValidationError(f"O Concept ID '{value}' não foi encontrado na base OMOP.")
+            
+        return value
+    
+    def validate_birthday(self, value):
+        if value and value > date.today():
+            raise serializers.ValidationError("A data de nascimento não pode ser no futuro.")
+        return value
+
+    @transaction.atomic()
+    def create(self, validated_data):
+        
+        user = User.objects.create_user(
+            username=validated_data["email"],
+            email=validated_data["email"]
+        )
+        validated_data = VirtualSpecialist.create({
+            "specialist_name": validated_data["specialist_name"],
+            "user_id": user.id,
+            "birthday": validated_data["birthday"],
+            "speciality": validated_data["speciality"],
+            "city": validated_data["city"],
+            "state": validated_data["state"],
+        })
+        
+        return {
+            "specialist_id": validated_data["specialist_id"], 
+            "specialist_name": validated_data["specialist_name"], 
+            "email": user.email, 
+            "birthday": validated_data["birthday"], 
+            "speciality": validated_data["speciality"],
+            "city": validated_data["city"],
+            "state": validated_data["state"] 
+        }
+
+    def update(self, instance, validated_data : dict[str, object]):
+
+        validated_data["specialist_id"] =  instance["provider_id"]
+        updatable_fields = [
+            "specialist_name",
+            "birthday",
+            "speciality",
+            "city",
+            "state"
+        ]
+        validated_data = VirtualSpecialist.update({
+            field : validated_data[field]
+            for field in updatable_fields
+            if field in validated_data.keys()
+        })
+        return VirtualSpecialist.get(**validated_data)
+    
+class VirtualPatientSerializer(serializers.Serializer):
+    patient_id            = serializers.IntegerField(read_only=True)
+    name                  = serializers.CharField(max_length = 255)
+    gender                = serializers.IntegerField()
+    birthday              = serializers.DateField()
+    specialist_id         = serializers.IntegerField(allow_null=True, required=False)
+    hospital_registration = serializers.CharField(allow_null=True, required=False, max_length = 255)
+
+    phone_regex = RegexValidator(
+        regex = r'^\(?\d{2}\)?[\s-]?\d{4,5}-?\d{4}$',
+        message = "O número de telefone deve estar no formato: (XX) XXXX-XXXX ou (XX) XXXXX-XXXX."
+    )
+    phone_number          = serializers.CharField(allow_null=True, required=False, max_length = 20, validators = [phone_regex])
+    weight                = serializers.FloatField(allow_null=True, required=False)
+    height                = serializers.FloatField(allow_null=True, required=False)
+    accept_tcl            = serializers.BooleanField(required=False)
+    smoke_frequency       = serializers.IntegerField(allow_null=True, required=False)
+    drink_frequency       = serializers.IntegerField(allow_null=True, required=False)
+
+    email                 = serializers.EmailField(read_only=True)
+    comorbidities         = serializers.ListField(child=serializers.IntegerField(), allow_empty= True)
+    comorbidities_to_add  = serializers.ListField(child=serializers.CharField(), allow_empty= True)
+
+    def validate_birthday(self, value):
+        if value and value > date.today():
+            raise serializers.ValidationError("A data de nascimento não pode ser no futuro.")
+        return value
+    
+    def validate_weight(self, value):
+        if value is not None and value <= 0:
+            raise serializers.ValidationError("O peso deve ser um valor positivo.")
+        return value
+
+    def validate_height(self, value):
+        # Validação para garantir que a altura é positiva
+        if value is not None and value <= 0:
+            raise serializers.ValidationError("A altura deve ser um valor positivo.")
+        return value
+    
+
+    
+    def validate_accept_tcl(self, value):
+        if self.context.get('request') and self.context['request'].method == 'POST':
+            if not value:
+                raise serializers.ValidationError("É necessário aceitar os Termos e Condições de Uso para participar da pesquisa.")
+        return value
+
+    @transaction.atomic()
+    def create(self, validated_data):
+        virtual_patient_fields  = [
+            "name",
+            "gender",
+            "birthday",
+            "specialist_id",
+            "phone_number",
+            "weight",
+            "height",
+            "accept_tcl",
+            "smoke_frequency",
+            "drink_frequency"
+        ]
+        data = {
+            field: validated_data[field]
+            for field in virtual_patient_fields
+        }
+        data["updated_at"] = datetime.now()
+        
+        result = VirtualPatient.create(data)
+        
+        print(result)
+        for c in set(validated_data["comorbidities"]):
+            obs = Observation.objects.create(
+                person_id = result["patient_id"],
+                observation_concept_id =  omop_ids.CID_COMORBIDITY,
+                observation_type_concept_id = omop_ids.CID_EHR,
+                value_as_concept_id = c,
+                observation_date = data["updated_at"]
+            )
+        for c in set(validated_data["comorbidities_to_add"]):
+            obs = Observation.objects.create(
+                person_id = result["patient_id"],
+                observation_concept_id =  omop_ids.CID_COMORBIDITY,
+                observation_type_concept_id = omop_ids.CID_EHR,
+                value_as_string = c,
+                observation_date = data["updated_at"]
+            )
+        
+        return result
 
 class VirtualWoundSerializer(VirtualModelSerializer):
+    wound_id      = serializers.IntegerField(read_only=True) 
+    patient_id    = serializers.IntegerField(required=True) 
+    specialist_id = serializers.IntegerField(required=True) 
+    updated_at    = serializers.DateTimeField(read_only=True)
+    region        = serializers.IntegerField(required=True)     
+    wound_type    = serializers.IntegerField(required=True) 
+    start_date    = serializers.DateField(required=True) 
+    end_date      = serializers.DateField(allow_null=True, required=False)
+    is_active     = serializers.IntegerField(required=True)
+    image_id      = serializers.CharField(max_length=500, allow_null=True, required=False)
     class Meta:
         super_model = VirtualWound
         model = VirtualWound
         fields = "__all__"
 
+    def _validate_concept_id_existence(self, value, field_name):
+        if value:
+            try:
+                Concept.objects.get(concept_id=value)
+            except Concept.DoesNotExist:
+                raise serializers.ValidationError(
+                    f"O Concept ID '{value}' para '{field_name}' não foi encontrado na base de conceitos OMOP."
+                )
+        return value
+    def validate_region(self, value):
+        self._validate_concept_id_existence(value, "região da ferida")
+        self._validate_standard_concept(value, "região da ferida")
+        return value
+    
+    def validate_wound_type(self, value):
+        self._validate_concept_id_existence(value, "tipo de ferida")
+        self._validate_standard_concept(value, "tipo de ferida")
+        return value
+
+
+    def validate_start_date(self, value):
+        if value and value > date.today():
+            raise serializers.ValidationError("A data de início da ferida não pode ser no futuro.")
+        return value
+
+    def validate_end_date(self, value):
+        if value and value > date.today():
+            raise serializers.ValidationError("A data de término da ferida não pode ser no futuro.")
+        return value
+    
+
+    def validate_is_active(self, value):
+        if value not in [omop_ids.CID_CONDITION_ACTIVE, omop_ids.CID_CONDITION_INACTIVE]:
+            raise serializers.ValidationError(
+                f"O Concept ID '{value}' para status da ferida é inválido. Use {omop_ids.CID_CONDITION_ACTIVE} (Ativa) ou {omop_ids.CID_CONDITION_INACTIVE} (Inativa)."
+            )
+        self._validate_concept_id_existence(value, "status da ferida")
+        self._validate_standard_concept(value, "status da ferida")
+        return value
+
 class VirtualTrackingRecordsSerializer(VirtualModelSerializer):
+    tracking_id = serializers.IntegerField(read_only=True)
+    updated_at = serializers.DateTimeField(read_only=True)
+    patient_id               = serializers.IntegerField(required=True)
+    specialist_id            = serializers.IntegerField(required=True)
+    wound_id                 = serializers.IntegerField(required=True)
+    track_date               = serializers.DateField(required=True)
+    length                   = serializers.FloatField(min_value=0.0, allow_null=True, required=False)
+    width                    = serializers.FloatField(min_value=0.0, allow_null=True, required=False)
+    exudate_amount           = serializers.IntegerField(allow_null=True, required=False) 
+    exudate_type             = serializers.IntegerField(allow_null=True, required=False)    
+    tissue_type              = serializers.IntegerField(allow_null=True, required=False)
+    wound_edges              = serializers.IntegerField(allow_null=True, required=False)
+    skin_around              = serializers.IntegerField(allow_null=True, required=False)
+    had_a_fever              = serializers.BooleanField(allow_null=True, required=False)
+    pain_level               = serializers.IntegerField(min_value=0, max_value=10, allow_null=True, required=False)
+    dressing_changes_per_day = serializers.IntegerField(min_value=0, allow_null=True, required=False) 
+    image_id                 = serializers.CharField(max_length=500, allow_null=True, required=False)
+    guidelines_to_patient    = serializers.CharField(max_length=1000, allow_null=True, required=False)
+    extra_notes              = serializers.CharField(max_length=1000, allow_null=True, required=False)
+
     class Meta:
         super_model = VirtualTrackingRecords
         model = VirtualTrackingRecords
@@ -70,3 +294,19 @@ class VirtualComorbiditySerializer(VirtualModelSerializer):
             return None
         concept = Concept.objects.filter(concept_id=comorbidity_type).first()
         return concept.concept_name if concept else None
+
+    def _validate_concept_id_existence(self, value, field_name):
+        if value:
+            try:
+                Concept.objects.get(concept_id=value)
+            except Concept.DoesNotExist:
+                raise serializers.ValidationError(
+                    f"O Concept ID '{value}' para '{field_name}' não foi encontrado na base de conceitos OMOP."
+                )
+        return value
+
+    def validate_track_date(self, value):
+        if value and value > date.today():
+            raise serializers.ValidationError("A data do acompanhamento não pode ser no futuro.")
+        return value
+    
