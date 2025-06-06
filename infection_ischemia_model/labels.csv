@@ -1,0 +1,273 @@
+filename,W,I,Fi
+PacienteB_CCSA_01 T0.jpg,2,0,0
+PacienteB_CCSA_01 T4.jpg,2,0,0
+PacienteB_CCSA_01 T8.jpg,2,0,0
+PacienteB_CCSA_02 T0.jpg,1,0,0
+PacienteB_CCSA_02 T7.jpg,1,0,0
+PacienteB_CRRD_04 T1.jpg,1,1,0
+PacienteB_CRRD_04 T4.jpg,1,1,0
+PacienteB_CRRD_04 T8.jpg,1,1,0
+PacienteB_AM_05 T0.jpg,2,0,1
+PacienteB_AM_05 T4.jpg,2,0,1
+PacienteB_AM_05 T8.jpg,2,0,1
+PacienteB_TSO_06 T0.jpg,1,0,0
+PacienteB_TSO_06 T4.jpg,1,0,0
+PacienteB_TSO_06 T10.jpg,1,0,0
+PacienteB_JNS_09 T0.jpg,1,0,0
+PacienteB_JNS_09 T4.jpg,1,0,0
+PacienteB_JNS_09 T8.jpg,1,0,0
+PacienteB_VFS_10 T0.jpg,1,0,1
+PacienteB_VFS_10 T4.jpg,1,0,1
+PacienteB_VFS_10 T8.jpg,1,0,1
+PacienteB_VFS_11 T0.jpg,1,0,1
+PacienteB_VFS_11 T4.jpg,1,0,1
+PacienteB_VFS_11 T8.jpg,1,0,1
+PacienteB_CPA_13 T0.jpg,1,1,0
+PacienteB_CPA_13 T2.jpg,1,1,0
+PacienteB_CPA_13 T4.jpg,1,1,0
+PacienteB_PEA_16 T0.jpg,1,0,0
+PacienteB_PEA_16 T4.jpg,1,0,0
+Paciente C_AFS1.jpg,1,0,0
+Paciente C_AFS2.jpg,2,0,0
+Paciente C_APR1.jpg,1,0,0
+Paciente C_APR2.jpg,1,0,0
+Paciente C_APR3.jpg,1,0,0
+Paciente C_CAF1.jpg,1,0,0
+Paciente C_CAF2.jpg,1,0,0
+Paciente C_CAF3.jpg,2,0,0
+Paciente C_CAF4.jpg,2,0,0
+Paciente C_CAF5.jpg,1,0,0
+Paciente C_CAF6.jpg,1,0,0
+Paciente C_CC1.jpg,1,1,0
+Paciente C_CC2.jpg,1,1,0
+Paciente C_CC3.jpg,1,1,0
+Paciente C_CC4.jpg,1,1,0
+Paciente C_CC5.jpg,1,1,0
+Paciente C_CC6.jpg,1,1,0
+Paciente C_CWRM1.jpg,1,2,1
+Paciente C_CWRM2.jpg,1,2,1
+Paciente C_CWRM3.jpg,1,3,1
+Paciente C_CWRM4.jpg,1,2,1
+Paciente C_CWRM5.jpg,1,3,1
+Paciente C_CWRM6.jpg,1,2,1
+Paciente C_CWRM7.jpg,1,2,0
+Paciente C_CWRM8.jpg,1,2,0
+Paciente C_CWRM9.jpg,1,2,0
+Paciente C_CWRM10.jpg,1,2,0
+Paciente C_CWRM11.jpg,1,2,0
+Paciente C_CWRM12.jpg,1,2,0
+Paciente C_CWRM13.jpg,1,2,0
+Paciente C_CWRM14.jpg,1,2,0
+Paciente C_CWRM15.jpg,1,2,0
+Paciente C_CWRM16.jpg,1,2,0
+Paciente C_CWRM17.jpg,1,1,0
+Paciente C_CWRM18.jpg,1,1,0
+Paciente C_CWRM19.jpg,1,1,0
+Paciente C_CWRM20.jpg,1,1,0
+Paciente C_CWRM21.jpg,1,1,0
+Paciente C_CWRM22.jpg,1,1,0
+Paciente C_CWRM23.jpg,1,1,0
+Paciente C_CWRM24.jpg,1,1,0
+Paciente C_CWRM25.jpg,1,1,0
+Paciente C_FT1.jpg,1,2,0
+Paciente C_FT2.jpg,1,2,0
+PacienteC_JAL1.jpg,1,1,0
+PacienteC_JAL2.jpg,1,1,0
+PacienteC_JAL3.jpg,1,1,0
+PacienteC_JAL4.jpg,1,1,0
+PacienteC_JEMP1.jpg,1,0,0
+PacienteC_JEMP2.jpg,1,0,0
+PacienteC_JEMP3.jpg,1,0,0
+PacienteC_JEMP4.jpg,1,0,0
+PacienteC_JEMP5.jpg,1,0,0
+PacienteC_JMC1.jpg,2,1,1
+PacienteC_JMC2.jpg,1,1,0
+PacienteC_LCR1.jpg,1,0,0
+PacienteC_LEL1.jpg,2,3,2
+PacienteC_LEL2.jpg,2,3,2
+PacienteC_LEL3.jpg,2,3,2
+PacienteC_LEL4.jpg,2,3,1
+PacienteC_MARR1.jpg,1,1,0
+PacienteC_MARR2.jpg,1,1,0
+PacienteC_MARR3.jpg,1,1,0
+PacienteC_MARR4.jpg,1,1,0
+PacienteC_MARR5.jpg,1,1,0
+PacienteC_MARR6.jpg,1,1,0
+PacienteC_MARR7.jpg,1,1,0
+PacienteC_MARR8.jpg,1,1,0
+PacienteC_MARR9.jpg,1,1,0
+PacienteC_MARR10.jpg,1,1,0
+PacienteC_MARR11.jpg,1,1,0
+PacienteC_MARR12.jpg,1,1,0
+PacienteC_MARR13.jpg,1,1,0
+PacienteC_MEB1.jpg,1,1,0
+PacienteC_MEB2.jpg,1,1,0
+PacienteC_MEB3.jpg,1,1,0
+PacienteC_MEB4.jpg,1,1,1
+PacienteC_MEB5.jpg,1,1,1
+PacienteC_MEB6.jpg,1,1,0
+PacienteC_MEB7.jpg,1,1,0
+PacienteC_MEB8.jpg,1,1,0
+PacienteC_MEB9.jpg,1,1,0
+PacienteC_MEB10.jpg,1,1,0
+PacienteC_MEB11.jpg,1,1,0
+PacienteC_MEB12.jpg,1,1,0
+PacienteC_MEB13.jpg,1,1,0
+PacienteC_MEB14.jpg,1,1,0
+PacienteC_MEB15.jpg,1,1,0
+PacienteC_MEB16.jpg,1,1,0
+PacienteC_MEB17.jpg,1,1,0
+PacienteC_MEB18.jpg,1,1,0
+PacienteC_MEB19.jpg,1,1,0
+PacienteC_MEB20.jpg,1,1,0
+PacienteC_MEB21.jpg,1,1,0
+PacienteC_MEB22.jpg,1,1,0
+PacienteC_MEB23.jpg,1,1,0
+PacienteC_MEB24.jpg,1,1,0
+PacienteC_MEB25.jpg,1,1,0
+PacienteC_MEB26.jpg,1,1,0
+PacienteC_MEB27.jpg,1,1,0
+PacienteC_MEB28.jpg,1,1,0
+PacienteC_MFL1.jpg,1,0,0
+PacienteC_MFL2.jpg,1,0,0
+PacienteC_MGFL1.jpg,1,1,0
+PacienteC_MGFL2.jpg,1,1,0
+PacienteC_MGFL3.jpg,1,1,0
+PacienteC_MGFL4.jpg,1,1,0
+PacienteC_MRFO1.jpg,2,1,0
+PacienteC_MRFO2.jpg,2,1,0
+PacienteC_MRFO3.jpg,2,1,0
+PacienteC_MRFO4.jpg,2,1,0
+PacienteC_MRFO5.jpg,2,1,0
+PacienteC_MRFO6.jpg,2,1,0
+PacienteC_MRFO7.jpg,2,1,0
+PacienteC_MRFO8.jpg,2,1,0
+PacienteC_MRFO9.jpg,2,1,0
+PacienteC_MRFO10.jpg,1,1,0
+PacienteC_MRFO11.jpg,2,1,0
+PacienteC_MRFO12.jpg,2,1,0
+PacienteC_MRFO13.jpg,2,1,0
+PacienteC_MRFO14.jpg,1,1,0
+PacienteC_MRFO15.jpg,2,1,0
+PacienteC_MRFO16.jpg,1,1,0
+PacienteC_MRFO17.jpg,2,1,0
+PacienteC_MRFO18.jpg,1,1,0
+PacienteC_PAA1.jpg,3,3,1
+PacienteC_PAA2.jpg,3,3,1
+PacienteC_PAA3.jpg,3,3,0
+PacienteC_PAA4.jpg,3,3,0
+PacienteC_PAA5.jpg,3,3,0
+PacienteC_PAA6.jpg,3,3,0
+PacienteC_PAA7.jpg,3,3,0
+PacienteC_RBDO1.jpg,1,0,0
+PacienteC_RBDO2.jpg,1,0,0
+PacienteC_RBDO3.jpg,1,0,0
+PacienteC_RBDO4.jpg,1,0,0
+PacienteC_RBDO5.jpg,1,0,0
+PacienteC_SROC1.jpg,1,1,0
+PacienteC_SROC2.jpg,1,1,0
+PacienteC_SROC3.jpg,1,1,0
+PacienteC_SROC4.jpg,1,1,0
+PacienteC_SROC5.jpg,1,1,0
+PacienteC_SROC6.jpg,1,1,0
+PacienteC_SROC7.jpg,1,1,0
+PacienteC_SROC8.jpg,1,1,0
+PacienteC_SROC9.jpg,1,1,0
+PacienteC_SROC10.jpg,1,1,0
+PacienteC_SROC11.jpg,1,1,0
+PacienteC_SROC12.jpg,1,1,0
+PacienteC_SROC13.jpg,1,1,0
+PacienteC_SROC14.jpg,1,1,0
+PacienteC_SROC15.jpg,1,1,0
+PacienteC_SROC16.jpg,1,1,0
+PacienteC_SROC17.jpg,1,1,0
+PacienteC_SROC18.jpg,1,1,0
+PacienteC_SROC19.jpg,1,1,0
+PacienteC_SROC20.jpg,1,1,0
+PacienteC_SROC21.jpg,1,1,0
+PacienteC_SROC22.jpg,1,1,0
+PacienteC_SROC23.jpg,1,1,0
+PacienteC_SROC24.jpg,1,1,0
+PacienteC_SROC25.jpg,1,1,0
+PacienteC_SROC26.jpg,1,1,0
+PacienteC_SROC27.jpg,1,1,0
+PacienteC_SROC28.jpg,1,1,0
+PacienteC_SROC29.jpg,1,1,0
+PacienteC_SROC30.jpg,1,1,0
+PacienteC_SROC31.jpg,1,1,0
+PacienteC_SROC32.jpg,1,1,0
+PacienteC_SROC33.jpg,1,1,0
+PacienteC_SROC34.jpg,1,1,0
+PacienteC_SROC35.jpg,1,1,0
+PacienteC_SROC36.jpg,1,1,0
+PacienteC_SROC37.jpg,1,1,0
+PacienteC_SROC38.jpg,1,1,0
+PacienteC_SRTO1.jpg,3,2,0
+PacienteC_SRTO2.jpg,3,2,0
+PacienteC_VCN1.jpg,1,0,0
+PacienteC_VCN2.jpg,1,0,0
+PacienteC_VCN3.jpg,1,0,0
+PacienteC_VCN4.jpg,1,0,0
+PacienteC_VCN5.jpg,1,0,0
+PacienteC_VCN6.jpg,1,0,0
+PacienteC_VCN7.jpg,1,0,0
+PacienteC_VCN8.jpg,1,0,0
+PacienteC_VCN9.jpg,1,0,0
+PacienteC_outro1.jpg,1,0,0
+PacienteC_outro2.jpg,3,3,0
+PacienteC_outro3.jpg,1,0,0
+PacienteC_outro4.jpg,1,0,0
+PacienteC_outro5.jpg,1,0,0
+PacienteC_outro6.jpg,1,0,0
+PacienteC_outro7.jpg,1,0,0
+MH_1.jpg,2,1,0
+MH_2.jpg,1,1,0
+MH_3.jpg,1,1,0
+MH_4.jpg,2,1,0
+MH_5.jpg,2,3,0
+MH_6.jpg,2,3,0
+MH_7.jpg,2,3,2
+MH_8.jpg,2,3,2
+MH_9.jpg,3,1,0
+MH_10.jpg,3,1,0
+MH_11.jpg,3,1,0
+MH_12.jpg,2,1,1
+MH_13.jpg,2,1,1
+MH_14.jpg,2,1,1
+MH_15.jpg,3,2,1
+MH_16.jpg,3,2,1
+MH_17.jpg,3,2,1
+MH_18.jpg,3,1,0
+MH_19.jpg,1,1,0
+MH_20.jpg,1,1,0
+MH_21.jpg,1,1,0
+MH_22.jpg,1,0,0
+MH_23.jpg,1,0,0
+MH_24.jpg,1,1,0
+MH_25.jpg,2,0,0
+MH_26.jpg,1,0,0
+MH_27.jpg,1,0,0
+MH_28.jpg,1,0,0
+MH_29.jpg,1,0,0
+MH_30.jpg,3,1,0
+MH_31.jpg,3,1,0
+MH_32.jpg,3,1,1
+MH_33.jpg,1,0,0
+MH_34.jpg,1,0,0
+MH_35.jpg,1,0,0
+MH_36.jpg,1,1,0
+MH_37.jpg,2,1,0
+MH_38.jpg,2,1,0
+MH_39.jpg,1,0,0
+MH_40.jpg,1,0,0
+MH_41.jpg,2,2,0
+MH_42.jpg,3,1,0
+MH_43.jpg,1,0,0
+MH_44.jpg,1,0,0
+MH_45.jpg,3,1,0
+MH_46.jpg,3,1,1
+MH_47.jpg,1,0,0
+MH_48.jpg,1,1,0
+MH_49.jpg,3,3,2
+MH_50.jpg,3,1,1
+MH_51.jpg,3,3,2
