@@ -309,6 +309,13 @@ class VirtualModel:
 				result[field_name]  = field_desc.choicemap.virtual_to_db(result[field_name])
 		return result
 	@classmethod
+	def _map_db_to_virtual(cls, data):
+		result = {**data}
+		for field_name, field_desc in cls.descriptor().fields.items():
+			if field_desc.choicemap is not None:
+				result[field_name]  = field_desc.choicemap.db_to_virtual(result[field_name])
+		return result
+	@classmethod
 	@transaction.atomic()
 	def create(cls, data):
 		result = {**cls._map_virtual_to_db(data)}
@@ -318,7 +325,7 @@ class VirtualModel:
 				**subtables.model_from_data(**result)
 			)
 			subtables.model_to_data(result, model_data)
-		return result
+		return cls._map_db_to_virtual(result)
 
 	@classmethod
 	@transaction.atomic()
@@ -348,4 +355,4 @@ class VirtualModel:
 					**subtable.model_from_data(**actual)
 				)
 			subtable.model_from_data(**data)
-		return data
+		return cls._map_db_to_virtual(data)
