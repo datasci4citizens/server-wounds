@@ -1,6 +1,5 @@
 from rest_framework import viewsets, status
 from drf_spectacular.utils import extend_schema
-
 from .virtual_models import (VirtualSpecialist, VirtualWound, VirtualTrackingRecords, VirtualPatient, VirtualComorbidity)
 from .virtual_serializers import (VirtualSpecialistSerializer, VirtualWoundSerializer, VirtualTrackingRecordsSerializer, 
                                  VirtualPatientSerializer, VirtualComorbiditySerializer)
@@ -15,7 +14,7 @@ class VirtualSpecialistViewSet(mixins.CreateModelMixin,
                    mixins.ListModelMixin,
                    viewsets.GenericViewSet):
     queryset  = VirtualSpecialist.objects().annotate(
-		email = Subquery(User.objects.all().filter(id=OuterRef("user_id")).values("email")[:1])
+		email = Subquery(User.objects.all().filter(id=OuterRef("provider_user_id")).values("email")[:1])
 	)
     serializer_class = VirtualSpecialistSerializer
 
@@ -23,7 +22,9 @@ class VirtualSpecialistViewSet(mixins.CreateModelMixin,
 class VirtualPatientViewSet(viewsets.ViewSet):
     queryset  = VirtualPatient.objects().all()
     serializer_class = VirtualPatientSerializer
+
     def create(self, request, *args, **kwargs):
+        
         serializer = VirtualPatientSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.create(serializer.validated_data)
@@ -31,23 +32,8 @@ class VirtualPatientViewSet(viewsets.ViewSet):
 
     def perform_create(self, serializer):
         serializer.save()
-    
-    def retrieve(self, request, pk=None, *args, **kwargs):
-        instance = VirtualPatient.get(patient_id=pk)
-        comorbidities, comorbidities_to_add = VirtualPatient.get_comorbidities(patient_id=pk)
-        instance["comorbidities"] = comorbidities
-        instance["comorbidities_to_add"] = comorbidities_to_add
-        serializer = VirtualPatientSerializer()
-        return Response(instance)
 
 
-    def list(self, request, *args, **kwargs):
-        instances = VirtualPatient.objects().all()
-        for instance in instances:
-            comorbidities, comorbidities_to_add = VirtualPatient.get_comorbidities(patient_id=instance["patient_id"])
-            instance["comorbidities"] = comorbidities
-            instance["comorbidities_to_add"] = comorbidities_to_add
-        return Response(instances)
 @extend_schema(tags=["wounds"])
 class VirtualWoundViewSet(viewsets.ModelViewSet):
     queryset = VirtualWound.objects().all()

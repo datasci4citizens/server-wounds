@@ -1,6 +1,8 @@
 from rest_framework.routers import DefaultRouter
-from .virtual_views import(VirtualPatientViewSet, VirtualSpecialistViewSet, VirtualWoundViewSet, 
-                         VirtualTrackingRecordsViewSet, VirtualComorbidityViewSet)
+from .virtual_views import(
+    VirtualPatientViewSet, VirtualSpecialistViewSet, VirtualWoundViewSet,
+    VirtualTrackingRecordsViewSet, VirtualComorbidityViewSet
+)
 
 router = DefaultRouter()
 router.register(r'patients', VirtualPatientViewSet)

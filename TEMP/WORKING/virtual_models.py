@@ -14,7 +14,10 @@ from .omop.omop_ids  import (
     CID_WOUND_PHOTOGRAPHY, CID_CONDITION_RELEVANT_TO, CID_PK_PROCEDURE_OCCURRENCE, CID_EXUDATE_AMOUNT,
     CID_EXUDATE_APPEARANCE, CID_WOUND_APPEARANCE, CID_WOUND_EDGE_DESCRIPTION, CID_WOUND_SKIN_AROUND,
     CID_FEVER, CID_NEGATIVE, CID_POSITIVE, CID_PAIN_SEVERITY, CID_DEGREE_FINDING, 
-    CID_WOUND_CARE_DRESSING_CHANGE, CID_GENERIC_NOTE, CID_WOUND_LENGTH, CID_WOUND_WIDTH, CID_COMORBIDITY
+    CID_WOUND_CARE_DRESSING_CHANGE, CID_GENERIC_NOTE, CID_WOUND_LENGTH, CID_WOUND_WIDTH, CID_COMORBIDITY,
+    CID_GENDER_MALE, CID_GENDER_FEMALE, CID_GENDER_OTHER, CID_GENDER_UNKNOWN,
+    CID_RACE_WHITE, CID_RACE_BLACK, CID_RACE_ASIAN, CID_RACE_NATIVE, CID_RACE_OTHER, CID_RACE_UNKNOWN,
+    CID_ETHNICITY_HISPANIC, CID_ETHNICITY_NOT_HISPANIC, CID_ETHNICITY_UNKNOWN
 )
 from .omop import omop_ids
 from .django_virtualmodels.models import (
@@ -65,28 +68,27 @@ class VirtualPatient(VirtualModel):
     gender                = VirtualField(source=("row_person", "gender_concept_id"))
     birthday              = VirtualField(source=("row_person", "birth_datetime"))
     specialist_id         = VirtualField(source=("row_person", "provider_id"))
-    hospital_registration = VirtualField(source=("row_person", "person_care_site_registration"))
+    hospital_registration = VirtualField(source=("row_person", "care_site_id"))
     phone_number          = VirtualField(source=("row_nonclinicalinfos", "phone_number"))
     weight                = VirtualField(source=("row_weight", "value_as_number"))
     height                = VirtualField(source=("row_height", "value_as_number"))
     accept_tcl            = VirtualField(source=("row_nonclinicalinfos", "accept_tcl"))
     smoke_frequency       = VirtualField(source=("row_smoke_frequency", "value_as_concept_id"))
     drink_frequency       = VirtualField(source=("row_drink_frequency", "value_as_concept_id"))
-    user_id               = VirtualField(source=("row_person", "person_user_id"))
     # TODO comorbidities  
     # TODO comorbidities_to_add  
     updated_at            = VirtualField(source=("row_height", "measurement_date"))
     main_row = "row_person"
+    # TODO EMAIL
     row_person = TableBindings.Person(
-        person_id                     = FieldBind("patient_id", key = True),
-        birth_datetime                = FieldBind("birthday"),
-        year_of_birth                 = FieldBind(CID_NULL, const=True),
-        race_concept_id               = FieldBind(CID_NULL, const=True),
-        ethnicity_concept_id          = FieldBind(CID_NULL, const=True),
-        gender_concept_id             = FieldBind("gender"),
-        provider_id                   = FieldBind("specialist_id"),
-        person_care_site_registration = FieldBind("hospital_registration"),
-        person_user_id                = FieldBind("user_id")
+        person_id            = FieldBind("patient_id", key = True),
+        birth_datetime       = FieldBind("birthday"),
+        year_of_birth        = FieldBind(CID_NULL, const=True),
+        race_concept_id      = FieldBind(CID_RACE_UNKNOWN, const=True),
+        ethnicity_concept_id = FieldBind(CID_ETHNICITY_UNKNOWN, const=True),
+        gender_concept_id    = FieldBind("gender"),
+        provider_id          = FieldBind("specialist_id"),
+        care_site_id         = FieldBind("hospital_registration"),
     )
     row_nonclinicalinfos = TableBindings.PatientNonClinicalInfos(
         person_id    = FieldBind("patient_id"),
@@ -128,33 +130,23 @@ class VirtualPatient(VirtualModel):
         observation_date            = FieldBind("updated_at"),
         observation_type_concept_id = FieldBind(CID_NULL, const=True),
     )
-    @classmethod
-    def get_comorbidities(cls, patient_id : int):
-        queryset = Observation.objects.all().filter(person_id=patient_id, observation_concept_id=omop_ids.CID_COMORBIDITY)
-        comorbidities = []
-        comorbidities_to_add = []
-        print({"person_id":queryset, "observation_concept_id": omop_ids.CID_COMORBIDITY})
-        for c in queryset.filter(value_as_concept_id__isnull=False):
-            comorbidities.append(c.value_as_concept_id)
 
-        for c in queryset.filter(value_as_concept_id__isnull=True):
-            comorbidities_to_add.append(c.value_as_string)
-        return (comorbidities, comorbidities_to_add)
 class VirtualSpecialist(VirtualModel):
     specialist_id   = VirtualField(source=("row_provider", "provider_id"), key=True)
     specialist_name = VirtualField(source=("row_provider", "provider_name"))
-    user_id         = VirtualField(source=("row_provider", "provider_user_id")), 
-    birthday        = VirtualField(source=("row_provider", "provider_birthday"), null=True)
-    speciality      = VirtualField(source=("row_provider", "specialty_concept_id"), null=True)
-    city            = VirtualField(source=("row_location", "city"), null=True)
-    state           = VirtualField(source=("row_location", "state"), null=True)
+    # TODO email
+    birthday        = VirtualField(source=("row_provider", "provider_birthday"))
+    speciality      = VirtualField(source=("row_provider", "specialty_concept_id"))
+    city            = VirtualField(source=("row_location", "city"))
+    state           = VirtualField(source=("row_location", "state"))
+    user_id         = VirtualField(source=("row_provider", "provider_user_id"))
     main_row = "row_provider"
     row_provider = TableBindings.Provider(
         provider_id   = FieldBind("specialist_id", key = True),
         provider_name = FieldBind("specialist_name"),
         provider_birthday = FieldBind("birthday"),
+        specialty_concept_id   = FieldBind("speciality"),
         provider_user_id = FieldBind("user_id"),
-        specialty_concept_id   = FieldBind("speciality")
     )
 
     row_location =  TableBindings.Location(
