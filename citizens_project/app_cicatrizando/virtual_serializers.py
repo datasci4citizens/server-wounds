@@ -6,7 +6,12 @@ from .django_virtualmodels.models import (
     all_attr_ofclass
 )
 from .django_virtualmodels.serializers import VirtualModelSerializer
-from .virtual_models import (VirtualSpecialist, VirtualWound, VirtualTrackingRecords, VirtualPatient)
+from .virtual_models import (VirtualSpecialist, VirtualWound, VirtualTrackingRecords, VirtualPatient, VirtualComorbidity)
+from rest_framework import serializers
+from django.db import transaction
+from django.contrib.auth import get_user_model
+from datetime import datetime
+User = get_user_model()
 
 for const_name in all_attr_ofclass(omop_ids, int):
     try:
@@ -39,3 +44,29 @@ class VirtualTrackingRecordsSerializer(VirtualModelSerializer):
         super_model = VirtualTrackingRecords
         model = VirtualTrackingRecords
         fields = "__all__"
+        
+class VirtualComorbiditySerializer(VirtualModelSerializer):
+    comorbidity_name = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        super_model = VirtualComorbidity
+        model = VirtualComorbidity
+        fields = "__all__"
+        read_only_fields = ["comorbidity_id", "comorbidity_name"]
+
+    def validate_comorbidity_type(self, value):
+        # Garante que o concept existe
+        if not Concept.objects.filter(concept_id=value).exists():
+            raise serializers.ValidationError(f"O conceito com ID {value} não existe. Certifique-se de que ele foi criado.")
+        return value
+
+    def get_comorbidity_name(self, obj):
+        comorbidity_type = None
+        if isinstance(obj, dict):
+            comorbidity_type = obj.get('comorbidity_type')
+        else:
+            comorbidity_type = getattr(obj, 'comorbidity_type', None)
+        if not comorbidity_type:
+            return None
+        concept = Concept.objects.filter(concept_id=comorbidity_type).first()
+        return concept.concept_name if concept else None
