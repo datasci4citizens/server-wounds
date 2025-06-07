@@ -2,7 +2,8 @@ from datetime import date
 from django.core.validators import RegexValidator
 from .omop.omop_models import (
     Concept,
-    Observation
+    Observation,
+    Provider
 )
 from .omop import omop_ids
 from .django_virtualmodels.models import (
@@ -37,8 +38,11 @@ class VirtualSpecialistSerializer(serializers.Serializer):
 
     def validate_email(self, value):
         # valida se o email ja nao esta em uso
-        if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("Este e-mail já está em uso.")
+        try:
+            if Provider.objects.filter(provider_user__email = value):
+                raise serializers.ValidationError("Este e-mail já está em uso.")
+        except User.DoesNotExist:
+            pass 
         return value
     
     def validate_speciality(self, value):
@@ -58,7 +62,7 @@ class VirtualSpecialistSerializer(serializers.Serializer):
     @transaction.atomic()
     def create(self, validated_data):
         
-        user = User.objects.create_user(
+        user, _ = User.objects.get_or_create(
             username=validated_data["email"],
             email=validated_data["email"]
         )
