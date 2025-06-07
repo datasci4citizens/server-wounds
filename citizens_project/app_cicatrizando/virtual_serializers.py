@@ -10,7 +10,7 @@ from .django_virtualmodels.models import (
 )
 from .django_virtualmodels.serializers import VirtualModelSerializer
 from .virtual_models import (VirtualSpecialist, VirtualWound, VirtualTrackingRecords, VirtualPatient, VirtualComorbidity)
-
+from . import virtual_models
 from rest_framework import serializers
 from django.db import transaction
 from django.contrib.auth import get_user_model
@@ -101,7 +101,7 @@ class VirtualSpecialistSerializer(serializers.Serializer):
 class VirtualPatientSerializer(serializers.Serializer):
     patient_id            = serializers.IntegerField(read_only=True)
     name                  = serializers.CharField(max_length = 255)
-    gender                = serializers.IntegerField()
+    gender                = serializers.ChoiceField(choices=virtual_models.map_gender.virtual_values())
     birthday              = serializers.DateField()
     specialist_id         = serializers.IntegerField(allow_null=True, required=False)
     hospital_registration = serializers.CharField(allow_null=True, required=False, max_length = 255)
@@ -114,12 +114,11 @@ class VirtualPatientSerializer(serializers.Serializer):
     weight                = serializers.FloatField(allow_null=True, required=False)
     height                = serializers.FloatField(allow_null=True, required=False)
     accept_tcl            = serializers.BooleanField(required=False)
-    smoke_frequency       = serializers.IntegerField(allow_null=True, required=False)
-    drink_frequency       = serializers.IntegerField(allow_null=True, required=False)
+    smoke_frequency       = serializers.ChoiceField(allow_null=True, required=False, choices=virtual_models.map_smoke_frequency.virtual_values())
+    drink_frequency       = serializers.ChoiceField(allow_null=True, required=False, choices=virtual_models.map_drink_frequency.virtual_values())
 
     email                 = serializers.EmailField(read_only=True)
-    comorbidities         = serializers.ListField(child=serializers.IntegerField(), allow_empty= True)
-    comorbidities_to_add  = serializers.ListField(child=serializers.CharField(), allow_empty= True)
+    comorbidities         = serializers.ListField(child=serializers.ChoiceField(choices=virtual_models.map_comorbidities.virtual_values()), allow_empty= True)
 
     def validate_birthday(self, value):
         if value and value > date.today():
@@ -144,7 +143,7 @@ class VirtualPatientSerializer(serializers.Serializer):
             if not value:
                 raise serializers.ValidationError("É necessário aceitar os Termos e Condições de Uso para participar da pesquisa.")
         return value
-
+ 
     @transaction.atomic()
     def create(self, validated_data):
         virtual_patient_fields  = [
@@ -173,19 +172,16 @@ class VirtualPatientSerializer(serializers.Serializer):
                 person_id = result["patient_id"],
                 observation_concept_id =  omop_ids.CID_COMORBIDITY,
                 observation_type_concept_id = omop_ids.CID_EHR,
-                value_as_concept_id = c,
-                observation_date = data["updated_at"]
-            )
-        for c in set(validated_data["comorbidities_to_add"]):
-            obs = Observation.objects.create(
-                person_id = result["patient_id"],
-                observation_concept_id =  omop_ids.CID_COMORBIDITY,
-                observation_type_concept_id = omop_ids.CID_EHR,
-                value_as_string = c,
+                value_as_concept_id = virtual_models.map_comorbidities.virtual_to_db(c),
                 observation_date = data["updated_at"]
             )
         
         return result
+    def validate_gender(self, value):
+        result = VirtualPatient.descriptor().fields["gender"].validate(value)
+        if result != None:
+            raise serializers.ValidationError(result)
+        return value
 
 class VirtualWoundSerializer(VirtualModelSerializer):
     wound_id      = serializers.IntegerField(read_only=True) 

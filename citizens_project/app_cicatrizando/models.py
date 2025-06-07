@@ -13,6 +13,8 @@ class PatientNonClinicalInfos(models.Model):
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     accept_tcl = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    bind_code  = models.IntegerField(unique=True, null=True)
+    user  = models.ForeignKey(User, models.SET_NULL, null=True)
     updated_at = models.DateTimeField(auto_now=True)
 
 
