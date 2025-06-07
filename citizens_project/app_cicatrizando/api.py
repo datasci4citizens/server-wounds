@@ -115,42 +115,35 @@ class GoogleLoginView(viewsets.ViewSet):
         # Check for existing provider record (OMOP model) only
         provider_id = None
         provider_data = None
-        new_user = False
+        user, created = User.objects.get_or_create(username=user_email,email=user_email)
         try:
-            user = User.objects.get(email=user_email)
-            try:
-                provider = VirtualSpecialist.objects().filter(user_id=user.id).get()
-                print(provider)
-                provider_id = provider["specialist_id"]
-                provider_data = {
-                    'provider_id': provider["specialist_id"],
-                    'provider_name': provider["specialist_name"],
-                    'specialty': provider["speciality"]
-                }
-            except Provider.DoesNotExist:
-                pass
-            token = RefreshToken.for_user(user)
-        except User.DoesNotExist:
-            token = RefreshToken.for_user(AnonymousUser())
-            new_user = True
+            provider = VirtualSpecialist.objects().filter(user_id=user.id).get()
+            print(provider)
+            provider_id = provider["specialist_id"]
+            provider_data = {
+                'provider_id': provider["specialist_id"],
+                'provider_name': provider["specialist_name"],
+                'specialty': provider["speciality"]
+            }
+        except Provider.DoesNotExist:
             pass
+        token = RefreshToken.for_user(user)
         
         # Determine role and profile completion status
         is_provider = provider_id is not None
         role = "specialist" if is_provider else "user"
-        profile_completion_required = new_user or not is_provider
+        profile_completion_required = created or not is_provider
 
         # Generate JWT token
         response = {
             "access": str(token.access_token),
             "refresh": str(token),
             "role": role,
-            "is_new_user": new_user,
+            "is_new_user": created,
             "specialist_id": None,  # Always None since we no longer check this model
             "provider_id": provider_id,
             "provider_data": provider_data,
-            "profile_completion_required": profile_completion_required,
-            "email": user_email
+            "profile_completion_required": profile_completion_required
         }
 
         return Response(response, status=200)
