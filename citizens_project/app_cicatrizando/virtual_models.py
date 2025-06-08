@@ -62,8 +62,8 @@ TableCreationOrder = [
 
 
 map_gender = ChoiceMap([
-    ("F", omop_ids.CID_FEMALE),
-    ("M", omop_ids.CID_MALE)
+    ("female", omop_ids.CID_FEMALE),
+    ("male", omop_ids.CID_MALE)
 ])
 map_smoke_frequency = ChoiceMap([
   ("0", omop_ids.CID_NEVER),
@@ -101,8 +101,6 @@ class VirtualPatient(VirtualModel):
     smoke_frequency       = VirtualField(source=("row_smoke_frequency", "value_as_concept_id"), choicemap=map_smoke_frequency)
     drink_frequency       = VirtualField(source=("row_drink_frequency", "value_as_concept_id"), choicemap=map_drink_frequency)
     user_id               = VirtualField(source=("row_person", "person_user_id"))
-    # TODO comorbidities  
-    # TODO comorbidities_to_add  
     updated_at            = VirtualField(source=("row_height", "measurement_date"))
     main_row = "row_person"
     row_person = TableBindings.Person(
@@ -170,16 +168,16 @@ class VirtualSpecialist(VirtualModel):
     specialist_name = VirtualField(source=("row_provider", "provider_name"))
     user_id         = VirtualField(source=("row_provider", "provider_user_id")), 
     birthday        = VirtualField(source=("row_provider", "provider_birthday"), null=True)
-    speciality      = VirtualField(source=("row_provider", "specialty_concept_id"), null=True)
+    speciality      = VirtualField(source=("row_provider", "specialty_string"), null=True)
     city            = VirtualField(source=("row_location", "city"), null=True)
     state           = VirtualField(source=("row_location", "state"), null=True)
     main_row = "row_provider"
     row_provider = TableBindings.Provider(
-        provider_id   = FieldBind("specialist_id", key = True),
-        provider_name = FieldBind("specialist_name"),
+        provider_id       = FieldBind("specialist_id", key = True),
+        provider_name     = FieldBind("specialist_name"),
         provider_birthday = FieldBind("birthday"),
-        provider_user_id = FieldBind("user_id"),
-        specialty_concept_id   = FieldBind("speciality")
+        provider_user_id  = FieldBind("user_id"),
+        specialty_string  = FieldBind("speciality")
     )
 
     row_location =  TableBindings.Location(
