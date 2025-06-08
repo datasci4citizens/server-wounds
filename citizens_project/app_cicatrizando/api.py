@@ -66,13 +66,11 @@ def to_base(number, base):
         number //= base
     return result[::-1] or "0"
 
-class GoogleLoginView(viewsets.ViewSet):
-    serializer_class = AuthSerializer
-    permission_classes = [AllowAny]        
+class UserPatientBindView(viewsets.ViewSet):
+    serializer_class = BindCodeSerializer
     @transaction.atomic
-    @action(detail=False,url_path="patient-bind", methods=['post'], serializer_class=BindSerializer)
     @extend_schema(request=BindSerializer, responses={200: AuthTokenResponseSerializer})
-    def patient_bind(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs):
         serializer = BindSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
@@ -94,7 +92,7 @@ class GoogleLoginView(viewsets.ViewSet):
         
         return Response(patient.person_id,status=status.HTTP_200_OK)
     
-    @action(detail=True,url_path="new-patient-bind", methods=['post'])
+    @action(detail=True, url_path="new", methods=['post'])
     def new_patient_bind(self, request, pk : int, *args, **kwargs):
         try:
             patient = PatientNonClinicalInfos.objects.filter(person_id=pk).get()
@@ -103,6 +101,10 @@ class GoogleLoginView(viewsets.ViewSet):
         except PatientNonClinicalInfos.DoesNotExist:
             return Response("Paciente não existe",status=status.HTTP_404_NOT_FOUND)
         return Response(patient.bind_code)
+class GoogleLoginView(viewsets.ViewSet):
+    serializer_class = AuthSerializer
+    permission_classes = [AllowAny]        
+
     @extend_schema(request=AuthSerializer, responses={200: AuthTokenResponseSerializer})
     def create(self, request, *args, **kwargs):
         auth_serializer = self.serializer_class(data=request.data)
