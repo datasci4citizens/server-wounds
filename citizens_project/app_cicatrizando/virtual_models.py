@@ -18,7 +18,7 @@ from .omop.omop_ids  import (
 )
 from .omop import omop_ids
 from .django_virtualmodels.models import (
-    TableBinding, VirtualField, VirtualModel, FieldBind
+    ChoiceMap, TableBinding, VirtualField, VirtualModel, FieldBind
 )
 from .django_virtualmodels.serializers import VirtualModelSerializer
 from rest_framework.routers import DefaultRouter
@@ -59,10 +59,38 @@ TableCreationOrder = [
     FactRelationship
 ]
 
+
+
+map_gender = ChoiceMap([
+    ("F", omop_ids.CID_FEMALE),
+    ("M", omop_ids.CID_MALE)
+])
+map_smoke_frequency = ChoiceMap([
+  ("0", omop_ids.CID_NEVER),
+  ("1", omop_ids.CID_OCCASIONALLY),
+  ("2", omop_ids.CID_10_OR_LESS),
+  ("3", omop_ids.CID_10_OR_MORE)
+])
+
+map_drink_frequency = ChoiceMap([
+    ("0", omop_ids.CID_DRINK_NEVER),
+    ("1", omop_ids.CID_DRINK_MONTHLY_OR_LESS),
+    ("2", omop_ids.CID_DRINK_2_3_TIMES_WEEK),
+    ("3", omop_ids.CID_DRINK_4_OR_MORE_WEEK),
+])
+map_comorbidities = ChoiceMap([   
+  ("5A10", omop_ids.CID_DIABETES),
+  ("5A11", omop_ids.CID_DIABETES2),
+  ("BA00", omop_ids.CID_HIPERTENSAO),
+  ("5B81", omop_ids.CID_OBESIDADE),
+  ("8B20", omop_ids.CID_DPOC), # TODO VERIFICAR DEPOIS
+  ("5C80", omop_ids.CID_DOENCA_RENAL_CRONICA )# TODO VERIFICAR DEPOIS,
+])
+
 class VirtualPatient(VirtualModel):
     patient_id = VirtualField(source=("row_person","person_id"), key=True)
     name                  = VirtualField(source=("row_nonclinicalinfos", "name"))
-    gender                = VirtualField(source=("row_person", "gender_concept_id"))
+    gender                = VirtualField(source=("row_person", "gender_concept_id"), choicemap=map_gender)
     birthday              = VirtualField(source=("row_person", "birth_datetime"))
     specialist_id         = VirtualField(source=("row_person", "provider_id"))
     hospital_registration = VirtualField(source=("row_person", "person_care_site_registration"))
@@ -70,8 +98,8 @@ class VirtualPatient(VirtualModel):
     weight                = VirtualField(source=("row_weight", "value_as_number"))
     height                = VirtualField(source=("row_height", "value_as_number"))
     accept_tcl            = VirtualField(source=("row_nonclinicalinfos", "accept_tcl"))
-    smoke_frequency       = VirtualField(source=("row_smoke_frequency", "value_as_concept_id"))
-    drink_frequency       = VirtualField(source=("row_drink_frequency", "value_as_concept_id"))
+    smoke_frequency       = VirtualField(source=("row_smoke_frequency", "value_as_concept_id"), choicemap=map_smoke_frequency)
+    drink_frequency       = VirtualField(source=("row_drink_frequency", "value_as_concept_id"), choicemap=map_drink_frequency)
     user_id               = VirtualField(source=("row_person", "person_user_id"))
     # TODO comorbidities  
     # TODO comorbidities_to_add  
@@ -132,14 +160,11 @@ class VirtualPatient(VirtualModel):
     def get_comorbidities(cls, patient_id : int):
         queryset = Observation.objects.all().filter(person_id=patient_id, observation_concept_id=omop_ids.CID_COMORBIDITY)
         comorbidities = []
-        comorbidities_to_add = []
         print({"person_id":queryset, "observation_concept_id": omop_ids.CID_COMORBIDITY})
-        for c in queryset.filter(value_as_concept_id__isnull=False):
-            comorbidities.append(c.value_as_concept_id)
-
-        for c in queryset.filter(value_as_concept_id__isnull=True):
-            comorbidities_to_add.append(c.value_as_string)
-        return (comorbidities, comorbidities_to_add)
+        for c in queryset:
+            comorbidities.append(map_comorbidities.db_to_virtual(c.value_as_concept_id))
+            
+        return comorbidities
 class VirtualSpecialist(VirtualModel):
     specialist_id   = VirtualField(source=("row_provider", "provider_id"), key=True)
     specialist_name = VirtualField(source=("row_provider", "provider_name"))
