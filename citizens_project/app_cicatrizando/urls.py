@@ -2,7 +2,7 @@ from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
 
-from app_cicatrizando.api import GoogleLoginView, MeView
+from app_cicatrizando.api import GoogleLoginView, MeView, UserPatientBindView
 from . import virtual_urls
 from .omop.omop_views import router as omop_router
 
@@ -17,6 +17,7 @@ from rest_framework.routers import DefaultRouter
 router = DefaultRouter() 
 router.register(r'auth/login/google', GoogleLoginView, basename='google-login')
 router.register(r'auth/me', MeView, basename='me')
+router.register(r'auth/patient-bind', UserPatientBindView, basename='patient-bind')
 # --- URLS ---
 
 urlpatterns = [
