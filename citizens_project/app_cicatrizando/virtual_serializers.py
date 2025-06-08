@@ -26,13 +26,27 @@ for const_name in all_attr_ofclass(omop_ids, int):
         )
     except:
         pass
+# serializers.py
+from rest_framework import serializers
+from datetime import datetime
 
+class TimezoneAwareDateField(serializers.DateField):
+    def to_internal_value(self, value):
+        try:
+            # Converte a string ISO para datetime (considera UTC se terminado com 'Z')
+            parsed_date = datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f%z')
+            # Extrai apenas a parte da data (ignora horário e fuso)
+            return parsed_date.date()
+        except (ValueError, TypeError):
+            # Se falhar, tenta o formato padrão do DRF (YYYY-MM-DD)
+            return super().to_internal_value(value)
+        
 class VirtualSpecialistSerializer(serializers.Serializer):
     specialist_id   = serializers.IntegerField(read_only=True)
     specialist_name = serializers.CharField(max_length = 255)
     email           = serializers.EmailField(max_length = 255)
-    birthday        = serializers.DateField(allow_null=True, required=False)
-    speciality      = serializers.IntegerField(allow_null=True, required=False)
+    birthday        = TimezoneAwareDateField(allow_null=True, required=False)
+    speciality      = serializers.CharField(max_length=40, allow_null=True, required=False)
     city            = serializers.CharField(allow_null=True, required=False, max_length = 100)
     state           = serializers.CharField(allow_null=True, required=False, max_length = 100)
 
@@ -45,14 +59,7 @@ class VirtualSpecialistSerializer(serializers.Serializer):
             pass 
         return value
     
-    def validate_speciality(self, value):
-        try:
-            Concept.objects.get(concept_id=value)
-                
-        except Concept.DoesNotExist:
-            raise serializers.ValidationError(f"O Concept ID '{value}' não foi encontrado na base OMOP.")
-            
-        return value
+
     
     def validate_birthday(self, value):
         if value and value > date.today():
@@ -106,7 +113,7 @@ class VirtualPatientSerializer(serializers.Serializer):
     patient_id            = serializers.IntegerField(read_only=True)
     name                  = serializers.CharField(max_length = 255)
     gender                = serializers.ChoiceField(choices=virtual_models.map_gender.virtual_values())
-    birthday              = serializers.DateField()
+    birthday              = TimezoneAwareDateField()
     specialist_id         = serializers.IntegerField(allow_null=True, required=False)
     hospital_registration = serializers.CharField(allow_null=True, required=False, max_length = 255)
 
@@ -194,8 +201,8 @@ class VirtualWoundSerializer(VirtualModelSerializer):
     updated_at    = serializers.DateTimeField(read_only=True)
     region        = serializers.IntegerField(required=True)     
     wound_type    = serializers.IntegerField(required=True) 
-    start_date    = serializers.DateField(required=True) 
-    end_date      = serializers.DateField(allow_null=True, required=False)
+    start_date    = TimezoneAwareDateField(required=True) 
+    end_date      = TimezoneAwareDateField(allow_null=True, required=False)
     is_active     = serializers.IntegerField(required=True)
     image_id      = serializers.CharField(max_length=500, allow_null=True, required=False)
     class Meta:

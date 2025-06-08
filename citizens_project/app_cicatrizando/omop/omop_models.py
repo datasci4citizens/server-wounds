@@ -217,6 +217,7 @@ class Provider(models.Model):
     npi = models.CharField(max_length=20, blank=True, null=True)
     dea = models.CharField(max_length=20, blank=True, null=True)
     specialty_concept = models.ForeignKey(Concept, models.DO_NOTHING, blank=True, null=True)
+    specialty_string = models.CharField(max_length=40, blank=True, null=True)
     care_site = models.ForeignKey(CareSite, models.DO_NOTHING, blank=True, null=True)
     provider_birthday = models.DateField(null=True)
     gender_concept = models.ForeignKey(Concept, models.DO_NOTHING, related_name='provider_gender_concept_set', blank=True, null=True)
