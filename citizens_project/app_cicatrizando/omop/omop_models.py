@@ -194,7 +194,7 @@ class Person(models.Model):
 
 
 class ProcedureOccurrence(models.Model):
-    procedure_occurrence_id = models.IntegerField(primary_key=True)
+    procedure_occurrence_id = models.AutoField(primary_key=True)
     person = models.ForeignKey(Person, models.DO_NOTHING)
     procedure_concept = models.ForeignKey(Concept, models.DO_NOTHING)
     procedure_date = models.DateField()
