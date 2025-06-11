@@ -33,7 +33,7 @@ GOOGLE_OAUTH2_CLIENT_SECRET = os.environ["GOOGLE_CLIENT_SECRET"]
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['server.wounds.staging.paas.ic.unicamp.br', 'localhost', '127.0.0.1']
 
 
 # Application definition
