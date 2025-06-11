@@ -6,6 +6,9 @@ from .omop.omop_models import (
     Provider
 )
 from .omop import omop_ids
+from .models import (
+    Image
+)
 from .django_virtualmodels.models import (
     all_attr_ofclass
 )
@@ -204,11 +207,10 @@ class VirtualWoundSerializer(VirtualModelSerializer):
     start_date    = TimezoneAwareDateField(required=True) 
     end_date      = TimezoneAwareDateField(allow_null=True, required=False)
     is_active     = serializers.IntegerField(required=True)
-    image_id      = serializers.CharField(max_length=500, allow_null=True, required=False)
+    image_url     = serializers.URLField()
+
     class Meta:
-        super_model = VirtualWound
-        model = VirtualWound
-        fields = "__all__"
+        super_model = VirtualWound 
 
     def _validate_concept_id_existence(self, value, field_name):
         if value:
@@ -221,12 +223,10 @@ class VirtualWoundSerializer(VirtualModelSerializer):
         return value
     def validate_region(self, value):
         self._validate_concept_id_existence(value, "região da ferida")
-        self._validate_standard_concept(value, "região da ferida")
         return value
     
     def validate_wound_type(self, value):
         self._validate_concept_id_existence(value, "tipo de ferida")
-        self._validate_standard_concept(value, "tipo de ferida")
         return value
 
 
@@ -247,14 +247,22 @@ class VirtualWoundSerializer(VirtualModelSerializer):
                 f"O Concept ID '{value}' para status da ferida é inválido. Use {omop_ids.CID_CONDITION_ACTIVE} (Ativa) ou {omop_ids.CID_CONDITION_INACTIVE} (Inativa)."
             )
         self._validate_concept_id_existence(value, "status da ferida")
-        self._validate_standard_concept(value, "status da ferida")
         return value
+    
+class ImageSerializer(serializers.ModelSerializer):
+    def validate_image(self, value):
+        if not value.name.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
+            raise serializers.ValidationError("O arquivo deve ser uma imagem (PNG, JPG, JPEG, GIF).")
+        return value
+    class Meta:
+        model = Image
+        fields = ['image']
 
-class VirtualTrackingRecordsSerializer(VirtualModelSerializer):
-    tracking_id = serializers.IntegerField(read_only=True)
-    updated_at = serializers.DateTimeField(read_only=True)
+class VirtualTrackingRecordsSerializer(serializers.Serializer):
+    tracking_id              = serializers.IntegerField(read_only=True)
+    updated_at               = serializers.DateTimeField(read_only=True)
     patient_id               = serializers.IntegerField(required=True)
-    specialist_id            = serializers.IntegerField(required=True)
+    specialist_id            = serializers.IntegerField(required=True, allow_null=True)
     wound_id                 = serializers.IntegerField(required=True)
     track_date               = serializers.DateField(required=True)
     length                   = serializers.FloatField(min_value=0.0, allow_null=True, required=False)
@@ -267,14 +275,10 @@ class VirtualTrackingRecordsSerializer(VirtualModelSerializer):
     had_a_fever              = serializers.BooleanField(allow_null=True, required=False)
     pain_level               = serializers.IntegerField(min_value=0, max_value=10, allow_null=True, required=False)
     dressing_changes_per_day = serializers.IntegerField(min_value=0, allow_null=True, required=False) 
-    image_id                 = serializers.CharField(max_length=500, allow_null=True, required=False)
     guidelines_to_patient    = serializers.CharField(max_length=1000, allow_null=True, required=False)
     extra_notes              = serializers.CharField(max_length=1000, allow_null=True, required=False)
+    image_url                = serializers.URLField()
 
-    class Meta:
-        super_model = VirtualTrackingRecords
-        model = VirtualTrackingRecords
-        fields = "__all__"
     
     def _validate_concept_id_existence(self, value, field_name):
         if value:

@@ -1,7 +1,7 @@
 import datetime
 from rest_framework import viewsets
 
-from .models import PatientNonClinicalInfos
+from .models import PatientNonClinicalInfos, Image, TrackingRecordImage, WoundImage
 from .omop.omop_models import (
     Location, Measurement, Observation, Person, Provider, 
     ConditionOccurrence, ProcedureOccurrence, Note, FactRelationship, Concept
@@ -45,7 +45,10 @@ class TableBindings:
         table = FactRelationship
     class Location(TableBinding):
         table = Location
-
+    class TrackingRecordImage(TableBinding):
+        table = TrackingRecordImage
+    class WoundImage(TableBinding):
+        table = WoundImage
 
 
 TableCreationOrder = [
@@ -158,7 +161,6 @@ class VirtualPatient(VirtualModel):
     def get_comorbidities(cls, patient_id : int):
         queryset = Observation.objects.all().filter(person_id=patient_id, observation_concept_id=omop_ids.CID_COMORBIDITY)
         comorbidities = []
-        print({"person_id":queryset, "observation_concept_id": omop_ids.CID_COMORBIDITY})
         for c in queryset:
             comorbidities.append(map_comorbidities.db_to_virtual(c.value_as_concept_id))
             
@@ -193,7 +195,7 @@ class VirtualWound(VirtualModel):
     start_date    = VirtualField(source=("row_condition", "condition_start_date"))
     end_date      = VirtualField(source=("row_condition", "condition_end_date"))
     is_active     = VirtualField(source=("row_condition", "condition_status_concept_id"))
-    image_id      = VirtualField(source=("row_image", "note_text"))
+    image_id      = VirtualField(source=("row_image", "image_id"), null=True)
     patient_id    = VirtualField(source=("row_condition", "person_id"))
     specialist_id = VirtualField(source=("row_condition", "provider_id"))
     updated_at    = VirtualField(source=("row_region", "observation_date"))
@@ -219,17 +221,21 @@ class VirtualWound(VirtualModel):
         observation_type_concept_id = FieldBind(CID_NULL, const=True),
     )
     
-    row_image = TableBindings.Note(
-        person_id                   = FieldBind("patient_id", key=True),
-        note_date                   = FieldBind("updated_at"),
-        note_class_concept_id       = FieldBind(CID_WOUND_IMAGE, const=True, key=True),
-        encoding_concept_id         = FieldBind(CID_UTF8, const=True),
-        language_concept_id         = FieldBind(CID_PORTUGUESE, const=True),
-        note_text                   = FieldBind("image_id"),
-        note_event_id               = FieldBind("wound_id", key=True),
-        note_event_field_concept_id = FieldBind(CID_PK_CONDITION_OCCURRENCE, const=True),
-        note_type_concept_id        = FieldBind(CID_NULL, const=True),
+    row_image = TableBindings.WoundImage(
+        image_id = FieldBind("image_id"),
+        wound_id = FieldBind("wound_id", key=True),
     )
+    # row_note_image = TableBindings.Note(
+    #     person_id                   = FieldBind("patient_id", key=True),
+    #     note_date                   = FieldBind("updated_at"),
+    #     note_class_concept_id       = FieldBind(CID_WOUND_IMAGE, const=True, key=True),
+    #     encoding_concept_id         = FieldBind(CID_UTF8, const=True),
+    #     language_concept_id         = FieldBind(CID_PORTUGUESE, const=True),
+    #     note_text                   = FieldBind("image_id"),
+    #     note_event_id               = FieldBind("wound_id", key=True),
+    #     note_event_field_concept_id = FieldBind(CID_PK_CONDITION_OCCURRENCE, const=True),
+    #     note_type_concept_id        = FieldBind(CID_NULL, const=True),
+    # )
 
 
 def _tr_measurement(**kwargs):
@@ -254,7 +260,7 @@ def _tr_measurement_value_number(virtual: str, concept: int, cid_unit : int):
         unit_concept_id = FieldBind(cid_unit, const = True)
     )    
 class VirtualTrackingRecords(VirtualModel):
-    tracking_id = VirtualField(source=("row_procedure", "procedure_occurrence_id"), key=True)
+    tracking_id              = VirtualField(source=("row_procedure", "procedure_occurrence_id"), key=True)
     patient_id               = VirtualField(source=("row_procedure", "person_id"))
     specialist_id            = VirtualField(source=("row_procedure", "provider_id"))
     track_date               = VirtualField(source=("row_procedure", "procedure_date"))
@@ -270,7 +276,7 @@ class VirtualTrackingRecords(VirtualModel):
     had_a_fever              = VirtualField(source=("row_had_a_fever", "value_as_concept_id"))
     pain_level               = VirtualField(source=("row_pain_level", "value_as_concept_id"))
     dressing_changes_per_day = VirtualField(source=("row_dressing_changes_per_day", "value_as_concept_id"))
-    image_id                 = VirtualField(source=("row_image", "note_text"))
+    image_id                 = VirtualField(source=("row_image", "image_id"))
     guidelines_to_patient    = VirtualField(source=("row_guidelines_note", "note_text"))
     extra_notes              = VirtualField(source=("row_extra_notes", "note_text"))
 
@@ -278,8 +284,8 @@ class VirtualTrackingRecords(VirtualModel):
     
     row_procedure = TableBindings.ProcedureOccurrence(
         procedure_occurrence_id = FieldBind("tracking_id", key=True),
-        person_id = FieldBind("patient_id", key=True),
-        provider_id = FieldBind("specialist_id", key=True),
+        person_id = FieldBind("patient_id"),
+        provider_id = FieldBind("specialist_id"),
         procedure_concept_id = FieldBind(CID_WOUND_PHOTOGRAPHY, const=True),
         procedure_date = FieldBind("track_date"),
         procedure_type_concept_id = FieldBind(CID_NULL, const=True),
@@ -304,19 +310,24 @@ class VirtualTrackingRecords(VirtualModel):
     row_had_a_fever    = _tr_measurement_value_cid("had_a_fever", CID_FEVER)
     row_pain_level     = _tr_measurement_value_cid("pain_level", CID_PAIN_SEVERITY)
     row_dressing_changes_per_day= _tr_measurement_value_cid("dressing_changes_per_day", CID_WOUND_CARE_DRESSING_CHANGE)
-
-    # Notes
-    row_image = TableBindings.Note(
-        person_id = FieldBind("patient_id"),
-        note_date = FieldBind("updated_at"),
-        note_class_concept_id = FieldBind(CID_WOUND_IMAGE, const=True),
-        encoding_concept_id = FieldBind(CID_UTF8, const=True),
-        language_concept_id = FieldBind(CID_PORTUGUESE, const=True),
-        note_text = FieldBind("image_id"),
-        note_event_id = FieldBind("tracking_id", key=True),
-        note_event_field_concept_id = FieldBind(CID_PK_PROCEDURE_OCCURRENCE, const=True),
-        note_type_concept_id = FieldBind(CID_NULL, const=True),
+    
+    row_image = TableBindings.TrackingRecordImage(
+        image_id           = FieldBind("image_id"),
+        tracking_record_id = FieldBind("tracking_id", key=True),
     )
+    # TODO verificar se deve manter nota para a imagem
+    # Notes
+    # row_note_image = TableBindings.Note(
+    #     person_id = FieldBind("patient_id"),
+    #     note_date = FieldBind("updated_at"),
+    #     note_class_concept_id = FieldBind(CID_WOUND_IMAGE, const=True),
+    #     encoding_concept_id = FieldBind(CID_UTF8, const=True),
+    #     language_concept_id = FieldBind(CID_PORTUGUESE, const=True),
+    #     note_text = FieldBind("image_id"),
+    #     note_event_id = FieldBind("tracking_id", key=True),
+    #     note_event_field_concept_id = FieldBind(CID_PK_PROCEDURE_OCCURRENCE, const=True),
+    #     note_type_concept_id = FieldBind(CID_NULL, const=True),
+    # )
     
     row_guidelines_note = TableBindings.Note(
         person_id = FieldBind("patient_id"),
