@@ -20,6 +20,10 @@ class ImageViewSet(viewsets.ModelViewSet):
     serializer_class = ImagesSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        return context
+
     def list(self, request):
         # GET /images
         return super().list(request)
@@ -88,10 +92,10 @@ class TrackingRecordViewSet(viewsets.ModelViewSet):
     serializer_class = TrackingRecordsSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
-    # filterset_fields = ['specialist_id', 'wounds_id']
+    filterset_fields = ['specialist_id', 'wound_id']  # Uncommented and corrected field name
 
     def list(self, request, *args, **kwargs):
-        # GET /tracking-records?specialist_id=...&wounds_id=...
+        # GET /tracking-records?specialist_id=...&wound_id=...
         return super().list(request, *args, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):
@@ -136,6 +140,26 @@ class WoundViewSet(viewsets.ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         # PATCH /wounds/{id}
         return super().partial_update(request, *args, **kwargs)
+    
+    def create(self, request, *args, **kwargs):
+        # Debug the request data
+        print(f"Received wound data: {request.data}")
+        
+        # Check if patient_id is provided
+        if 'patient_id' not in request.data or not request.data['patient_id']:
+            return Response(
+                {"error": "patient_id is required and cannot be null"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        try:
+            return super().create(request, *args, **kwargs)
+        except Exception as e:
+            print(f"Error creating wound: {str(e)}")
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     @action(detail=True, methods=['put'], url_path='archive')
     def archive(self, request, pk=None):

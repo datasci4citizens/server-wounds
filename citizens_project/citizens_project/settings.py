@@ -18,10 +18,18 @@ from dotenv import load_dotenv
 load_dotenv() 
 load_dotenv(".env.google") 
 
+# Detectar se estamos rodando em Docker (verificando a existência do diretório /code)
+RUNNING_IN_DOCKER = os.path.exists('/code')
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-MEDIA_ROOT =  BASE_DIR.parent / "tmp" / "media"
+# Configure o MEDIA_ROOT com base no ambiente
+if RUNNING_IN_DOCKER:
+    MEDIA_ROOT = '/code/citizens_project/media'
+else:
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 MEDIA_URL = '/media/'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -67,6 +75,8 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'Wounds API',
     'VERSION': '0.1.0',
     'SERVE_INCLUDE_SCHEMA': True,
+    # 'COMPONENT_SPLIT_REQUEST': True,
+    # 'GENERIC_FILTER_LOOKUPS': ['exact', 'in', 'contains', 'icontains', 'gt', 'gte', 'lt', 'lte'],
 }
   
 MIDDLEWARE = [
