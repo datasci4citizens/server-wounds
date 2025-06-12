@@ -1,3 +1,46 @@
+#foi dificil representar todos conceitos necessários com OMOP
+#para contornar esse problema criamos alguns conceitos locais
+# todos conceitos com id's na casa do bilhao sao locais
+
+# aqui esta uma lista com todos os conceitos locais
+'''
+-> skin around 
+CI__ERYTHEMA_SML_2
+CID_ERYTHEMA_GT_2
+
+-> tissue type
+CID_DEVITALIZED 
+ 
+-> wound size
+CID_WOUND_AREA_0_SQCM 
+CID_WOUND_AREA_LT_0_3_SQCM  
+CID_WOUND_AREA_0_3_0_6_SQCM 
+CID_WOUND_AREA_0_7_1_SQCM 
+CID_WOUND_AREA_1_1_2_SQCM  
+CID_WOUND_AREA_2_1_3_SQCM  
+CID_WOUND_AREA_3_1_4_SQCM  
+CID_WOUND_AREA_4_1_8_SQCM  
+CID_WOUND_AREA_8_1_12_SQCM  
+CID_WOUND_AREA_12_1_24_SQCM 
+CID_WOUND_AREA_GT_24_SQCM  
+
+-> todas as wound locations sao conceitos locais
+-> todos os os wound size tambem sao locais
+
+-> wound type
+CID_VENEMOUS_ULCER
+CID_NEOPLASTIC 
+
+-> exudate
+CID_FETID 
+CID_ABSENT 
+
+CID_TCLE
+CID_COMORBIDITY 
+
+#qualquer conceito que nao eata listado aqui eh padrao do OMOP
+'''
+
 CID_NULL = 0
 CID_WOUND = 4168335
 CID_WOUND_MORPH = 4029919
@@ -20,10 +63,6 @@ CID_EPITHELIALIZATION = 45877378
 CID_GRANULATION = 4247022
 CID_NECROTIC_ISSUE_ESCHAR = 1177240
 CID_DEVITALIZED = 2000000152
-
-#foi dificil encontrar conceitos omop que 
-#encaixam bem com o wonds edges, location e size
-# vou criar conceitos locais nao OMOP
 
 #wound size
 CID_WOUND_AREA_0_SQCM = 2000000200
