@@ -1,14 +1,18 @@
+from django.conf import settings
 from rest_framework import viewsets, status
 from drf_spectacular.utils import extend_schema
+from rest_framework.request import Request
+
+from .omop.omop_models import ProcedureOccurrence
 
 from .virtual_models import (VirtualSpecialist, VirtualWound, VirtualTrackingRecords, VirtualPatient, VirtualComorbidity)
-from .virtual_serializers import (VirtualSpecialistSerializer, VirtualWoundSerializer, VirtualTrackingRecordsSerializer, 
-                                 VirtualPatientSerializer, VirtualComorbiditySerializer)
+from .virtual_serializers import (ImageSerializer, VirtualSpecialistSerializer, VirtualWoundSerializer, VirtualTrackingRecordsSerializer, 
+                                 VirtualPatientSerializer, VirtualComorbiditySerializer, ImageSerializer)
 from django.db.models import OuterRef, Subquery
-from .models import User 
+from .models import TrackingRecordImage, WoundImage, User
 from rest_framework import generics, mixins, views
 from rest_framework.response import Response
-
+from rest_framework.parsers import MultiPartParser
 @extend_schema(tags=["specialists"])
 class VirtualSpecialistViewSet(mixins.CreateModelMixin,
                    mixins.RetrieveModelMixin,
@@ -26,17 +30,17 @@ class VirtualPatientViewSet(viewsets.ViewSet):
     def create(self, request, *args, **kwargs):
         serializer = VirtualPatientSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.create(serializer.validated_data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        data = serializer.create(serializer.validated_data)
+        VirtualPatient._map_virtual_to_db
+        return Response(data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
         serializer.save()
     
     def retrieve(self, request, pk=None, *args, **kwargs):
         instance = VirtualPatient.get(patient_id=pk)
-        comorbidities, comorbidities_to_add = VirtualPatient.get_comorbidities(patient_id=pk)
+        comorbidities = VirtualPatient.get_comorbidities(patient_id=pk)
         instance["comorbidities"] = comorbidities
-        instance["comorbidities_to_add"] = comorbidities_to_add
         serializer = VirtualPatientSerializer()
         return Response(instance)
 
@@ -44,19 +48,102 @@ class VirtualPatientViewSet(viewsets.ViewSet):
     def list(self, request, *args, **kwargs):
         instances = VirtualPatient.objects().all()
         for instance in instances:
-            comorbidities, comorbidities_to_add = VirtualPatient.get_comorbidities(patient_id=instance["patient_id"])
+            comorbidities = VirtualPatient.get_comorbidities(patient_id=instance["patient_id"])
             instance["comorbidities"] = comorbidities
-            instance["comorbidities_to_add"] = comorbidities_to_add
         return Response(instances)
+    
+    
 @extend_schema(tags=["wounds"])
 class VirtualWoundViewSet(viewsets.ModelViewSet):
-    queryset = VirtualWound.objects().all()
+    queryset = VirtualWound.objects().annotate(
+        image_url=Subquery(
+            WoundImage.objects.filter(wound_id=OuterRef('wound_id')).values('image__image')
+        )
+    ).all()
     serializer_class = VirtualWoundSerializer
+    
+    def retrieve(self, request, pk=None, *args, **kwargs):
+        instance = self.queryset.get(tracking_id=pk)
+        instance["image_url"] = request.build_absolute_uri("../" +"media/"+ instance.get("image_url"))
+        serializer = VirtualWoundSerializer(data=instance)
+        serializer.is_valid(raise_exception=True)
 
+        return Response(serializer.validated_data)
+
+    def list(self, request: Request, *args, **kwargs):
+        instances = list(self.queryset.all())
+        for instance in instances:            
+            instance["image_url"] = request.build_absolute_uri("../" +"media/"+ instance.get("image_url"))
+        serializer =  VirtualWoundSerializer(many=True, data=instances)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.validated_data)
 @extend_schema(tags=["tracking-records"])
 class VirtualTrackingRecordsViewSet(viewsets.ModelViewSet):
-    queryset = VirtualTrackingRecords.objects().all()
+    queryset = VirtualTrackingRecords.objects().all().annotate(
+        image_url=Subquery(
+            TrackingRecordImage.objects.filter(tracking_record_id=OuterRef('tracking_id')).values('image__image')
+        )
+    )
     serializer_class = VirtualTrackingRecordsSerializer
+    def create(self, request, *args, **kwargs):
+        serializer = VirtualPatientSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.create(serializer.validated_data)
+        return Response(data, status=status.HTTP_201_CREATED)
+
+    def perform_create(self, serializer):
+        serializer.save()
+    
+    def retrieve(self, request, pk=None, *args, **kwargs):
+        instance = self.queryset.get(tracking_id=pk)
+        instance["image_url"] = request.build_absolute_uri("../" +"media/"+ instance.get("image_url"))
+        serializer = VirtualTrackingRecordsSerializer(data=instance)
+        serializer.is_valid(raise_exception=True)
+
+        return Response(serializer.validated_data)
+
+
+    def list(self, request: Request, *args, **kwargs):
+        instances = list(self.queryset.all())
+        for instance in instances:            
+            instance["image_url"] = request.build_absolute_uri("../" +"media/"+ instance.get("image_url"))
+        serializer =  VirtualTrackingRecordsSerializer(many=True, data=instances)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.validated_data)
+    
+@extend_schema(tags=["tracking-records"])
+class TrackingRecordsImageViewSet(viewsets.ViewSet):
+    serializer_class = ImageSerializer
+    parser_classes = [MultiPartParser]
+    def update(self, request,pk, *args, **kwargs):
+        serializer = ImageSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try: 
+            tracking_image_instance = TrackingRecordImage.objects.get(tracking_record_id=pk)
+            image_instance = serializer.save()
+            tracking_image_instance.image = image_instance
+            tracking_image_instance.save()
+        except TrackingRecordImage.DoesNotExist:
+            return Response({"error": "Tracking record not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"message": "Image updated successfully"}, status=status.HTTP_200_OK)
+
+@extend_schema(tags=["wounds"])
+class WoundImageViewSet(viewsets.ViewSet):
+    serializer_class = ImageSerializer
+    parser_classes = [MultiPartParser]
+    def update(self, request,pk, *args, **kwargs):
+        serializer = ImageSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try: 
+            wound_image_instance = WoundImage.objects.get(wound_id=pk)
+            image_instance = serializer.save()
+            wound_image_instance.image = image_instance
+            wound_image_instance.save()
+            
+        except WoundImage.DoesNotExist:
+            return Response({"error": "Tracking record not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"message": "Image updated successfully"}, status=status.HTTP_200_OK)
 
 @extend_schema(tags=["comorbidities"])
 class VirtualComorbidityViewSet(viewsets.ModelViewSet):
