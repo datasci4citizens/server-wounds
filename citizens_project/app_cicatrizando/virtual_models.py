@@ -23,6 +23,178 @@ from .django_virtualmodels.models import (
 from .django_virtualmodels.serializers import VirtualModelSerializer
 from rest_framework.routers import DefaultRouter
 
+map_drink_frequency = [
+    ("0", omop_ids.CID_DRINK_NEVER)
+    ("1",omop_ids.CID_DRINK_MONTHLY_OR_LESS)
+    ("2", omop_ids.CID_DRINK_2_3_TIMES_WEEK)
+    ("3", omop_ids.CID_DRINK_4_OR_MORE_WEEK)
+
+]
+
+map_exudate_amount = [
+    ("0", omop_ids.CID_NONE)
+    ("1", omop_ids.CID_QUITE_A_BIT)
+    ("2", omop_ids.CID_A_MODERATE_AMOUNT)
+    ("3", omop_ids.CID_A_LOT)
+
+]
+
+map_exudate_type = [
+    ("0", omop_ids.CID_EXUDATE_SEROUS)
+    ("1", omop_ids.CID_EXUDATE_SANGUINOUS)
+    ("2", omop_ids.CID_EXUDATE_PURULENT)
+    ("3", omop_ids.CID_EXUDATE_SEROSANGUINOUS)
+    ("4", omop_ids.CID_FETID) # conceito local ( nao omop)
+    ("5", omop_ids.CID_NONE)
+]
+
+map_skin_around = [
+    ("in", omop_ids.CID_SWELLING)
+    ("l2", omop_ids.CID_WOUND_ERYTHEMA)
+    ("g2", omop_ids.CID_WOUND_ERYTHEMA) 
+]
+
+map_smoke_frequency = [
+    ("0 ", omop_ids.CID_NEVER),
+    ("1", omop_ids.CID_OCCASIONALLY)
+    ("2", omop_ids.CID_10_OR_LESS)
+    ("3", omop_ids.CID_10_OR_MORE)
+]
+
+map_tissue_type = [
+    ("tc", omop_ids.CID_SCAR)
+    ("te", omop_ids.CID_EPITHELIALIZATION)
+    ("tg", omop_ids.CID_GRANULATION)
+    ("td", omop_ids.CID_DEVITALIZED) #conceito local (nao omop)
+    ("tn", omop_ids.CID_NECROTIC_ISSUE_ESCHAR)
+]
+
+map_wound_edges = [
+    ("in", omop_ids.CID_WOUND_EDGE_POORLY_DEFINED),
+    ("df", omop_ids.CID_WOUND_EDGE_ATTACHED),
+    ("na", omop_ids.CID_WOUND_EDGE_NOT_ATTACHED),
+    ("cu", omop_ids.CID_WOUND_EDGE_ROLLED),
+    ("fb", omop_ids.CID_WOUND_EDGE_SCABBED),
+]
+
+
+#sao todos conceitos locais
+map_wound_location = [
+    # Regiões Principais
+    ("cb", omop_ids.CID_REGION_HEAD),
+    ("fc", omop_ids.CID_REGION_FACE),
+    ("pc", omop_ids.CID_REGION_NECK),
+    ("pt", omop_ids.CID_REGION_CHEST),
+    ("ab", omop_ids.CID_REGION_ABDOMEN),
+    ("ds", omop_ids.CID_REGION_BACK),
+    ("pr", omop_ids.CID_REGION_PERINEAL),
+    ("ms", omop_ids.CID_REGION_UPPER_LIMB),
+    ("mi", omop_ids.CID_REGION_LOWER_LIMB),
+
+    # Sub-Regiões da Cabeça (cb)
+    ("cb ft", omop_ids.CID_SUBREGION_HEAD_FRONTAL),
+    ("cb pt", omop_ids.CID_SUBREGION_HEAD_PARIETAL),
+    ("cb oc", omop_ids.CID_SUBREGION_HEAD_OCCIPITAL),
+    ("cb tm", omop_ids.CID_SUBREGION_HEAD_TEMPORAL),
+    ("cb it", omop_ids.CID_SUBREGION_HEAD_INFRATEMPORAL),
+
+    # Sub-Regiões da Face (fc)
+    ("fc ns", omop_ids.CID_SUBREGION_FACE_NASAL),
+    ("fc ol", omop_ids.CID_SUBREGION_FACE_ORAL),
+    ("fc mn", omop_ids.CID_SUBREGION_FACE_MENTONIAN),
+    ("fc or", omop_ids.CID_SUBREGION_FACE_ORBITAL),
+    ("fc io", omop_ids.CID_SUBREGION_FACE_INFRAORBITAL),
+    ("fc jg", omop_ids.CID_SUBREGION_FACE_BUCCAL),
+    ("fc zg", omop_ids.CID_SUBREGION_FACE_ZYGOMATIC),
+    ("fc pm", omop_ids.CID_SUBREGION_FACE_PAROTIDOMASSETERIC),
+
+    # Sub-Regiões do Pescoço (pc)
+    ("pc an", omop_ids.CID_SUBREGION_NECK_ANTERIOR),
+    ("pc em", omop_ids.CID_SUBREGION_NECK_STERNOCLEIDOMASTOID),
+    ("pc lt", omop_ids.CID_SUBREGION_NECK_LATERAL),
+    ("pc pn", omop_ids.CID_SUBREGION_NECK_POSTERIOR),
+
+    # Sub-Regiões do Peito (pt)
+    ("pt ic", omop_ids.CID_SUBREGION_CHEST_INFRACLAVICULAR),
+    ("pt mm", omop_ids.CID_SUBREGION_CHEST_MAMMARY),
+    ("pt ax", omop_ids.CID_SUBREGION_CHEST_AXILLARY),
+    ("pt es", omop_ids.CID_SUBREGION_CHEST_STERNAL),
+
+    # Sub-Regiões do Abdome (aecido desvitalizadob)
+    ("ab hc", omop_ids.CID_SUBREGION_ABDOMEN_HYPOCHONDRIAC),
+    ("ab ep", omop_ids.CID_SUBREGION_ABDOMEN_EPIGASTRIC),
+    ("ab la", omop_ids.CID_SUBREGION_ABDOMEN_FLANK),
+    ("ab um", omop_ids.CID_SUBREGION_ABDOMEN_UMBILICAL),
+    ("ab ig", omop_ids.CID_SUBREGION_ABDOMEN_INGUINAL),
+    ("ab pb", omop_ids.CID_SUBREGION_ABDOMEN_PUBIC_HYPOGASTRIC),
+
+    # Sub-Regiões do Dorso (ds)
+    ("ds vt", omop_ids.CID_SUBREGION_BACK_VERTEBRAL),
+    ("ds sc", omop_ids.CID_SUBREGION_BACK_SACRAL),
+    ("ds es", omop_ids.CID_SUBREGION_BACK_SCAPULAR),
+    ("ds ie", omop_ids.CID_SUBREGION_BACK_INFRASCAPULAR),
+    ("ds lb", omop_ids.CID_SUBREGION_BACK_LUMBAR),
+    ("ds se", omop_ids.CID_SUBREGION_BACK_SUPRASCAPULAR),
+    ("ds iv", omop_ids.CID_SUBREGION_BACK_INTERSCAPULOVERTEBRAL),
+
+    # Sub-Regiões da Região Perineal (pr)
+    ("pr an", omop_ids.CID_SUBREGION_PERINEAL_ANAL),
+    ("pr ug", omop_ids.CID_SUBREGION_PERINEAL_UROGENITAL),
+
+    # Sub-Regiões do Membro Superior (ms)
+    ("ms dt", omop_ids.CID_SUBREGION_UPPER_LIMB_DELTOID),
+    ("ms ab", omop_ids.CID_SUBREGION_UPPER_LIMB_ANTERIOR_ARM),
+    ("ms pb", omop_ids.CID_SUBREGION_UPPER_LIMB_POSTERIOR_ARM),
+    ("ms ac", omop_ids.CID_SUBREGION_UPPER_LIMB_ANTERIOR_ELBOW),
+    ("ms pc", omop_ids.CID_SUBREGION_UPPER_LIMB_POSTERIOR_ELBOW),
+    ("ms aa", omop_ids.CID_SUBREGION_UPPER_LIMB_ANTERIOR_FOREARM),
+    ("ms pa", omop_ids.CID_SUBREGION_UPPER_LIMB_POSTERIOR_FOREARM),
+    ("ms dm", omop_ids.CID_SUBREGION_UPPER_LIMB_DORSUM_HAND),
+    ("ms pm", omop_ids.CID_SUBREGION_UPPER_LIMB_PALM_HAND),
+
+    # Sub-Regiões do Membro Inferior (mi)
+    ("mi gl", omop_ids.CID_SUBREGION_LOWER_LIMB_GLUTEAL),
+    ("mi ac", omop_ids.CID_SUBREGION_LOWER_LIMB_ANTERIOR_THIGH),
+    ("mi pc", omop_ids.CID_SUBREGION_LOWER_LIMB_POSTERIOR_THIGH),
+    ("mi aj", omop_ids.CID_SUBREGION_LOWER_LIMB_ANTERIOR_KNEE),
+    ("mi pj", omop_ids.CID_SUBREGION_LOWER_LIMB_POSTERIOR_KNEE),
+    ("mi pp", omop_ids.CID_SUBREGION_LOWER_LIMB_POSTERIOR_LEG),
+    ("mi ap", omop_ids.CID_SUBREGION_LOWER_LIMB_ANTERIOR_LEG),
+    ("mi cl", omop_ids.CID_SUBREGION_LOWER_LIMB_CALCANEAL),
+    ("mi dp", omop_ids.CID_SUBREGION_LOWER_LIMB_DORSUM_FOOT),
+    ("mi ppf", omop_ids.CID_SUBREGION_LOWER_LIMB_PLANTAR_FOOT), 
+]
+
+# conceitos locais
+map_wound_size = [
+    ("0", omop_ids.CID_WOUND_AREA_0_SQCM),
+    ("1", omop_ids.CID_WOUND_AREA_LT_0_3_SQCM),
+    ("2", omop_ids.CID_WOUND_AREA_0_3_0_6_SQCM),
+    ("3", omop_ids.CID_WOUND_AREA_0_7_1_SQCM),
+    ("4", omop_ids.CID_WOUND_AREA_1_1_2_SQCM),
+    ("5", omop_ids.CID_WOUND_AREA_2_1_3_SQCM),
+    ("6", omop_ids.CID_WOUND_AREA_3_1_4_SQCM),
+    ("7", omop_ids.CID_WOUND_AREA_4_1_8_SQCM),
+    ("8", omop_ids.CID_WOUND_AREA_8_1_12_SQCM),
+    ("9", omop_ids.CID_WOUND_AREA_12_1_24_SQCM),
+    ("10", omop_ids.CID_WOUND_AREA_GT_24_SQCM),
+]
+
+map_wound_type = [
+    ("ud", omop_ids.CID_DIABETIC_FOOT_ULCER )
+    ("up", omop_ids.CID_PRESSURE_INJURY)
+    ("uv", omop_ids.CID_VENEMOUS_ULCER) #conceito local (nao omop)
+    ("ua", omop_ids.CID_ARTERIAL_ULCER)
+    ("ft", omop_ids.CID_TRAUMATIC_WOUND)
+    ("fc", omop_ids.CID_SURGICAL_WOUND)
+    ("qm", omop_ids.CID_BURN)
+    ("os", omop_ids.CID_OSTOMY)
+    ("st", omop_ids.CID_TEAR_OF_SKIN)
+    ("fs", omop_ids.CID_FISTULA)
+    ("fn", omop_ids.CID_WOUND_NECROTIC)
+    ("fl", omop_ids.CID_PHLEBITIS)
+
+]
 
 class TableBindings:
     class Observation(TableBinding):
