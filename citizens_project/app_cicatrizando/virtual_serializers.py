@@ -2,15 +2,19 @@ from datetime import date
 from django.core.validators import RegexValidator
 from .omop.omop_models import (
     Concept,
-    Observation
+    Observation,
+    Provider
 )
 from .omop import omop_ids
+from .models import (
+    Image
+)
 from .django_virtualmodels.models import (
     all_attr_ofclass
 )
 from .django_virtualmodels.serializers import VirtualModelSerializer
 from .virtual_models import (VirtualSpecialist, VirtualWound, VirtualTrackingRecords, VirtualPatient, VirtualComorbidity)
-
+from . import virtual_models
 from rest_framework import serializers
 from django.db import transaction
 from django.contrib.auth import get_user_model
@@ -25,30 +29,40 @@ for const_name in all_attr_ofclass(omop_ids, int):
         )
     except:
         pass
+# serializers.py
+from rest_framework import serializers
+from datetime import datetime
 
+class TimezoneAwareDateField(serializers.DateField):
+    def to_internal_value(self, value):
+        try:
+            # Converte a string ISO para datetime (considera UTC se terminado com 'Z')
+            parsed_date = datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f%z')
+            # Extrai apenas a parte da data (ignora horário e fuso)
+            return parsed_date.date()
+        except (ValueError, TypeError):
+            # Se falhar, tenta o formato padrão do DRF (YYYY-MM-DD)
+            return super().to_internal_value(value)
+        
 class VirtualSpecialistSerializer(serializers.Serializer):
     specialist_id   = serializers.IntegerField(read_only=True)
     specialist_name = serializers.CharField(max_length = 255)
     email           = serializers.EmailField(max_length = 255)
-    birthday        = serializers.DateField(allow_null=True, required=False)
-    speciality      = serializers.IntegerField(allow_null=True, required=False)
+    birthday        = TimezoneAwareDateField(allow_null=True, required=False)
+    speciality      = serializers.CharField(max_length=40, allow_null=True, required=False)
     city            = serializers.CharField(allow_null=True, required=False, max_length = 100)
     state           = serializers.CharField(allow_null=True, required=False, max_length = 100)
 
     def validate_email(self, value):
         # valida se o email ja nao esta em uso
-        if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("Este e-mail já está em uso.")
+        try:
+            if Provider.objects.filter(provider_user__email = value):
+                raise serializers.ValidationError("Este e-mail já está em uso.")
+        except User.DoesNotExist:
+            pass 
         return value
     
-    def validate_speciality(self, value):
-        try:
-            Concept.objects.get(concept_id=value)
-                
-        except Concept.DoesNotExist:
-            raise serializers.ValidationError(f"O Concept ID '{value}' não foi encontrado na base OMOP.")
-            
-        return value
+
     
     def validate_birthday(self, value):
         if value and value > date.today():
@@ -58,7 +72,7 @@ class VirtualSpecialistSerializer(serializers.Serializer):
     @transaction.atomic()
     def create(self, validated_data):
         
-        user = User.objects.create_user(
+        user, _ = User.objects.get_or_create(
             username=validated_data["email"],
             email=validated_data["email"]
         )
@@ -101,8 +115,8 @@ class VirtualSpecialistSerializer(serializers.Serializer):
 class VirtualPatientSerializer(serializers.Serializer):
     patient_id            = serializers.IntegerField(read_only=True)
     name                  = serializers.CharField(max_length = 255)
-    gender                = serializers.IntegerField()
-    birthday              = serializers.DateField()
+    gender                = serializers.ChoiceField(choices=virtual_models.map_gender.virtual_values())
+    birthday              = TimezoneAwareDateField()
     specialist_id         = serializers.IntegerField(allow_null=True, required=False)
     hospital_registration = serializers.CharField(allow_null=True, required=False, max_length = 255)
 
@@ -114,12 +128,11 @@ class VirtualPatientSerializer(serializers.Serializer):
     weight                = serializers.FloatField(allow_null=True, required=False)
     height                = serializers.FloatField(allow_null=True, required=False)
     accept_tcl            = serializers.BooleanField(required=False)
-    smoke_frequency       = serializers.IntegerField(allow_null=True, required=False)
-    drink_frequency       = serializers.IntegerField(allow_null=True, required=False)
+    smoke_frequency       = serializers.ChoiceField(allow_null=True, required=False, choices=virtual_models.map_smoke_frequency.virtual_values())
+    drink_frequency       = serializers.ChoiceField(allow_null=True, required=False, choices=virtual_models.map_drink_frequency.virtual_values())
 
     email                 = serializers.EmailField(read_only=True)
-    comorbidities         = serializers.ListField(child=serializers.IntegerField(), allow_empty= True)
-    comorbidities_to_add  = serializers.ListField(child=serializers.CharField(), allow_empty= True)
+    comorbidities         = serializers.ListField(child=serializers.ChoiceField(choices=virtual_models.map_comorbidities.virtual_values()), allow_empty= True)
 
     def validate_birthday(self, value):
         if value and value > date.today():
@@ -144,7 +157,7 @@ class VirtualPatientSerializer(serializers.Serializer):
             if not value:
                 raise serializers.ValidationError("É necessário aceitar os Termos e Condições de Uso para participar da pesquisa.")
         return value
-
+ 
     @transaction.atomic()
     def create(self, validated_data):
         virtual_patient_fields  = [
@@ -173,19 +186,16 @@ class VirtualPatientSerializer(serializers.Serializer):
                 person_id = result["patient_id"],
                 observation_concept_id =  omop_ids.CID_COMORBIDITY,
                 observation_type_concept_id = omop_ids.CID_EHR,
-                value_as_concept_id = c,
-                observation_date = data["updated_at"]
-            )
-        for c in set(validated_data["comorbidities_to_add"]):
-            obs = Observation.objects.create(
-                person_id = result["patient_id"],
-                observation_concept_id =  omop_ids.CID_COMORBIDITY,
-                observation_type_concept_id = omop_ids.CID_EHR,
-                value_as_string = c,
+                value_as_concept_id = virtual_models.map_comorbidities.virtual_to_db(c),
                 observation_date = data["updated_at"]
             )
         
         return result
+    def validate_gender(self, value):
+        result = VirtualPatient.descriptor().fields["gender"].validate(value)
+        if result != None:
+            raise serializers.ValidationError(result)
+        return value
 
 class VirtualWoundSerializer(VirtualModelSerializer):
     wound_id      = serializers.IntegerField(read_only=True) 
@@ -194,14 +204,13 @@ class VirtualWoundSerializer(VirtualModelSerializer):
     updated_at    = serializers.DateTimeField(read_only=True)
     region        = serializers.IntegerField(required=True)     
     wound_type    = serializers.IntegerField(required=True) 
-    start_date    = serializers.DateField(required=True) 
-    end_date      = serializers.DateField(allow_null=True, required=False)
+    start_date    = TimezoneAwareDateField(required=True) 
+    end_date      = TimezoneAwareDateField(allow_null=True, required=False)
     is_active     = serializers.IntegerField(required=True)
-    image_id      = serializers.CharField(max_length=500, allow_null=True, required=False)
+    image_url     = serializers.URLField()
+
     class Meta:
-        super_model = VirtualWound
-        model = VirtualWound
-        fields = "__all__"
+        super_model = VirtualWound 
 
     def _validate_concept_id_existence(self, value, field_name):
         if value:
@@ -214,12 +223,10 @@ class VirtualWoundSerializer(VirtualModelSerializer):
         return value
     def validate_region(self, value):
         self._validate_concept_id_existence(value, "região da ferida")
-        self._validate_standard_concept(value, "região da ferida")
         return value
     
     def validate_wound_type(self, value):
         self._validate_concept_id_existence(value, "tipo de ferida")
-        self._validate_standard_concept(value, "tipo de ferida")
         return value
 
 
@@ -240,14 +247,22 @@ class VirtualWoundSerializer(VirtualModelSerializer):
                 f"O Concept ID '{value}' para status da ferida é inválido. Use {omop_ids.CID_CONDITION_ACTIVE} (Ativa) ou {omop_ids.CID_CONDITION_INACTIVE} (Inativa)."
             )
         self._validate_concept_id_existence(value, "status da ferida")
-        self._validate_standard_concept(value, "status da ferida")
         return value
+    
+class ImageSerializer(serializers.ModelSerializer):
+    def validate_image(self, value):
+        if not value.name.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
+            raise serializers.ValidationError("O arquivo deve ser uma imagem (PNG, JPG, JPEG, GIF).")
+        return value
+    class Meta:
+        model = Image
+        fields = ['image']
 
-class VirtualTrackingRecordsSerializer(VirtualModelSerializer):
-    tracking_id = serializers.IntegerField(read_only=True)
-    updated_at = serializers.DateTimeField(read_only=True)
+class VirtualTrackingRecordsSerializer(serializers.Serializer):
+    tracking_id              = serializers.IntegerField(read_only=True)
+    updated_at               = serializers.DateTimeField(read_only=True)
     patient_id               = serializers.IntegerField(required=True)
-    specialist_id            = serializers.IntegerField(required=True)
+    specialist_id            = serializers.IntegerField(required=True, allow_null=True)
     wound_id                 = serializers.IntegerField(required=True)
     track_date               = serializers.DateField(required=True)
     length                   = serializers.FloatField(min_value=0.0, allow_null=True, required=False)
@@ -260,14 +275,10 @@ class VirtualTrackingRecordsSerializer(VirtualModelSerializer):
     had_a_fever              = serializers.BooleanField(allow_null=True, required=False)
     pain_level               = serializers.IntegerField(min_value=0, max_value=10, allow_null=True, required=False)
     dressing_changes_per_day = serializers.IntegerField(min_value=0, allow_null=True, required=False) 
-    image_id                 = serializers.CharField(max_length=500, allow_null=True, required=False)
     guidelines_to_patient    = serializers.CharField(max_length=1000, allow_null=True, required=False)
     extra_notes              = serializers.CharField(max_length=1000, allow_null=True, required=False)
+    image_url                = serializers.URLField()
 
-    class Meta:
-        super_model = VirtualTrackingRecords
-        model = VirtualTrackingRecords
-        fields = "__all__"
     
     def _validate_concept_id_existence(self, value, field_name):
         if value:
