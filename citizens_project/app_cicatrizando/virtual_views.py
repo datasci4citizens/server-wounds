@@ -93,7 +93,7 @@ class VirtualWoundViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
 
         with transaction.atomic():
-            # 3. Prepara os dados para a atualização no modelo VirtualWound
+            # 3. Prepara os dados para atualização no modelo VirtualWound
             update_data = {
                 "wound_id": instance["wound_id"], 
                 "updated_at": datetime.now() 
