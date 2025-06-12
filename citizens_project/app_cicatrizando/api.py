@@ -17,6 +17,10 @@ import random
 from django.db import transaction
 # --- VIEWSETS ---
 from django.contrib.auth.models import AnonymousUser
+import logging
+
+# Get a logger for your module
+logger = logging.getLogger('app_cicatrizando')
 
 
 User = get_user_model()
@@ -107,10 +111,12 @@ class GoogleLoginView(viewsets.ViewSet):
 
     @extend_schema(request=AuthSerializer, responses={200: AuthTokenResponseSerializer})
     def create(self, request, *args, **kwargs):
+        logger.info('Arrived at GoogleLoginView.create()')
         auth_serializer = self.serializer_class(data=request.data)
         auth_serializer.is_valid(raise_exception=True)
         validated_data = auth_serializer.validated_data
         user_data = google_get_user_data(validated_data)
+        logger.info(f'User data received: {user_data}')
 
         # Creates user in DB if first time login
         user_email  = user_data.get("email")
@@ -118,8 +124,10 @@ class GoogleLoginView(viewsets.ViewSet):
         provider_id = None
         provider_data = None
         user, created = User.objects.get_or_create(username=user_email,email=user_email)
+        logger.info(f'User created: {created}, User ID: {user.id}')
         try:
             provider = VirtualSpecialist.objects().filter(user_id=user.id).get()
+            logger.info('Provider found for user')
             print(provider)
             provider_id = provider["specialist_id"]
             provider_data = {
@@ -130,11 +138,13 @@ class GoogleLoginView(viewsets.ViewSet):
         except Provider.DoesNotExist:
             pass
         token = RefreshToken.for_user(user)
+        logger.info('Token generated for user')
         
         # Determine role and profile completion status
         is_provider = provider_id is not None
         role = "specialist" if is_provider else "user"
         profile_completion_required = created or not is_provider
+        logger.info(f'Role: {role}, Profile completion required: {profile_completion_required}')
 
         # Generate JWT token
         response = {
@@ -147,5 +157,6 @@ class GoogleLoginView(viewsets.ViewSet):
             "provider_data": provider_data,
             "profile_completion_required": profile_completion_required
         }
+        logger.info('Response prepared')
 
         return Response(response, status=200)
