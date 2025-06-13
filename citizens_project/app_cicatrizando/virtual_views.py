@@ -20,6 +20,7 @@ from rest_framework.parsers import MultiPartParser
 from .predict_single_image import predict_image_class, predict_multi_label
 from PIL import Image
 
+
 @extend_schema(tags=["specialists"])
 class VirtualSpecialistViewSet(mixins.CreateModelMixin,
                    mixins.RetrieveModelMixin,
