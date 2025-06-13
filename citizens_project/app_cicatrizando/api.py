@@ -43,7 +43,8 @@ class MeView(viewsets.ViewSet):
 
 
 class AuthSerializer(serializers.Serializer):
-    code = serializers.CharField(required=True, allow_null=False, allow_blank=False)
+    code = serializers.CharField(required=False, allow_null=False, allow_blank=False)
+    token = serializers.CharField(required=False, allow_null=False, allow_blank=False)
     
 class AuthTokenResponseSerializer(serializers.Serializer):
     access = serializers.CharField()
