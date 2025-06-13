@@ -13,6 +13,10 @@ from .models import TrackingRecordImage, WoundImage, User
 from rest_framework import generics, mixins, views
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
+
+from .predict_single_image import predict_image_class, predict_multi_label
+from PIL import Image
+
 @extend_schema(tags=["specialists"])
 class VirtualSpecialistViewSet(mixins.CreateModelMixin,
                    mixins.RetrieveModelMixin,
@@ -123,14 +127,31 @@ class TrackingRecordsImageViewSet(viewsets.ViewSet):
             image_instance = serializer.save()
             tracking_image_instance.image = image_instance
             tracking_image_instance.save()
+
+            uploaded_image = request.FILES.get("image")
+            if uploaded_image is None:
+                return Response({"error": "No image provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+            pil_image = Image.open(uploaded_image).convert("RGB")
+
+            tissue_prediction = predict_image_class(pil_image)
+            multihead_predictions = predict_multi_label(pil_image)
+
         except TrackingRecordImage.DoesNotExist:
             return Response({"error": "Tracking record not found"}, status=status.HTTP_404_NOT_FOUND)
-        return Response({"message": "Image updated successfully"}, status=status.HTTP_200_OK)
+        return Response({
+                "message": "Image updated successfully",
+                "predictions": {
+                    "tissue_type": tissue_prediction,
+                    "W_I_Fi": multihead_predictions
+                }
+            }, status=status.HTTP_200_OK)
 
 @extend_schema(tags=["wounds"])
 class WoundImageViewSet(viewsets.ViewSet):
     serializer_class = ImageSerializer
     parser_classes = [MultiPartParser]
+
     def update(self, request,pk, *args, **kwargs):
         serializer = ImageSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -140,10 +161,26 @@ class WoundImageViewSet(viewsets.ViewSet):
             image_instance = serializer.save()
             wound_image_instance.image = image_instance
             wound_image_instance.save()
+
+            uploaded_image = request.FILES.get('image')
+            if uploaded_image is None:
+                return Response({"error": "No image file provided"}, status=status.HTTP_400_BAD_REQUEST)
             
+            pil_image = Image.open(uploaded_image).convert("RGB")
+
+            tissue_prediction = predict_image_class(pil_image)
+            multihead_predictions = predict_multi_label(pil_image)
+            
+
         except WoundImage.DoesNotExist:
             return Response({"error": "Tracking record not found"}, status=status.HTTP_404_NOT_FOUND)
-        return Response({"message": "Image updated successfully"}, status=status.HTTP_200_OK)
+        return Response({
+                "message": "Image updated successfully",
+                "predictions": {
+                    "tissue_type": tissue_prediction,
+                    "W_I_Fi": multihead_predictions
+                }
+            }, status=status.HTTP_200_OK)
 
 @extend_schema(tags=["comorbidities"])
 class VirtualComorbidityViewSet(viewsets.ModelViewSet):
