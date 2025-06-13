@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.conf import settings
 import uuid
 import os
 from django.contrib.auth import get_user_model
@@ -42,3 +43,30 @@ class TrackingRecordImage(models.Model):
     tracking_record_image_id = models.AutoField(primary_key=True)
     image = models.ForeignKey(Image, null=True, on_delete=models.DO_NOTHING)
     tracking_record = models.ForeignKey(ProcedureOccurrence, on_delete=models.DO_NOTHING) 
+
+class PatientExtraNote(models.Model):
+
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='patient_extra_notes',
+    )
+
+    note_text = models.TextField(
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        verbose_name = "Nota Extra do Paciente"
+        verbose_name_plural = "Notas Extras dos Pacientes"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        author_name = self.author.username if self.author else 'Anônimo'
+        return f"Nota de {author_name} em {self.created_at.strftime('%Y-%m-%d %H:%M')}: {self.note_text[:50]}..."
+
