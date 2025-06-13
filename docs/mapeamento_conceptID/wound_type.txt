@@ -1,0 +1,33 @@
+sao todos conceitos standart da classe disorder menos os especificados
+
+Wound-type{
+ 
+    "ud": "Úlcera do Pé Diabético", --> diabetic foot ulcer: 4159742
+    "up": "Lesão por Pressão",    --> Pressure Injury: 37159532
+
+    "uv": "Úlcera Venosa", 
+    Venous ulcer of lower limb: 37164951
+    Ulcer of skin of upper limb: 37168054
+ 
+    "ua": "Úlcera Arterial",   --> Arterial ulcer: 37312206 (eh da classe Morph Abnormality) 
+    
+
+    "ft": "Ferida por Trauma" --> traumatic wound: 46287159 (precisa ser revisado
+    nao sei se traumatic wound e a de fato o mesmo que uma ferida por trauma)
+
+    "fc": "Ferida Cirúrgica",  --> Surgical wound: 46284419
+    "qm": "Queimadura",       --> Burn: 442013
+
+    "os": "Ostomia",          --> ostomy: 45613198 precisa ser revisado (a ostomia na verdade eh um processo
+    cirurgico e nao um tipo de ferida)
+
+    "st": "Skin Tear",        --> Tear of skin: 4180738
+
+    "fs": "Fístula",          --> Fistula: 4324769
+
+    "fn": "Ferida Neoplásica",--> precisa de revisao
+
+    "fl": "Flebite"           --> Phlebitis: 318174
+
+}
+

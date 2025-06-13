@@ -33,7 +33,7 @@ GOOGLE_OAUTH2_CLIENT_SECRET = os.environ["GOOGLE_CLIENT_SECRET"]
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['server.wounds.staging.paas.ic.unicamp.br', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'drf_spectacular',  # For OpenAPI schema generation
     'rest_framework_simplejwt', # For JWT authentication
     'corsheaders',  # Adicione esta linha
+    'django_dbml'
 ]
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
@@ -57,6 +58,10 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
+
+       # 'rest_framework.permissions.IsAuthenticated',
+
+        # Comentar para permitir acesso público
         'rest_framework.permissions.AllowAny',
     ]
 }
@@ -171,6 +176,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Seu frontend
     "http://127.0.0.1:5173",
+    "https://server.wounds.staging.paas.ic.unicamp.br"
 ]
 
 # Para desenvolvimento, você pode permitir todas as origens (não recomendado para produção)
@@ -195,3 +201,12 @@ CORS_ALLOWED_HEADERS = [
     'Content-Type',
     'X-Requested-With',
 ]
+
+SPECTACULAR_SETTINGS = {
+    "EXTENSIONS_ROOT": {
+    },
+    'POSTPROCESSING_HOOKS': [
+        'drf_spectacular.hooks.postprocess_schema_enums',
+        'app_cicatrizando.schema.custom_postprocessing_hook'
+    ],
+}

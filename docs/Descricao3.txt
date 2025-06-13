@@ -1,0 +1,172 @@
+
+from enum import Enum
+from typing import Generic, Optional, TypeVar, Union, overload
+from datetime import date
+
+CID_WOUND = 4168335
+CID_WOUND_MORPH = 4029919
+CID_WOUND_TYPE = 43055265
+CID_EHR = 32817
+CID_HEIGHT = 607590
+CID_WEIGHT = 4099154
+CID_CENTIMETER = 8582
+CID_KILOGRAM = 9529
+CID_SMOKE_FREQUENCY = 1586169
+CID_DRINK_FREQUENCY = 1586201
+CID_CONDITION_ACTIVE = 32902
+CID_CONDITION_INACTIVE = 32906
+CID_SURFACE_REGION = 4027908
+CID_WOUND_LOCATION = 765364
+CID_WOUND_IMAGE = 36031251
+CID_WOUND_PHOTOGRAPHY = 40486415
+CID_UTF8 = 32678
+CID_PORTUGUESE = 4181536
+CID_WOUND_IMAGE_ANALYSIS = 4076808
+CID_CONDITION_RELEVANT_TO = 46233685
+CID_PK_CONDITION_OCCURRENCE = 1147127
+CID_PK_PROCEDURE_OCCURRENCE = 1147082
+# https://athena.ohdsi.org/search-terms/terms/1033739
+# https://athena.ohdsi.org/search-terms/terms/4270431
+CID_WOUND_LENGTH = 3041292
+CID_WOUND_WIDTH = 3042480
+CID_EXUDATE_AMOUNT = 3038234
+CID_EXUDATE_APPEARANCE = 43055255
+CID_WOUND_APPEARANCE = 43055002
+CID_WOUND_EDGE_DESCRIPTION = 43055269
+CID_WOUND_SKIN_AROUND = CID_EXUDATE_APPEARANCE? # No front end usava o mesmo tipo 
+CID_FEVER = 437663
+CID_NEGATIVE = 9189
+CID_POSITIVE =	9191
+CID_PAIN_SEVERITY = 21499037
+CID_DEGREE_FINDING = 4154199?
+CID_WOUND_MANAGEMENT_NOTE = 36031413
+CID_GENERIC_NOTE = 3030653
+CID_WOUND_CARE_DRESSING_CHANGE = 4256346
+T = TypeVar('T')
+class SERIAL:
+    pass
+class FK(Generic[T]):
+    pass
+# Todos os *_TYPE_CONCEPT_ID possuem valor  CID_EHR
+
+
+class CONCEPT:
+    concept_id : int
+    concept_name : str
+
+class LOCATION:  
+    city  : str
+    state : str
+
+class PROVIDER :
+    provider_id   : int  
+    provider_name : str
+    year_of_birth : date
+    specialty_concept_id  : FK[CONCEPT] 
+    location_id = FK[LOCATION]
+
+
+
+class CONDITION_OCCURRENCE: 
+    # WHERE is_active in [CID_CONDITION_ACTIVE, CID_CONDITION_INACTIVE]
+    # WHERE ( CONCEPT {id: condition_occurrence_id,  class: ID_DISORDER, domain: ID_CONDITION })
+    #       ( CID_WOUND_TYPE -[Has Answer]-> condition_occurrence_id )
+
+    person_id : int
+    condition_occurrence_id : SERIAL  
+    condition_concept_id : FK[CONCEPT]   
+    condition_start_date :  date
+    condition_end_date : date
+    provider_id : Optional[FK[PROVIDER]]
+    condition_status_concept_id : FK[CONCEPT] 
+
+
+class PERSON: 
+    person_id : int  
+    birth_datetime  : date
+    gender_concept_id    : FK[CONCEPT]
+    name  : str # não omop
+    email : str # não omop
+    phone_number : str # não omop
+    accept_tcl : bool # não omop
+
+
+class MEASUREMENT_CONCEPT(Enum):
+    CID_HEIGHT = CID_HEIGHT 
+    CID_WEIGHT = CID_WEIGHT 
+    CID_WOUND_LENGTH = CID_WOUND_LENGTH  
+    CID_WOUND_WIDTH = CID_WOUND_WIDTH 
+    CID_EXUDATE_AMOUNT = CID_EXUDATE_AMOUNT 
+    CID_EXUDATE_APPEARANCE = CID_EXUDATE_APPEARANCE 
+    CID_WOUND_APPEARANCE = CID_WOUND_APPEARANCE 
+    CID_WOUND_EDGE_DESCRIPTION = CID_WOUND_EDGE_DESCRIPTION 
+    CID_WOUND_SKIN_AROUND = CID_WOUND_SKIN_AROUND 
+    CID_FEVER = CID_FEVER 
+    CID_PAIN_SEVERITY = CID_PAIN_SEVERITY 
+    CID_WOUND_CARE_DRESSING_CHANGE = CID_WOUND_CARE_DRESSING_CHANGE
+
+class MEASUREMENT_UNIT_CONECPT(Enum):
+    CID_CENTIMETER = CID_CENTIMETER 
+    CID_KILOGRAM = CID_KILOGRAM
+# WHERE ( value_as_concept_id <-[Has Answer ]- CID_EXUDATE_AMOUNT ) 
+#     | ( value_as_concept_id <-[Has Answer ]- CID_EXUDATE_APPEARANCE ) 
+#     | ( value_as_concept_id <-[Has Answer ]- CID_WOUND_APPEARANCE ) 
+#     | ( value_as_concept_id <-[Has Answer ]- CID_WOUND_EDGE_DESCRIPTION ) 
+#     | ( value_as_concept_id <-[Has Answer ]- CID_WOUND_SKIN_AROUND ) 
+#     | ( value_as_concept_id <-[Has Answer ]- CID_PAIN_SEVERITY ) 
+#     | ( value_as_concept_id <-[Subsumes   ]- CID_DEGREE_FINDING ) 
+#     | ( value_as_concept_id in [CID_NEGATIVE, CID_POSITIVE])  
+class PROCEDURE_OCURRENCE: 
+    person_id : int
+    procedure_occurrence_id : int
+    provider_id : FK [PROVIDER]
+    procedure_concept_id = CID_WOUND_PHOTOGRAPHY
+    procedure_date : date 
+
+class MEASUREMENT: 
+    person_id :  FK[PERSON]
+    value_as_number : int 
+    measurement_concept_id : MEASUREMENT_CONCEPT
+    unit_concept_id : MEASUREMENT_UNIT_CONECPT
+    value_as_concept_id : FK[CONCEPT]  
+    measurement_date : UPDATE_AT()
+    measurement_event_id : Optional[FK[PROCEDURE_OCURRENCE]]
+    meas_event_field_concept_id : Optional[CID_PK_PROCEDURE_OCCURRENCE]
+},
+class OBSERVATION: 
+    person_id : int
+    observation_concept_id : CID_SMOKE_FREQUENCY | CID_DRINK_FREQUENCY | CID_WOUND_LOCATION | CID_WOUND_CARE_DRESSING_CHANGE
+    observation_date : UPDATE_AT()
+    value_as_concept_id :  value_as_concept_id 
+                             WHERE (value_as_concept_id  <-[Has Answer]- CID_SMOKE_FREQUENCY )
+                                  |  (value_as_concept_id  <-[Subsumes  ]- CID_DEGREE_FINDING ) 
+                                  |  (value_as_concept_id  <-[Has Answer]- CID_DRINK_FREQUENCY )
+                                  |  ( region -[Is A]-> CID_SURFACE_REGION )
+    observation_event_id : NULL | tracking_id
+    obs_event_field_concept_id : NULL | CID_PK_PROCEDURE_OCCURRENCE
+}
+
+
+class OBSERVATION: 
+    value_as_concept_id : 
+}
+class NOTE: 
+    person_id : patient_id
+    note_date : CREATED_AT()
+    note_class_concept_id : CID_WOUND_IMAGE |  CID_WOUND_CARE_DRESSING_CHANGE | CID_GENERIC_NOTE
+    encoding_concept_id : CID_UTF8
+    language_concept_id : CID_PORTUGUESE
+    note_text : str
+    note_event_id : NULL | int 
+    obs_event_field_concept_id : NULL | CID_PK_PROCEDURE_OCCURRENCE | CID_PK_CONDITION_OCCURRENCE
+}
+
+
+
+class FACT_RELATION_SHIP: 
+    domain_concept_id_1 : CID_PK_CONDITION_OCCURRENCE
+    fact_id_1 : wound_id (FK CONDITION)
+    relationship_concept_id : CID_CONDITION_RELEVANT_TO
+    domain_concept_id_1 : CID_PK_PROCEDURE_OCCURRENCE
+    fact_id_2 : tracking_id (FK CONDITION)
+} 

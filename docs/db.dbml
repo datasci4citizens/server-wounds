@@ -1,0 +1,845 @@
+virtual VirtualWound:
+    wound_id      = VirtualField(source=("row_condition", "condition_occurrence_id"))
+    patient_id    = VirtualField(source=("row_condition", "person_id"))
+    specialist_id = VirtualField(source=("row_condition", "provider_id"))
+    wound_type    = VirtualField(source=("row_condition", "condition_concept_id"))
+    start_date    = VirtualField(source=("row_condition", "condition_start_date"))
+    end_date      = VirtualField(source=("row_condition", "condition_end_date"))
+    is_active     = VirtualField(source=("row_condition", "condition_status_concept_id"))
+    updated_at    = VirtualField(source=("row_region", "observation_date"))
+    region        = VirtualField(source=("row_region", "value_as_concept_id"))
+    image_id      = VirtualField(source=("row_image", "note_text"))
+    bind row_condition:
+        * condition_occurrence_id     <-> wound_id
+          person_id                   <-> patient_id
+          provider_id                 <-> specialist_id
+          condition_concept_id        <-> wound_type
+          condition_start_date        <-> start_date
+          condition_end_date          <-> end_date
+          condition_status_concept_id <-> is_active
+          condition_type_concept_id   === 0
+
+    bind row_region:
+        * person_id                   <-- patient_id
+        * observation_concept_id      === 765364
+          observation_date            <-> updated_at
+          value_as_concept_id         <-> region
+          observation_type_concept_id === 0
+        * observation_event_id        <-- wound_id
+          obs_event_field_concept_id  === 1147127
+
+    bind row_image:
+        * person_id                   <-- patient_id
+          note_date                   <-- updated_at
+        * note_class_concept_id       === 36031251
+          encoding_concept_id         === 32678
+          language_concept_id         === 4181536
+          note_text                   <-> image_id
+        * note_event_id               <-- wound_id
+          note_event_field_concept_id === 1147127
+          note_type_concept_id        === 0
+
+
+Project "None" {
+  database_type: 'SQLite'
+  Note: '''None
+  Last Updated At 05-29-2025 02:59AM UTC'''
+}
+
+enum admin.positive_small_integer_logentry_action_flag {
+  "1" [note: '''Addition''']
+  "2" [note: '''Change''']
+  "3" [note: '''Deletion''']
+}
+
+Table admin.LogEntry {
+  Note: '''
+LogEntry(id, action_time, user, content_type, object_id, object_repr, action_flag, change_message)
+
+*DB table: django_admin_log*'''
+
+  id auto [pk, unique, not null]
+  action_time date_time [default:`django.utils.timezone.now()`, not null]
+  user_id foreign_key [not null]
+  content_type_id foreign_key [null]
+  object_id text [null]
+  object_repr char [not null]
+  action_flag admin.positive_small_integer_logentry_action_flag [not null]
+  change_message text [not null]
+
+  indexes {
+    (content_type_id) [name: 'django_admin_log_content_type_id_c4bce8eb', type: btree]
+    (id) [pk, unique, name: 'django_admin_log_pkey', type: btree]
+    (user_id) [name: 'django_admin_log_user_id_c564eba6', type: btree]
+  }
+}
+ref: admin.LogEntry.user_id > auth.User.id
+ref: admin.LogEntry.content_type_id > contenttypes.ContentType.id
+
+
+Table app_cicatrizando.CareSite {
+  Note: '''
+CareSite(care_site_id, care_site_name, place_of_service_concept, location)
+
+*DB table: care_site*'''
+
+  care_site_id integer [pk, unique, not null]
+  care_site_name char [null]
+  place_of_service_concept_id foreign_key [null]
+  location_id foreign_key [null]
+
+  indexes {
+    (location_id) [name: 'care_site_location_id_f9bdaca1', type: btree]
+    (care_site_id) [pk, unique, name: 'care_site_pkey', type: btree]
+    (place_of_service_concept_id) [name: 'care_site_place_of_service_concept_id_79fea579', type: btree]
+  }
+}
+ref: app_cicatrizando.CareSite.place_of_service_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.CareSite.location_id > app_cicatrizando.Location.location_id
+
+
+Table app_cicatrizando.Concept {
+  Note: '''
+Concept(concept_id, concept_name, domain, vocabulary, concept_class, standard_concept, concept_code, valid_start_date, valid_end_date, invalid_reason)
+
+*DB table: concept*'''
+
+  concept_id integer [pk, unique, not null]
+  concept_name char [not null]
+  domain_id foreign_key [null]
+  vocabulary_id foreign_key [null]
+  concept_class_id foreign_key [null]
+  standard_concept char [null]
+  concept_code char [null]
+  valid_start_date date [null]
+  valid_end_date date [null]
+  invalid_reason char [null]
+
+  indexes {
+    (concept_class_id) [name: 'concept_concept_class_id_c78272c0', type: btree]
+    (domain_id) [name: 'concept_domain_id_9d6a7fd2', type: btree]
+    (concept_id) [pk, unique, name: 'concept_pkey', type: btree]
+    (vocabulary_id) [name: 'concept_vocabulary_id_35eba385', type: btree]
+  }
+}
+ref: app_cicatrizando.Concept.domain_id > app_cicatrizando.Domain.domain_id
+ref: app_cicatrizando.Concept.vocabulary_id > app_cicatrizando.Vocabulary.vocabulary_id
+ref: app_cicatrizando.Concept.concept_class_id > app_cicatrizando.ConceptClass.concept_class_id
+
+
+Table app_cicatrizando.ConceptClass {
+  Note: '''
+ConceptClass(concept_class_id, concept_class_name, concept_class_concept)
+
+*DB table: concept_class*'''
+
+  concept_class_id char [pk, unique, not null]
+  concept_class_name char [not null]
+  concept_class_concept_id foreign_key [not null]
+
+  indexes {
+    (concept_class_concept_id) [name: 'concept_class_concept_class_concept_id_e0715a25', type: btree]
+    (concept_class_id) [pk, unique, name: 'concept_class_pkey', type: btree]
+  }
+}
+ref: app_cicatrizando.ConceptClass.concept_class_concept_id > app_cicatrizando.Concept.concept_id
+
+
+Table app_cicatrizando.ConceptSynonym {
+  Note: '''
+ConceptSynonym(id, concept, concept_synonym_name, language_concept)
+
+*DB table: concept_synonym*'''
+
+  id big_auto [pk, unique, not null]
+  concept_id foreign_key [not null]
+  concept_synonym_name char [not null]
+  language_concept_id foreign_key [not null]
+
+  indexes {
+    (concept_id) [name: 'concept_synonym_concept_id_7f3ed8fa', type: btree]
+    (language_concept_id) [name: 'concept_synonym_language_concept_id_1e33a682', type: btree]
+    (id) [pk, unique, name: 'concept_synonym_pkey', type: btree]
+  }
+}
+ref: app_cicatrizando.ConceptSynonym.concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.ConceptSynonym.language_concept_id > app_cicatrizando.Concept.concept_id
+
+
+Table app_cicatrizando.ConditionOccurrence {
+  Note: '''
+ConditionOccurrence(condition_occurrence_id, person, condition_concept, condition_start_date, condition_start_datetime, condition_end_date, condition_end_datetime, condition_type_concept, condition_status_concept, stop_reason, provider, visit_occurrence)
+
+*DB table: condition_occurrence*'''
+
+  condition_occurrence_id integer [pk, unique, not null]
+  person_id foreign_key [not null]
+  condition_concept_id foreign_key [not null]
+  condition_start_date date [not null]
+  condition_start_datetime date_time [null]
+  condition_end_date date [null]
+  condition_end_datetime date_time [null]
+  condition_type_concept_id foreign_key [not null]
+  condition_status_concept_id foreign_key [null]
+  stop_reason char [null]
+  provider_id foreign_key [null]
+  visit_occurrence_id foreign_key [null]
+
+  indexes {
+    (condition_concept_id) [name: 'condition_occurrence_condition_concept_id_cb3ba5a7', type: btree]
+    (condition_status_concept_id) [name: 'condition_occurrence_condition_status_concept_id_8bfb45c4', type: btree]
+    (condition_type_concept_id) [name: 'condition_occurrence_condition_type_concept_id_645c9523', type: btree]
+    (person_id) [name: 'condition_occurrence_person_id_138294aa', type: btree]
+    (condition_occurrence_id) [pk, unique, name: 'condition_occurrence_pkey', type: btree]
+    (provider_id) [name: 'condition_occurrence_provider_id_41d5eba9', type: btree]
+    (visit_occurrence_id) [name: 'condition_occurrence_visit_occurrence_id_a95f9c4b', type: btree]
+  }
+}
+ref: app_cicatrizando.ConditionOccurrence.person_id > app_cicatrizando.Person.person_id
+ref: app_cicatrizando.ConditionOccurrence.condition_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.ConditionOccurrence.condition_type_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.ConditionOccurrence.condition_status_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.ConditionOccurrence.provider_id > app_cicatrizando.Provider.provider_id
+ref: app_cicatrizando.ConditionOccurrence.visit_occurrence_id > app_cicatrizando.VisitOccurrence.visit_occurrence_id
+
+
+Table app_cicatrizando.Domain {
+  Note: '''
+Domain(domain_id, domain_name, domain_concept)
+
+*DB table: domain*'''
+
+  domain_id char [pk, unique, not null]
+  domain_name char [not null]
+  domain_concept_id foreign_key [not null]
+
+  indexes {
+    (domain_concept_id) [name: 'domain_domain_concept_id_7f6ff90b', type: btree]
+    (domain_id) [pk, unique, name: 'domain_pkey', type: btree]
+  }
+}
+ref: app_cicatrizando.Domain.domain_concept_id > app_cicatrizando.Concept.concept_id
+
+
+Table app_cicatrizando.FactRelationship {
+  Note: '''
+FactRelationship(id, domain_concept_id_1, fact_id_1, domain_concept_id_2, fact_id_2, relationship_concept)
+
+*DB table: fact_relationship*'''
+
+  id big_auto [pk, unique, not null]
+  domain_concept_id_1_id foreign_key [not null]
+  fact_id_1 integer [not null]
+  domain_concept_id_2_id foreign_key [not null]
+  fact_id_2 integer [not null]
+  relationship_concept_id foreign_key [not null]
+
+  indexes {
+    (domain_concept_id_1_id) [name: 'fact_relationship_domain_concept_id_1_id_e8c76909', type: btree]
+    (domain_concept_id_2_id) [name: 'fact_relationship_domain_concept_id_2_id_5ca7154d', type: btree]
+    (id) [pk, unique, name: 'fact_relationship_pkey', type: btree]
+    (relationship_concept_id) [name: 'fact_relationship_relationship_concept_id_a10f74c9', type: btree]
+  }
+}
+ref: app_cicatrizando.FactRelationship.domain_concept_id_1_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.FactRelationship.domain_concept_id_2_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.FactRelationship.relationship_concept_id > app_cicatrizando.Concept.concept_id
+
+
+Table app_cicatrizando.Location {
+  Note: '''
+Location(location_id, address_1, address_2, city, state, zip, county, country_concept, latitude, longitude)
+
+*DB table: location*'''
+
+  location_id auto [pk, unique, not null]
+  address_1 char [null]
+  address_2 char [null]
+  city char [null]
+  state char [null]
+  zip char [null]
+  county char [null]
+  country_concept_id foreign_key [null]
+  latitude decimal [null]
+  longitude decimal [null]
+
+  indexes {
+    (country_concept_id) [name: 'location_country_concept_id_1359e482', type: btree]
+    (location_id) [pk, unique, name: 'location_pkey', type: btree]
+  }
+}
+ref: app_cicatrizando.Location.country_concept_id > app_cicatrizando.Concept.concept_id
+
+
+Table app_cicatrizando.Measurement {
+  Note: '''
+Measurement(measurement_id, person, measurement_concept, measurement_date, measurement_datetime, measurement_time, measurement_type_concept, operator_concept, value_as_number, value_as_concept, unit_concept, range_low, range_high, provider, visit_occurrence, measurement_event_id, meas_event_field_concept)
+
+*DB table: measurement*'''
+
+  measurement_id integer [pk, unique, not null]
+  person_id foreign_key [not null]
+  measurement_concept_id foreign_key [not null]
+  measurement_date date [not null]
+  measurement_datetime date_time [null]
+  measurement_time char [null]
+  measurement_type_concept_id foreign_key [not null]
+  operator_concept_id foreign_key [null]
+  value_as_number decimal [null]
+  value_as_concept_id foreign_key [null]
+  unit_concept_id foreign_key [null]
+  range_low decimal [null]
+  range_high decimal [null]
+  provider_id foreign_key [null]
+  visit_occurrence_id foreign_key [null]
+  measurement_event_id integer [null]
+  meas_event_field_concept_id foreign_key [null]
+
+  indexes {
+    (meas_event_field_concept_id) [name: 'measurement_meas_event_field_concept_id_5b89180a', type: btree]
+    (measurement_concept_id) [name: 'measurement_measurement_concept_id_61eddf57', type: btree]
+    (measurement_type_concept_id) [name: 'measurement_measurement_type_concept_id_adae2488', type: btree]
+    (operator_concept_id) [name: 'measurement_operator_concept_id_c603c165', type: btree]
+    (person_id) [name: 'measurement_person_id_3d1723bd', type: btree]
+    (measurement_id) [pk, unique, name: 'measurement_pkey', type: btree]
+    (provider_id) [name: 'measurement_provider_id_8fde9933', type: btree]
+    (unit_concept_id) [name: 'measurement_unit_concept_id_dd84ca33', type: btree]
+    (value_as_concept_id) [name: 'measurement_value_as_concept_id_b27b775f', type: btree]
+    (visit_occurrence_id) [name: 'measurement_visit_occurrence_id_757add24', type: btree]
+  }
+}
+ref: app_cicatrizando.Measurement.person_id > app_cicatrizando.Person.person_id
+ref: app_cicatrizando.Measurement.measurement_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.Measurement.measurement_type_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.Measurement.operator_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.Measurement.value_as_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.Measurement.unit_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.Measurement.provider_id > app_cicatrizando.Provider.provider_id
+ref: app_cicatrizando.Measurement.visit_occurrence_id > app_cicatrizando.VisitOccurrence.visit_occurrence_id
+ref: app_cicatrizando.Measurement.meas_event_field_concept_id > app_cicatrizando.Concept.concept_id
+
+
+Table app_cicatrizando.Note {
+  Note: '''
+Note(note_id, person, note_date, note_datetime, note_type_concept, note_class_concept, note_title, note_text, encoding_concept, language_concept, provider, visit_occurrence, note_event_id, note_event_field_concept)
+
+*DB table: note*'''
+
+  note_id integer [pk, unique, not null]
+  person_id foreign_key [not null]
+  note_date date [not null]
+  note_datetime date_time [null]
+  note_type_concept_id foreign_key [not null]
+  note_class_concept_id foreign_key [not null]
+  note_title char [null]
+  note_text text [not null]
+  encoding_concept_id foreign_key [not null]
+  language_concept_id foreign_key [not null]
+  provider_id foreign_key [null]
+  visit_occurrence_id foreign_key [null]
+  note_event_id integer [null]
+  note_event_field_concept_id foreign_key [null]
+
+  indexes {
+    (encoding_concept_id) [name: 'note_encoding_concept_id_b02f1525', type: btree]
+    (language_concept_id) [name: 'note_language_concept_id_f5df7d37', type: btree]
+    (note_class_concept_id) [name: 'note_note_class_concept_id_afbe0513', type: btree]
+    (note_event_field_concept_id) [name: 'note_note_event_field_concept_id_1c083ca5', type: btree]
+    (note_type_concept_id) [name: 'note_note_type_concept_id_23f77ac5', type: btree]
+    (person_id) [name: 'note_person_id_85b28333', type: btree]
+    (note_id) [pk, unique, name: 'note_pkey', type: btree]
+    (provider_id) [name: 'note_provider_id_91b23632', type: btree]
+    (visit_occurrence_id) [name: 'note_visit_occurrence_id_d2c75928', type: btree]
+  }
+}
+ref: app_cicatrizando.Note.person_id > app_cicatrizando.Person.person_id
+ref: app_cicatrizando.Note.note_type_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.Note.note_class_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.Note.encoding_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.Note.language_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.Note.provider_id > app_cicatrizando.Provider.provider_id
+ref: app_cicatrizando.Note.visit_occurrence_id > app_cicatrizando.VisitOccurrence.visit_occurrence_id
+ref: app_cicatrizando.Note.note_event_field_concept_id > app_cicatrizando.Concept.concept_id
+
+
+Table app_cicatrizando.Observation {
+  Note: '''
+Observation(observation_id, person, observation_concept, observation_date, observation_datetime, observation_type_concept, value_as_number, value_as_string, value_as_concept, qualifier_concept, unit_concept, provider, visit_occurrence, observation_event_id, obs_event_field_concept)
+
+*DB table: observation*'''
+
+  observation_id integer [pk, unique, not null]
+  person_id foreign_key [not null]
+  observation_concept_id foreign_key [not null]
+  observation_date date [not null]
+  observation_datetime date_time [null]
+  observation_type_concept_id foreign_key [not null]
+  value_as_number decimal [null]
+  value_as_string char [null]
+  value_as_concept_id foreign_key [null]
+  qualifier_concept_id foreign_key [null]
+  unit_concept_id foreign_key [null]
+  provider_id foreign_key [null]
+  visit_occurrence_id foreign_key [null]
+  observation_event_id integer [null]
+  obs_event_field_concept_id foreign_key [null]
+
+  indexes {
+    (obs_event_field_concept_id) [name: 'observation_obs_event_field_concept_id_57b116f5', type: btree]
+    (observation_concept_id) [name: 'observation_observation_concept_id_437360d0', type: btree]
+    (observation_type_concept_id) [name: 'observation_observation_type_concept_id_5d44170d', type: btree]
+    (person_id) [name: 'observation_person_id_5df71b3d', type: btree]
+    (observation_id) [pk, unique, name: 'observation_pkey', type: btree]
+    (provider_id) [name: 'observation_provider_id_55f1f118', type: btree]
+    (qualifier_concept_id) [name: 'observation_qualifier_concept_id_667e3e15', type: btree]
+    (unit_concept_id) [name: 'observation_unit_concept_id_f1166f56', type: btree]
+    (value_as_concept_id) [name: 'observation_value_as_concept_id_5abacf2c', type: btree]
+    (visit_occurrence_id) [name: 'observation_visit_occurrence_id_a0cf8fac', type: btree]
+  }
+}
+ref: app_cicatrizando.Observation.person_id > app_cicatrizando.Person.person_id
+ref: app_cicatrizando.Observation.observation_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.Observation.observation_type_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.Observation.value_as_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.Observation.qualifier_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.Observation.unit_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.Observation.provider_id > app_cicatrizando.Provider.provider_id
+ref: app_cicatrizando.Observation.visit_occurrence_id > app_cicatrizando.VisitOccurrence.visit_occurrence_id
+ref: app_cicatrizando.Observation.obs_event_field_concept_id > app_cicatrizando.Concept.concept_id
+
+
+Table app_cicatrizando.ObservationPeriod {
+  Note: '''
+ObservationPeriod(observation_period_id, person, observation_period_start_date, observation_period_end_date, period_type_concept)
+
+*DB table: observation_period*'''
+
+  observation_period_id integer [pk, unique, not null]
+  person_id foreign_key [not null]
+  observation_period_start_date date [not null]
+  observation_period_end_date date [not null]
+  period_type_concept_id foreign_key [not null]
+
+  indexes {
+    (period_type_concept_id) [name: 'observation_period_period_type_concept_id_210778ee', type: btree]
+    (person_id) [name: 'observation_period_person_id_1cc0122b', type: btree]
+    (observation_period_id) [pk, unique, name: 'observation_period_pkey', type: btree]
+  }
+}
+ref: app_cicatrizando.ObservationPeriod.person_id > app_cicatrizando.Person.person_id
+ref: app_cicatrizando.ObservationPeriod.period_type_concept_id > app_cicatrizando.Concept.concept_id
+
+
+Table app_cicatrizando.PatientNonClinicalInfos {
+  Note: '''
+PatientNonClinicalInfos(id, person, name, phone_number, accept_tcl, created_at, updated_at)
+
+*DB table: app_cicatrizando_patientnonclinicalinfos*'''
+
+  id big_auto [pk, unique, not null]
+  person_id foreign_key [not null]
+  name char [not null]
+  phone_number char [null]
+  accept_tcl boolean [default:`False`, not null]
+  created_at date_time [not null]
+  updated_at date_time [not null]
+
+  indexes {
+    (person_id) [name: 'app_cicatrizando_patientnonclinicalinfos_person_id_6a6cae08', type: btree]
+    (id) [pk, unique, name: 'app_cicatrizando_patientnonclinicalinfos_pkey', type: btree]
+  }
+}
+ref: app_cicatrizando.PatientNonClinicalInfos.person_id > app_cicatrizando.Person.person_id
+
+
+Table app_cicatrizando.Person {
+  Note: '''
+Person(person_id, gender_concept, year_of_birth, birth_datetime, race_concept, ethnicity_concept, location, provider, care_site)
+
+*DB table: person*'''
+
+  person_id integer [pk, unique, not null]
+  gender_concept_id foreign_key [not null]
+  year_of_birth integer [not null]
+  birth_datetime date_time [null]
+  race_concept_id foreign_key [not null]
+  ethnicity_concept_id foreign_key [not null]
+  location_id foreign_key [null]
+  provider_id foreign_key [null]
+  care_site_id foreign_key [null]
+
+  indexes {
+    (care_site_id) [name: 'person_care_site_id_9eb7c8e4', type: btree]
+    (ethnicity_concept_id) [name: 'person_ethnicity_concept_id_ea633676', type: btree]
+    (gender_concept_id) [name: 'person_gender_concept_id_7ef3c8ca', type: btree]
+    (location_id) [name: 'person_location_id_2c5b92ef', type: btree]
+    (person_id) [pk, unique, name: 'person_pkey', type: btree]
+    (provider_id) [name: 'person_provider_id_ba2f5370', type: btree]
+    (race_concept_id) [name: 'person_race_concept_id_2c5e2e4a', type: btree]
+  }
+}
+ref: app_cicatrizando.Person.gender_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.Person.race_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.Person.ethnicity_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.Person.location_id > app_cicatrizando.Location.location_id
+ref: app_cicatrizando.Person.provider_id > app_cicatrizando.Provider.provider_id
+ref: app_cicatrizando.Person.care_site_id > app_cicatrizando.CareSite.care_site_id
+
+
+Table app_cicatrizando.ProcedureOccurrence {
+  Note: '''
+ProcedureOccurrence(procedure_occurrence_id, person, procedure_concept, procedure_date, procedure_datetime, procedure_end_date, procedure_end_datetime, procedure_type_concept, modifier_concept, quantity, provider, visit_occurrence)
+
+*DB table: procedure_occurrence*'''
+
+  procedure_occurrence_id integer [pk, unique, not null]
+  person_id foreign_key [not null]
+  procedure_concept_id foreign_key [not null]
+  procedure_date date [not null]
+  procedure_datetime date_time [null]
+  procedure_end_date date [null]
+  procedure_end_datetime date_time [null]
+  procedure_type_concept_id foreign_key [not null]
+  modifier_concept_id foreign_key [null]
+  quantity integer [null]
+  provider_id foreign_key [null]
+  visit_occurrence_id foreign_key [null]
+
+  indexes {
+    (modifier_concept_id) [name: 'procedure_occurrence_modifier_concept_id_b17bce01', type: btree]
+    (person_id) [name: 'procedure_occurrence_person_id_9b13a2c0', type: btree]
+    (procedure_occurrence_id) [pk, unique, name: 'procedure_occurrence_pkey', type: btree]
+    (procedure_concept_id) [name: 'procedure_occurrence_procedure_concept_id_d8166d50', type: btree]
+    (procedure_type_concept_id) [name: 'procedure_occurrence_procedure_type_concept_id_d5fd8dc3', type: btree]
+    (provider_id) [name: 'procedure_occurrence_provider_id_753ab3b0', type: btree]
+    (visit_occurrence_id) [name: 'procedure_occurrence_visit_occurrence_id_a3ee5bd0', type: btree]
+  }
+}
+ref: app_cicatrizando.ProcedureOccurrence.person_id > app_cicatrizando.Person.person_id
+ref: app_cicatrizando.ProcedureOccurrence.procedure_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.ProcedureOccurrence.procedure_type_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.ProcedureOccurrence.modifier_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.ProcedureOccurrence.provider_id > app_cicatrizando.Provider.provider_id
+ref: app_cicatrizando.ProcedureOccurrence.visit_occurrence_id > app_cicatrizando.VisitOccurrence.visit_occurrence_id
+
+
+Table app_cicatrizando.Provider {
+  Note: '''
+Provider(provider_id, provider_name, npi, dea, specialty_concept, care_site, year_of_birth, gender_concept)
+
+*DB table: provider*'''
+
+  provider_id integer [pk, unique, not null]
+  provider_name char [null]
+  npi char [null]
+  dea char [null]
+  specialty_concept_id foreign_key [null]
+  care_site_id foreign_key [null]
+  year_of_birth integer [null]
+  gender_concept_id foreign_key [null]
+
+  indexes {
+    (care_site_id) [name: 'provider_care_site_id_9ff56d28', type: btree]
+    (gender_concept_id) [name: 'provider_gender_concept_id_1764c2b3', type: btree]
+    (provider_id) [pk, unique, name: 'provider_pkey', type: btree]
+    (specialty_concept_id) [name: 'provider_specialty_concept_id_3e1d2784', type: btree]
+  }
+}
+ref: app_cicatrizando.Provider.specialty_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.Provider.care_site_id > app_cicatrizando.CareSite.care_site_id
+ref: app_cicatrizando.Provider.gender_concept_id > app_cicatrizando.Concept.concept_id
+
+
+Table app_cicatrizando.Relationship {
+  Note: '''
+Relationship(relationship_id, relationship_name, is_hierarchical, defines_ancestry, reverse_relationship_id, relationship_concept)
+
+*DB table: relationship*'''
+
+  relationship_id char [pk, unique, not null]
+  relationship_name char [not null]
+  is_hierarchical char [not null]
+  defines_ancestry char [not null]
+  reverse_relationship_id char [not null]
+  relationship_concept_id foreign_key [not null]
+
+  indexes {
+    (relationship_id) [pk, unique, name: 'relationship_pkey', type: btree]
+    (relationship_concept_id) [name: 'relationship_relationship_concept_id_7754bfd8', type: btree]
+  }
+}
+ref: app_cicatrizando.Relationship.relationship_concept_id > app_cicatrizando.Concept.concept_id
+
+
+Table app_cicatrizando.VisitOccurrence {
+  Note: '''
+VisitOccurrence(visit_occurrence_id, person, visit_concept, visit_start_date, visit_start_datetime, visit_end_date, visit_end_datetime, visit_type_concept, provider, care_site, admitted_from_concept, discharged_to_concept, preceding_visit_occurrence)
+
+*DB table: visit_occurrence*'''
+
+  visit_occurrence_id integer [pk, unique, not null]
+  person_id foreign_key [not null]
+  visit_concept_id foreign_key [not null]
+  visit_start_date date [not null]
+  visit_start_datetime date_time [null]
+  visit_end_date date [not null]
+  visit_end_datetime date_time [null]
+  visit_type_concept_id foreign_key [not null]
+  provider_id foreign_key [null]
+  care_site_id foreign_key [null]
+  admitted_from_concept_id foreign_key [null]
+  discharged_to_concept_id foreign_key [null]
+  preceding_visit_occurrence_id foreign_key [null]
+
+  indexes {
+    (admitted_from_concept_id) [name: 'visit_occurrence_admitted_from_concept_id_ab157648', type: btree]
+    (care_site_id) [name: 'visit_occurrence_care_site_id_997e130a', type: btree]
+    (discharged_to_concept_id) [name: 'visit_occurrence_discharged_to_concept_id_4df5f987', type: btree]
+    (person_id) [name: 'visit_occurrence_person_id_6e925383', type: btree]
+    (visit_occurrence_id) [pk, unique, name: 'visit_occurrence_pkey', type: btree]
+    (preceding_visit_occurrence_id) [name: 'visit_occurrence_preceding_visit_occurrence_id_8f423c06', type: btree]
+    (provider_id) [name: 'visit_occurrence_provider_id_1f33d66d', type: btree]
+    (visit_concept_id) [name: 'visit_occurrence_visit_concept_id_ff96c105', type: btree]
+    (visit_type_concept_id) [name: 'visit_occurrence_visit_type_concept_id_849c3905', type: btree]
+  }
+}
+ref: app_cicatrizando.VisitOccurrence.person_id > app_cicatrizando.Person.person_id
+ref: app_cicatrizando.VisitOccurrence.visit_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.VisitOccurrence.visit_type_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.VisitOccurrence.provider_id > app_cicatrizando.Provider.provider_id
+ref: app_cicatrizando.VisitOccurrence.care_site_id > app_cicatrizando.CareSite.care_site_id
+ref: app_cicatrizando.VisitOccurrence.admitted_from_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.VisitOccurrence.discharged_to_concept_id > app_cicatrizando.Concept.concept_id
+ref: app_cicatrizando.VisitOccurrence.preceding_visit_occurrence_id > app_cicatrizando.VisitOccurrence.visit_occurrence_id
+
+
+Table app_cicatrizando.Vocabulary {
+  Note: '''
+Vocabulary(vocabulary_id, vocabulary_name, vocabulary_reference, vocabulary_version, vocabulary_concept)
+
+*DB table: vocabulary*'''
+
+  vocabulary_id char [pk, unique, not null]
+  vocabulary_name char [not null]
+  vocabulary_reference char [null]
+  vocabulary_version char [null]
+  vocabulary_concept_id foreign_key [not null]
+
+  indexes {
+    (vocabulary_id) [pk, unique, name: 'vocabulary_pkey', type: btree]
+    (vocabulary_concept_id) [name: 'vocabulary_vocabulary_concept_id_900af135', type: btree]
+  }
+}
+ref: app_cicatrizando.Vocabulary.vocabulary_concept_id > app_cicatrizando.Concept.concept_id
+
+
+Table auth.Group {
+  Note: '''
+Groups are a generic way of categorizing users to apply permissions, or
+some other label, to those users. A user can belong to any number of
+groups.
+
+A user in a group automatically has all the permissions granted to that
+group. For example, if the group 'Site editors' has the permission
+can_edit_home_page, any user in that group will have that permission.
+
+Beyond permissions, groups are a convenient way to categorize users to
+apply some label, or extended functionality, to them. For example, you
+could create a group 'Special users', and you could write code that would
+do special things to those users -- such as giving them access to a
+members-only portion of your site, or sending them members-only email
+messages.
+
+
+*DB table: auth_group*'''
+
+  id auto [pk, unique, not null]
+  name char [unique, not null]
+
+  indexes {
+    (name) [unique, name: 'auth_group_name_key', type: btree]
+    (id) [pk, unique, name: 'auth_group_pkey', type: btree]
+  }
+}
+
+
+Table auth.Permission {
+  Note: '''
+The permissions system provides a way to assign permissions to specific
+users and groups of users.
+
+The permission system is used by the Django admin site, but may also be
+useful in your own code. The Django admin site uses permissions as follows:
+
+- The "add" permission limits the user's ability to view the "add" form
+and add an object.
+- The "change" permission limits a user's ability to view the change
+list, view the "change" form and change an object.
+- The "delete" permission limits the ability to delete an object.
+- The "view" permission limits the ability to view an object.
+
+Permissions are set globally per type of object, not per specific object
+instance. It is possible to say "Mary may change news stories," but it's
+not currently possible to say "Mary may change news stories, but only the
+ones she created herself" or "Mary may only change news stories that have a
+certain status or publication date."
+
+The permissions listed above are automatically created for each model.
+
+
+*DB table: auth_permission*'''
+
+  id auto [pk, unique, not null]
+  name char [not null]
+  content_type_id foreign_key [not null]
+  codename char [not null]
+
+  indexes {
+    (content_type_id) [name: 'auth_permission_content_type_id_2f476e4b', type: btree]
+    (content_type_id,codename) [unique, name: 'auth_permission_content_type_id_codename_01ab375a_uniq', type: btree]
+    (id) [pk, unique, name: 'auth_permission_pkey', type: btree]
+  }
+}
+ref: auth.Permission.content_type_id > contenttypes.ContentType.id
+
+
+Table auth.User {
+  Note: '''
+Users within the Django authentication system are represented by this
+model.
+
+Username and password are required. Other fields are optional.
+
+
+*DB table: auth_user*'''
+
+  id auto [pk, unique, not null]
+  password char [not null]
+  last_login date_time [null]
+  is_superuser boolean [note: '''Designates that this user has all permissions without explicitly assigning them.''', default:`False`, not null]
+  username char [note: '''Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.''', unique, not null]
+  first_name char [not null]
+  last_name char [not null]
+  email email [not null]
+  is_staff boolean [note: '''Designates whether the user can log into this admin site.''', default:`False`, not null]
+  is_active boolean [note: '''Designates whether this user should be treated as active. Unselect this instead of deleting accounts.''', default:`True`, not null]
+  date_joined date_time [default:`django.utils.timezone.now()`, not null]
+
+  indexes {
+    (id) [pk, unique, name: 'auth_user_pkey', type: btree]
+    (username) [unique, name: 'auth_user_username_key', type: btree]
+  }
+}
+
+
+Table auth.group_permissions {
+  Note: '''
+This is a Many-To-Many linking table autogenerated by Django.
+
+*DB table: auth_group_permissions*'''
+
+  id auto [pk, not null]
+  permission_id auto
+  group_id auto
+
+  indexes {
+    (group_id) [name: 'auth_group_permissions_group_id_b120cbf9', type: btree]
+    (group_id,permission_id) [unique, name: 'auth_group_permissions_group_id_permission_id_0cd325b0_uniq', type: btree]
+    (permission_id) [name: 'auth_group_permissions_permission_id_84c5c92e', type: btree]
+    (id) [pk, unique, name: 'auth_group_permissions_pkey', type: btree]
+  }
+}
+ref: auth.Group.id > auth.group_permissions.group_id
+ref: auth.Permission.id > auth.group_permissions.permission_id
+
+
+Table auth.user_groups {
+  Note: '''
+This is a Many-To-Many linking table autogenerated by Django.
+
+*DB table: auth_user_groups*'''
+
+  id auto [pk, not null]
+  group_id auto
+  user_id auto
+
+  indexes {
+    (group_id) [name: 'auth_user_groups_group_id_97559544', type: btree]
+    (id) [pk, unique, name: 'auth_user_groups_pkey', type: btree]
+    (user_id) [name: 'auth_user_groups_user_id_6a12ed8b', type: btree]
+    (user_id,group_id) [unique, name: 'auth_user_groups_user_id_group_id_94350c0c_uniq', type: btree]
+  }
+}
+ref: auth.User.id > auth.user_groups.user_id
+ref: auth.Group.id > auth.user_groups.group_id
+
+
+Table auth.user_user_permissions {
+  Note: '''
+This is a Many-To-Many linking table autogenerated by Django.
+
+*DB table: auth_user_user_permissions*'''
+
+  id auto [pk, not null]
+  permission_id auto
+  user_id auto
+
+  indexes {
+    (permission_id) [name: 'auth_user_user_permissions_permission_id_1fbb5f2c', type: btree]
+    (id) [pk, unique, name: 'auth_user_user_permissions_pkey', type: btree]
+    (user_id) [name: 'auth_user_user_permissions_user_id_a95ead1b', type: btree]
+    (user_id,permission_id) [unique, name: 'auth_user_user_permissions_user_id_permission_id_14a6b632_uniq', type: btree]
+  }
+}
+ref: auth.User.id > auth.user_user_permissions.user_id
+ref: auth.Permission.id > auth.user_user_permissions.permission_id
+
+
+Table contenttypes.ContentType {
+  Note: '''
+ContentType(id, app_label, model)
+
+*DB table: django_content_type*'''
+
+  id auto [pk, unique, not null]
+  app_label char [not null]
+  model char [not null]
+
+  indexes {
+    (app_label,model) [unique, name: 'django_content_type_app_label_model_76bd3d3b_uniq', type: btree]
+    (id) [pk, unique, name: 'django_content_type_pkey', type: btree]
+  }
+}
+
+
+Table sessions.Session {
+  Note: '''
+Django provides full support for anonymous sessions. The session
+framework lets you store and retrieve arbitrary data on a
+per-site-visitor basis. It stores data on the server side and
+abstracts the sending and receiving of cookies. Cookies contain a
+session ID -- not the data itself.
+
+The Django sessions framework is entirely cookie-based. It does
+not fall back to putting session IDs in URLs. This is an intentional
+design decision. Not only does that behavior make URLs ugly, it makes
+your site vulnerable to session-ID theft via the "Referer" header.
+
+For complete documentation on using Sessions in your code, consult
+the sessions documentation that is shipped with Django (also available
+on the Django web site).
+
+
+*DB table: django_session*'''
+
+  session_key char [pk, unique, not null]
+  session_data text [not null]
+  expire_date date_time [not null]
+
+  indexes {
+    (expire_date) [name: 'django_session_expire_date_a5c62663', type: btree]
+    (session_key) [pk, unique, name: 'django_session_pkey', type: btree]
+  }
+}
+
+
