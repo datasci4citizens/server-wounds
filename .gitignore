@@ -9,3 +9,6 @@ tmp
 !.env*.model
 !docker/.env
 !old/.env.minio
+ComputerVision/wound-segmentation/data/Foot Ulcer Segmentation Challenge/
+ComputerVision/wound-segmentation/data/Foot Ulcer Segmentation Challenge/
+ComputerVision/wound-segmentation/data/Medetec_foot_ulcer_224
