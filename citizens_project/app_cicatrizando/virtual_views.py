@@ -180,9 +180,15 @@ class VirtualTrackingRecordsViewSet(viewsets.ModelViewSet):
     )
     serializer_class = VirtualTrackingRecordsSerializer
     def create(self, request, *args, **kwargs):
-        serializer = VirtualPatientSerializer(data=request.data)
+        serializer = VirtualTrackingRecordsSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        data = serializer.create(serializer.validated_data)
+        data_to_create = serializer.validated_data
+        data_to_create["track_date"] = datetime.date.today()
+        if(data_to_create.get("extra_notes", None) == None):
+            data_to_create["extra_notes"] = ""
+        if(data_to_create.get("guidelines_to_patient", None) == None):
+            data_to_create["guidelines_to_patient"] = ""
+        data = VirtualTrackingRecords.create(data_to_create)
         return Response(data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
@@ -191,19 +197,17 @@ class VirtualTrackingRecordsViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, pk=None, *args, **kwargs):
         instance = self.queryset.get(tracking_id=pk)
         instance["image_url"] = request.build_absolute_uri("../" +"media/"+ instance.get("image_url"))
-        serializer = VirtualTrackingRecordsSerializer(data=instance)
-        serializer.is_valid(raise_exception=True)
-
-        return Response(serializer.validated_data)
+        instance.pop("image_id")
+        return Response(instance)
 
 
     def list(self, request: Request, *args, **kwargs):
         instances = list(self.queryset.all())
-        for instance in instances:            
-            instance["image_url"] = request.build_absolute_uri("../" +"media/"+ instance.get("image_url"))
-        serializer =  VirtualTrackingRecordsSerializer(many=True, data=instances)
-        serializer.is_valid(raise_exception=True)
-        return Response(serializer.validated_data)
+        for instance in instances:
+            if instance.get("image_url", None) != None:
+                instance["image_url"] = request.build_absolute_uri("../" +"media/"+ instance.get("image_url"))
+            instance.pop("image_id")
+        return Response(instances)
     
 @extend_schema(tags=["tracking-records"])
 class TrackingRecordsImageViewSet(viewsets.ViewSet):
