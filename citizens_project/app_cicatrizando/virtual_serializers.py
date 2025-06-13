@@ -19,6 +19,7 @@ from rest_framework import serializers
 from django.db import transaction
 from django.contrib.auth import get_user_model
 from datetime import datetime
+import random
 User = get_user_model()
 
 for const_name in all_attr_ofclass(omop_ids, int):
@@ -133,6 +134,7 @@ class VirtualPatientSerializer(serializers.Serializer):
 
     email                 = serializers.EmailField(read_only=True)
     comorbidities         = serializers.ListField(child=serializers.ChoiceField(choices=virtual_models.map_comorbidities.virtual_values()), allow_empty= True)
+    bind_code             = serializers.IntegerField(read_only=True)
 
     def validate_birthday(self, value):
         if value and value > date.today():
@@ -177,7 +179,7 @@ class VirtualPatientSerializer(serializers.Serializer):
             for field in virtual_patient_fields
         }
         data["updated_at"] = datetime.now()
-        
+        data["bind_code"] = random.randrange(0, 1048576) 
         result = VirtualPatient.create(data)
         
         print(result)
