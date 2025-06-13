@@ -1,0 +1,9 @@
+# Ignorar virtualenv e arquivos grandes
+wound_seg_env
+Foot_Ulcer_Segmentation_Challenge
+Medetec_foot_ulcer_224
+wound_dataset
+training_history
+*.hdf5
+*.so
+*.dylib
