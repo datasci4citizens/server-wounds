@@ -2,6 +2,8 @@ import cv2
 import os
 from keras.models import load_model
 from keras.utils.generic_utils import CustomObjectScope
+from tensorflow.keras.losses import binary_crossentropy
+import keras.backend as K
 
 from models.unets import Unet2D
 from models.deeplab import Deeplabv3, relu6, BilinearUpsampling, DepthwiseConv2D
@@ -12,14 +14,25 @@ from utils.learning.losses import dice_coef_loss
 from utils.BilinearUpSampling import BilinearUpSampling2D
 from utils.io.data import load_data, save_results, save_rgb_results, save_history, load_test_images, DataGen
 
+def combined_loss(y_true, y_pred):
+    """
+    Combina Binary Crossentropy + Dice Loss
+    """
+    bce_weight = 0.3
+    dice_weight = 0.7
+    
+    bce = binary_crossentropy(y_true, y_pred)
+    dice = dice_coef_loss(y_true, y_pred)
+    
+    return bce_weight * bce + dice_weight * dice
 
 # settings
 input_dim_x = 224
 input_dim_y = 224
 color_space = 'rgb'
 path = './data/Medetec_foot_ulcer_224/'
-weight_file_name = '2025-06-12 20:08:18.978294.hdf5'
-pred_save_path = '2025-06-12 20:08:18.978294/'
+weight_file_name = '2025-06-12 22:36:45.332568.hdf5'
+pred_save_path = '2025-06-12 22:36:45.332568/'
 
 # DEBUG: Verificar se as pastas existem
 print(f"Verificando path: {path}")
@@ -38,13 +51,14 @@ print(f"Número de imagens de teste: {len(x_test) if x_test is not None else 0}"
 print(f"Nomes dos arquivos: {test_label_filenames_list}")
 
 # ### get unet model
-unet2d = Unet2D(n_filters=32, input_dim_x=input_dim_x, input_dim_y=input_dim_y, num_channels=3)
+unet2d = Unet2D(n_filters=16, input_dim_x=input_dim_x, input_dim_y=input_dim_y, num_channels=3)
 model, model_name = unet2d.get_unet_model_yuanqing()
 model = load_model('./training_history/' + weight_file_name
                , custom_objects={'recall':recall,
                                  'precision':precision,
                                  'dice_coef': dice_coef,
-                                 'dice_coef_loss': dice_coef_loss})
+                                 'dice_coef_loss': dice_coef_loss,
+                                 'combined_loss': combined_loss})
 
 print("Modelo carregado com sucesso!")
 
