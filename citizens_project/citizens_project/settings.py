@@ -33,7 +33,7 @@ GOOGLE_OAUTH2_CLIENT_SECRET = os.environ["GOOGLE_CLIENT_SECRET"]
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['server.wounds.staging.paas.ic.unicamp.br', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -176,6 +176,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Seu frontend
     "http://127.0.0.1:5173",
+    "https://server.wounds.staging.paas.ic.unicamp.br",
+    "https://localhost",
 ]
 
 # Para desenvolvimento, você pode permitir todas as origens (não recomendado para produção)
@@ -208,4 +210,33 @@ SPECTACULAR_SETTINGS = {
         'drf_spectacular.hooks.postprocess_schema_enums',
         'app_cicatrizando.schema.custom_postprocessing_hook'
     ],
+}
+
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "[{asctime}] {levelname} {name}: {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "app_cicatrizando": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "": {
+            "handlers": ["console"],
+            "level": "WARNING",
+        },
+    },
 }
