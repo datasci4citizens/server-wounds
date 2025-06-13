@@ -54,7 +54,7 @@ class VirtualPatientViewSet(viewsets.ViewSet):
             instance["comorbidities"] = comorbidities
         return Response(instances)
     
-    
+
 @extend_schema(tags=["wounds"])
 class VirtualWoundViewSet(viewsets.ModelViewSet):
     queryset = VirtualWound.objects().annotate(
@@ -99,6 +99,59 @@ class VirtualWoundViewSet(viewsets.ModelViewSet):
         serializer = VirtualWoundSerializer(many=True, data=instances)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.validated_data)
+      
+      # Método `update` implementado na View
+
+    def update(self, request, pk=None, *args, **kwargs):
+        # 1. Obtém a instância existente da ferida
+        instance = VirtualWound.get(wound_id=pk)
+        if not instance:
+            return Response({'error': 'Wound not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # 2. Instancia o serializer com os dados existentes e os dados da requisição
+        #    `partial=kwargs.get('partial', False)` permite que o mesmo método `update`
+        #    lida com PUT (false) e PATCH (true) automaticamente.
+        serializer = self.get_serializer(instance=instance, data=request.data, partial=kwargs.get('partial', False))
+        serializer.is_valid(raise_exception=True)
+
+        with transaction.atomic():
+            # 3. Prepara os dados para atualização no modelo VirtualWound
+            update_data = {
+                "wound_id": instance["wound_id"], 
+                "updated_at": datetime.now() 
+            }
+
+            # Copia apenas os campos válidos e atualizáveis do serializer para update_data
+            for field_name in [
+                "patient_id", "specialist_id", "region", "wound_type",
+                "start_date", "end_date", "is_active"
+            ]:
+                if field_name in serializer.validated_data:
+                    update_data[field_name] = serializer.validated_data[field_name]
+                # Se for PATCH e o campo não estiver em validated_data, seu valor será mantido
+
+            # 4. Chama o método .update() do seu VirtualWound para persistir as mudanças no OMOP
+            updated_instance_data = VirtualWound.update(update_data)
+
+            # 5. Lida com a atualização da imagem, se um novo arquivo for enviado
+            if 'image' in request.FILES:
+                image_serializer = ImageSerializer(data={'image': request.FILES['image']})
+                if image_serializer.is_valid(raise_exception=True):
+                    new_image = image_serializer.save() # Salva a nova imagem no sistema de arquivos/DB
+
+                    # Tenta encontrar e atualizar o registro WoundImage existente
+                    try:
+                        wound_image_record = WoundImage.objects.get(wound_id=updated_instance_data['wound_id'])
+                        wound_image_record.image = new_image
+                        wound_image_record.save()
+                    except WoundImage.DoesNotExist:
+                        # Se não havia um registro de imagem associado, cria um novo
+                        WoundImage.objects.create(
+                            wound_id=updated_instance_data['wound_id'],
+                            image=new_image
+                        )
+
+        return Response(updated_instance_data)
 
     @action(detail=True, methods=['put'], url_path='archive')
     def archive(self, request, pk=None):
