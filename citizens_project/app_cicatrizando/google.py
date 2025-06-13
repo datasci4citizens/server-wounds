@@ -5,6 +5,8 @@ from django.conf import settings
 from rest_framework.exceptions import APIException
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
+import logging
+logger = logging.getLogger("app_saude")
 
 GOOGLE_ID_TOKEN_INFO_URL = "https://www.googleapis.com/oauth2/v3/tokeninfo"
 GOOGLE_ACCESS_TOKEN_OBTAIN_URL = "https://accounts.google.com/o/oauth2/token"
@@ -53,11 +55,13 @@ def google_get_user_data_web(code):
 
 def google_get_user_data_mobile(token):
     try:
+        logger.debug("Verifying ID token from Google")
         idinfo = id_token.verify_oauth2_token(
             token,
             google_requests.Request(),
             audience=[settings.GOOGLE_OAUTH2_CLIENT_ID],
         )
+        logger.debug("ID token from Google is valid")
 
         return {
             "email": idinfo["email"],
@@ -70,6 +74,8 @@ def google_get_user_data_mobile(token):
 
 def google_get_user_data(validated_data):
     if validated_data.get("code"):
+        logger.debug("Using code to get user web")
         return google_get_user_data_web(code=validated_data["code"])
     else:
+        logger.debug("Using token to get user mobile")
         return google_get_user_data_mobile(token=validated_data["token"])

@@ -17,6 +17,8 @@ import random
 from django.db import transaction
 # --- VIEWSETS ---
 from django.contrib.auth.models import AnonymousUser
+import logging
+logger = logging.getLogger("app_saude")
 
 
 User = get_user_model()
@@ -107,10 +109,13 @@ class GoogleLoginView(viewsets.ViewSet):
 
     @extend_schema(request=AuthSerializer, responses={200: AuthTokenResponseSerializer})
     def create(self, request, *args, **kwargs):
+        logger.debug("Google login request")
         auth_serializer = self.serializer_class(data=request.data)
         auth_serializer.is_valid(raise_exception=True)
         validated_data = auth_serializer.validated_data
+        logger.debug(f"Validated data: {validated_data}")
         user_data = google_get_user_data(validated_data)
+        logger.debug(f"User data from Google: {user_data}")
 
         # Creates user in DB if first time login
         user_email  = user_data.get("email")
@@ -119,9 +124,11 @@ class GoogleLoginView(viewsets.ViewSet):
         provider_data = None
         user, created = User.objects.get_or_create(username=user_email,email=user_email)
         try:
+            logger.debug(f"Fetching provider for user {user.id}")
             provider = VirtualSpecialist.objects().filter(user_id=user.id).get()
             print(provider)
             provider_id = provider["specialist_id"]
+            logger.debug(f"Provider found: {provider}")
             provider_data = {
                 'provider_id': provider["specialist_id"],
                 'provider_name': provider["specialist_name"],
