@@ -24,49 +24,49 @@ from .django_virtualmodels.serializers import VirtualModelSerializer
 from rest_framework.routers import DefaultRouter
 
 map_drink_frequency = [
-    ("0", omop_ids.CID_DRINK_NEVER)
-    ("1",omop_ids.CID_DRINK_MONTHLY_OR_LESS)
-    ("2", omop_ids.CID_DRINK_2_3_TIMES_WEEK)
-    ("3", omop_ids.CID_DRINK_4_OR_MORE_WEEK)
+    ("0", omop_ids.CID_DRINK_NEVER),
+    ("1", omop_ids.CID_DRINK_MONTHLY_OR_LESS),
+    ("2", omop_ids.CID_DRINK_2_3_TIMES_WEEK),
+    ("3", omop_ids.CID_DRINK_4_OR_MORE_WEEK),
 
 ]
 
 map_exudate_amount = [
-    ("0", omop_ids.CID_NONE)
-    ("1", omop_ids.CID_QUITE_A_BIT)
-    ("2", omop_ids.CID_A_MODERATE_AMOUNT)
-    ("3", omop_ids.CID_A_LOT)
+    ("0", omop_ids.CID_NONE),
+    ("1", omop_ids.CID_QUITE_A_BIT),
+    ("2", omop_ids.CID_A_MODERATE_AMOUNT),
+    ("3", omop_ids.CID_A_LOT),
 
 ]
 
 map_exudate_type = [
-    ("0", omop_ids.CID_EXUDATE_SEROUS)
-    ("1", omop_ids.CID_EXUDATE_SANGUINOUS)
-    ("2", omop_ids.CID_EXUDATE_PURULENT)
-    ("3", omop_ids.CID_EXUDATE_SEROSANGUINOUS)
-    ("4", omop_ids.CID_FETID) # conceito local ( nao omop)
-    ("5", omop_ids.CID_NONE)
+    ("0", omop_ids.CID_EXUDATE_SEROUS),
+    ("1", omop_ids.CID_EXUDATE_SANGUINOUS),
+    ("2", omop_ids.CID_EXUDATE_PURULENT),
+    ("3", omop_ids.CID_EXUDATE_SEROSANGUINOUS),
+    ("4", omop_ids.CID_FETID), # conceito local ( nao omop)
+    ("5", omop_ids.CID_NONE),
 ]
 
 map_skin_around = [
-    ("in", omop_ids.CID_SWELLING)
-    ("l2", omop_ids.CID_WOUND_ERYTHEMA)
-    ("g2", omop_ids.CID_WOUND_ERYTHEMA) 
+    ("in", omop_ids.CID_SWELLING),
+    ("l2", omop_ids.CID_WOUND_ERYTHEMA),
+    ("g2", omop_ids.CID_WOUND_ERYTHEMA), 
 ]
 
 map_smoke_frequency = [
     ("0 ", omop_ids.CID_NEVER),
-    ("1", omop_ids.CID_OCCASIONALLY)
-    ("2", omop_ids.CID_10_OR_LESS)
-    ("3", omop_ids.CID_10_OR_MORE)
+    ("1", omop_ids.CID_OCCASIONALLY),
+    ("2", omop_ids.CID_10_OR_LESS),
+    ("3", omop_ids.CID_10_OR_MORE),
 ]
 
 map_tissue_type = [
-    ("tc", omop_ids.CID_SCAR)
-    ("te", omop_ids.CID_EPITHELIALIZATION)
-    ("tg", omop_ids.CID_GRANULATION)
-    ("td", omop_ids.CID_DEVITALIZED) #conceito local (nao omop)
-    ("tn", omop_ids.CID_NECROTIC_ISSUE_ESCHAR)
+    ("tc", omop_ids.CID_SCAR),
+    ("te", omop_ids.CID_EPITHELIALIZATION),
+    ("tg", omop_ids.CID_GRANULATION),
+    ("td", omop_ids.CID_DEVITALIZED), #conceito local (nao omop),
+    ("tn", omop_ids.CID_NECROTIC_ISSUE_ESCHAR),
 ]
 
 map_wound_edges = [
@@ -181,18 +181,18 @@ map_wound_size = [
 ]
 
 map_wound_type = [
-    ("ud", omop_ids.CID_DIABETIC_FOOT_ULCER )
-    ("up", omop_ids.CID_PRESSURE_INJURY)
-    ("uv", omop_ids.CID_VENEMOUS_ULCER) #conceito local (nao omop)
-    ("ua", omop_ids.CID_ARTERIAL_ULCER)
-    ("ft", omop_ids.CID_TRAUMATIC_WOUND)
-    ("fc", omop_ids.CID_SURGICAL_WOUND)
-    ("qm", omop_ids.CID_BURN)
-    ("os", omop_ids.CID_OSTOMY)
-    ("st", omop_ids.CID_TEAR_OF_SKIN)
-    ("fs", omop_ids.CID_FISTULA)
-    ("fn", omop_ids.CID_WOUND_NECROTIC)
-    ("fl", omop_ids.CID_PHLEBITIS)
+    ("ud", omop_ids.CID_DIABETIC_FOOT_ULCER ),
+    ("up", omop_ids.CID_PRESSURE_INJURY),
+    ("uv", omop_ids.CID_VENEMOUS_ULCER), #conceito local (nao omop)
+    ("ua", omop_ids.CID_ARTERIAL_ULCER),
+    ("ft", omop_ids.CID_TRAUMATIC_WOUND),
+    ("fc", omop_ids.CID_SURGICAL_WOUND),
+    ("qm", omop_ids.CID_BURN),
+    ("os", omop_ids.CID_OSTOMY),
+    ("st", omop_ids.CID_TEAR_OF_SKIN),
+    ("fs", omop_ids.CID_FISTULA),
+    ("fn", omop_ids.CID_WOUND_NECROTIC),
+    ("fl", omop_ids.CID_PHLEBITIS),
 
 ]
 
