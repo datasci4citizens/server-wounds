@@ -264,6 +264,10 @@ map_comorbidities = ChoiceMap([
   ("8B20", omop_ids.CID_DPOC), # TODO VERIFICAR DEPOIS
   ("5C80", omop_ids.CID_DOENCA_RENAL_CRONICA )# TODO VERIFICAR DEPOIS,
 ])
+map_had_a_fever = ChoiceMap([
+    (True , omop_ids.CID_POSITIVE),
+    (False, omop_ids.CID_NEGATIVE)
+])
 
 class VirtualPatient(VirtualModel):
     patient_id = VirtualField(source=("row_person","person_id"), key=True)
@@ -418,7 +422,7 @@ class VirtualWound(VirtualModel):
 def _tr_measurement(**kwargs):
     return TableBindings.Measurement(
         person_id = FieldBind("patient_id", key=True),
-        measurement_date = FieldBind("updated_at"),
+        measurement_date = FieldBind("track_date"),
         measurement_event_id = FieldBind("tracking_id", key=True),
         meas_event_field_concept_id = FieldBind(CID_PK_PROCEDURE_OCCURRENCE, const=True),
         measurement_type_concept_id = FieldBind(CID_NULL, const=True),
@@ -427,13 +431,13 @@ def _tr_measurement(**kwargs):
 def _tr_measurement_value_cid(virtual: str, concept: int):
     return _tr_measurement(
         value_as_concept_id = FieldBind(virtual),   
-        measurement_concept_id = FieldBind(concept, const = True)
+        measurement_concept_id = FieldBind(concept, const = True, key=True)
     )    
 
 def _tr_measurement_value_number(virtual: str, concept: int, cid_unit : int):
     return _tr_measurement(
         value_as_number = FieldBind(virtual),   
-        measurement_concept_id = FieldBind(concept, const = True),
+        measurement_concept_id = FieldBind(concept, const = True, key=True),
         unit_concept_id = FieldBind(cid_unit, const = True)
     )    
 class VirtualTrackingRecords(VirtualModel):
@@ -442,18 +446,17 @@ class VirtualTrackingRecords(VirtualModel):
     specialist_id            = VirtualField(source=("row_procedure", "provider_id"))
     track_date               = VirtualField(source=("row_procedure", "procedure_date"))
     wound_id                 = VirtualField(source=("row_fact_relation", "fact_id_1"))
-    updated_at               = VirtualField(source=("row_length", "measurement_date"))
-    length                   = VirtualField(source=("row_length", "value_as_number"))
-    width                    = VirtualField(source=("row_width", "value_as_number"))
-    exudate_amount           = VirtualField(source=("row_exudate_amount", "value_as_concept_id"))
-    exudate_type             = VirtualField(source=("row_exudate_type", "value_as_concept_id"))
-    tissue_type              = VirtualField(source=("row_tissue_type", "value_as_concept_id"))
-    wound_edges              = VirtualField(source=("row_wound_edges", "value_as_concept_id"))
-    skin_around              = VirtualField(source=("row_skin_around", "value_as_concept_id"))
-    had_a_fever              = VirtualField(source=("row_had_a_fever", "value_as_concept_id"))
-    pain_level               = VirtualField(source=("row_pain_level", "value_as_concept_id"))
-    dressing_changes_per_day = VirtualField(source=("row_dressing_changes_per_day", "value_as_concept_id"))
-    image_id                 = VirtualField(source=("row_image", "image_id"))
+    length                   = VirtualField(source=("row_length", "value_as_number"), null=True)
+    width                    = VirtualField(source=("row_width", "value_as_number"), null=True)
+    exudate_amount           = VirtualField(source=("row_exudate_amount", "value_as_concept_id"),choicemap=map_exudate_amount, null=True)
+    exudate_type             = VirtualField(source=("row_exudate_type", "value_as_concept_id"),  choicemap=map_exudate_type, null=True)
+    tissue_type              = VirtualField(source=("row_tissue_type", "value_as_concept_id"),   choicemap=map_tissue_type, null=True)
+    wound_edges              = VirtualField(source=("row_wound_edges", "value_as_concept_id"),   choicemap=map_wound_edges, null=True)
+    skin_around              = VirtualField(source=("row_skin_around", "value_as_concept_id"),   choicemap=map_skin_around, null=True)
+    had_a_fever              = VirtualField(source=("row_had_a_fever", "value_as_concept_id"),   choicemap=map_had_a_fever)
+    pain_level               = VirtualField(source=("row_pain_level", "value_as_concept_id"), null=True)
+    dressing_changes_per_day = VirtualField(source=("row_dressing_changes_per_day", "value_as_concept_id"), null=True)
+    image_id                 = VirtualField(source=("row_image", "image_id"), null=True)
     guidelines_to_patient    = VirtualField(source=("row_guidelines_note", "note_text"))
     extra_notes              = VirtualField(source=("row_extra_notes", "note_text"))
 
@@ -496,7 +499,7 @@ class VirtualTrackingRecords(VirtualModel):
     # Notes
     # row_note_image = TableBindings.Note(
     #     person_id = FieldBind("patient_id"),
-    #     note_date = FieldBind("updated_at"),
+    #     note_date = FieldBind("track_date"),
     #     note_class_concept_id = FieldBind(CID_WOUND_IMAGE, const=True),
     #     encoding_concept_id = FieldBind(CID_UTF8, const=True),
     #     language_concept_id = FieldBind(CID_PORTUGUESE, const=True),
@@ -508,7 +511,7 @@ class VirtualTrackingRecords(VirtualModel):
     
     row_guidelines_note = TableBindings.Note(
         person_id = FieldBind("patient_id"),
-        note_date = FieldBind("updated_at"),
+        note_date = FieldBind("track_date"),
         note_class_concept_id = FieldBind(CID_WOUND_MANAGEMENT_NOTE, const=True, key = True),
         encoding_concept_id = FieldBind(CID_UTF8, const=True),
         language_concept_id = FieldBind(CID_PORTUGUESE, const=True),
@@ -520,7 +523,7 @@ class VirtualTrackingRecords(VirtualModel):
 
     row_extra_notes = TableBindings.Note(
         person_id = FieldBind("patient_id"),
-        note_date = FieldBind("updated_at"),
+        note_date = FieldBind("track_date"),
         note_class_concept_id = FieldBind(CID_GENERIC_NOTE, const=True, key = True),
         encoding_concept_id = FieldBind(CID_UTF8, const=True),
         language_concept_id = FieldBind(CID_PORTUGUESE, const=True),
