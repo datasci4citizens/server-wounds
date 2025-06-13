@@ -1,3 +1,4 @@
+import datetime
 from django.conf import settings
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -67,9 +68,11 @@ class VirtualWoundViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = VirtualWoundSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data;
+        data["updated_at"] = datetime.datetime.now()
         
         # Criar a ferida no banco usando o modelo virtual
-        instance = VirtualWound.create(serializer.validated_data)
+        instance = VirtualWound.create(data)
         
         # Se uma imagem foi enviada, criar o registro de imagem
         if 'image' in request.FILES:
@@ -87,18 +90,21 @@ class VirtualWoundViewSet(viewsets.ModelViewSet):
         instance = self.queryset.get(wound_id=pk)
         if instance.get("image_url"):
             instance["image_url"] = request.build_absolute_uri("../" + "media/" + instance.get("image_url"))
+        instance.pop("image_id")
+
         serializer = VirtualWoundSerializer(data=instance)
         serializer.is_valid(raise_exception=True)
-        return Response(serializer.validated_data)
+        return Response(instance)
 
     def list(self, request: Request, *args, **kwargs):
         instances = list(self.queryset.all())
         for instance in instances:            
             if instance.get("image_url"):
                 instance["image_url"] = request.build_absolute_uri("../" + "media/" + instance.get("image_url"))
+            instance.pop("image_id")
         serializer = VirtualWoundSerializer(many=True, data=instances)
         serializer.is_valid(raise_exception=True)
-        return Response(serializer.validated_data)
+        return Response(instances)
       
       # Método `update` implementado na View
 
@@ -153,15 +159,15 @@ class VirtualWoundViewSet(viewsets.ModelViewSet):
 
         return Response(updated_instance_data)
 
-    @action(detail=True, methods=['put'], url_path='archive')
+    @action(detail=True, methods=['put'], url_path='archive', serializer_class=None)
     def archive(self, request, pk=None):
         instance = VirtualWound.get(wound_id=pk)
         if not instance:
             return Response({'error': 'Wound not found'}, status=status.HTTP_404_NOT_FOUND)
             
         # Marcar a ferida como inativa usando o Concept ID apropriado
-        data = {'is_active': CID_CONDITION_INACTIVE}
-        updated_instance = VirtualWound.update(wound_id=pk, data=data)
+        instance["is_active"] = False
+        updated_instance = VirtualWound.update(data=instance)
         
         return Response(updated_instance)
     

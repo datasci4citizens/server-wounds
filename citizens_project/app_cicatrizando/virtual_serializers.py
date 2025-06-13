@@ -182,7 +182,6 @@ class VirtualPatientSerializer(serializers.Serializer):
         data["bind_code"] = random.randrange(0, 1048576) 
         result = VirtualPatient.create(data)
         
-        print(result)
         for c in set(validated_data["comorbidities"]):
             obs = Observation.objects.create(
                 person_id = result["patient_id"],
@@ -199,20 +198,18 @@ class VirtualPatientSerializer(serializers.Serializer):
             raise serializers.ValidationError(result)
         return value
 
-class VirtualWoundSerializer(VirtualModelSerializer):
+class VirtualWoundSerializer(serializers.Serializer):
     wound_id      = serializers.IntegerField(read_only=True) 
     patient_id    = serializers.IntegerField(required=True) 
     specialist_id = serializers.IntegerField(required=True) 
     updated_at    = serializers.DateTimeField(read_only=True)
-    region        = serializers.IntegerField(required=True)     
-    wound_type    = serializers.IntegerField(required=True) 
+    region        = serializers.ChoiceField(required=True, choices=virtual_models.map_wound_location.virtual_values())     
+    wound_type    = serializers.ChoiceField(required=True, choices=virtual_models.map_wound_type.virtual_values()) 
     start_date    = TimezoneAwareDateField(required=True) 
     end_date      = TimezoneAwareDateField(allow_null=True, required=False)
-    is_active     = serializers.IntegerField(required=True)
-    image_url     = serializers.URLField()
+    is_active     = serializers.BooleanField(required=True)
+    image_url     = serializers.URLField(read_only=True)
 
-    class Meta:
-        super_model = VirtualWound 
 
     def _validate_concept_id_existence(self, value, field_name):
         if value:
@@ -223,14 +220,6 @@ class VirtualWoundSerializer(VirtualModelSerializer):
                     f"O Concept ID '{value}' para '{field_name}' não foi encontrado na base de conceitos OMOP."
                 )
         return value
-    def validate_region(self, value):
-        self._validate_concept_id_existence(value, "região da ferida")
-        return value
-    
-    def validate_wound_type(self, value):
-        self._validate_concept_id_existence(value, "tipo de ferida")
-        return value
-
 
     def validate_start_date(self, value):
         if value and value > date.today():
@@ -243,13 +232,6 @@ class VirtualWoundSerializer(VirtualModelSerializer):
         return value
     
 
-    def validate_is_active(self, value):
-        if value not in [omop_ids.CID_CONDITION_ACTIVE, omop_ids.CID_CONDITION_INACTIVE]:
-            raise serializers.ValidationError(
-                f"O Concept ID '{value}' para status da ferida é inválido. Use {omop_ids.CID_CONDITION_ACTIVE} (Ativa) ou {omop_ids.CID_CONDITION_INACTIVE} (Inativa)."
-            )
-        self._validate_concept_id_existence(value, "status da ferida")
-        return value
     
 class ImageSerializer(serializers.ModelSerializer):
     def validate_image(self, value):
