@@ -172,7 +172,8 @@ class VirtualPatientSerializer(serializers.Serializer):
             "height",
             "accept_tcl",
             "smoke_frequency",
-            "drink_frequency"
+            "drink_frequency",
+            "hospital_registration"
         ]
         data = {
             field: validated_data[field]

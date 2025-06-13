@@ -283,7 +283,7 @@ class VirtualPatient(VirtualModel):
     accept_tcl            = VirtualField(source=("row_nonclinicalinfos", "accept_tcl"))
     smoke_frequency       = VirtualField(source=("row_smoke_frequency", "value_as_concept_id"), choicemap=map_smoke_frequency)
     drink_frequency       = VirtualField(source=("row_drink_frequency", "value_as_concept_id"), choicemap=map_drink_frequency)
-    user_id               = VirtualField(source=("row_person", "person_user_id"))
+    user_id               = VirtualField(source=("row_person", "person_user_id"), null=True)
     updated_at            = VirtualField(source=("row_height", "measurement_date"))
     main_row = "row_person"
     row_person = TableBindings.Person(
@@ -374,7 +374,7 @@ class VirtualWound(VirtualModel):
     region        = VirtualField(source=("row_region", "value_as_concept_id"), choicemap=map_wound_location)
     wound_type    = VirtualField(source=("row_condition", "condition_concept_id"), choicemap=map_wound_type) 
     start_date    = VirtualField(source=("row_condition", "condition_start_date"))
-    end_date      = VirtualField(source=("row_condition", "condition_end_date"))
+    end_date      = VirtualField(source=("row_condition", "condition_end_date"), null=True)
     is_active     = VirtualField(source=("row_condition", "condition_status_concept_id"), choicemap=map_is_active)
     image_id      = VirtualField(source=("row_image", "image_id"), null=True)
     patient_id    = VirtualField(source=("row_condition", "person_id"))
