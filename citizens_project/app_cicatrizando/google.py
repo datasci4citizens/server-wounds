@@ -55,13 +55,13 @@ def google_get_user_data_web(code):
 
 def google_get_user_data_mobile(token):
     try:
-        logger.debug("Verifying ID token from Google")
+        logger.info("Verifying ID token from Google")
         idinfo = id_token.verify_oauth2_token(
             token,
             google_requests.Request(),
             audience=[settings.GOOGLE_OAUTH2_CLIENT_ID],
         )
-        logger.debug("ID token from Google is valid")
+        logger.info("ID token from Google is valid")
 
         return {
             "email": idinfo["email"],
@@ -74,8 +74,8 @@ def google_get_user_data_mobile(token):
 
 def google_get_user_data(validated_data):
     if validated_data.get("code"):
-        logger.debug("Using code to get user web")
+        logger.info("Using code to get user web")
         return google_get_user_data_web(code=validated_data["code"])
     else:
-        logger.debug("Using token to get user mobile")
+        logger.info("Using token to get user mobile")
         return google_get_user_data_mobile(token=validated_data["token"])
