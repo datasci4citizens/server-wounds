@@ -265,6 +265,7 @@ map_comorbidities = ChoiceMap([
 class VirtualPatient(VirtualModel):
     patient_id = VirtualField(source=("row_person","person_id"), key=True)
     name                  = VirtualField(source=("row_nonclinicalinfos", "name"))
+    bind_code             = VirtualField(source=("row_nonclinicalinfos", "bind_code"))
     gender                = VirtualField(source=("row_person", "gender_concept_id"), choicemap=map_gender)
     birthday              = VirtualField(source=("row_person", "birth_datetime"))
     specialist_id         = VirtualField(source=("row_person", "provider_id"))
@@ -294,6 +295,7 @@ class VirtualPatient(VirtualModel):
         name         = FieldBind("name"),
         phone_number = FieldBind("phone_number"),
         accept_tcl   = FieldBind("accept_tcl"),
+        bind_code    = FieldBind("bind_code")
     )
     
     row_height = TableBindings.Measurement( 
