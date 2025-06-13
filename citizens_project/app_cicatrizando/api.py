@@ -1,4 +1,4 @@
-from rest_framework import serializers, viewsets, routers, parsers
+from rest_framework import serializers, viewsets, routers, parsers, permissions
 from django.urls import path, include
 from drf_spectacular.utils import extend_schema
 from django.contrib.auth import get_user_model
@@ -17,6 +17,8 @@ import random
 from django.db import transaction
 # --- VIEWSETS ---
 from django.contrib.auth.models import AnonymousUser
+from .models import PatientExtraNote 
+from .serializers import PatientExtraNoteSerializer
 
 
 User = get_user_model()
@@ -149,3 +151,23 @@ class GoogleLoginView(viewsets.ViewSet):
         }
 
         return Response(response, status=200)
+
+@extend_schema(tags=["patient-notes"])
+class PatientExtraNoteViewSet(viewsets.ModelViewSet):
+    """
+    Viewset para gerenciar notas extras enviadas pelos pacientes.
+    Permite criar (POST), listar (GET), recuperar (GET por ID),
+    atualizar (PUT/PATCH) e deletar (DELETE) notas.
+    """
+    queryset = PatientExtraNote.objects.all()
+    serializer_class = PatientExtraNoteSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.request.user.is_authenticated and not self.request.user.is_staff:
+            return queryset.filter(author=self.request.user)
+        return queryset
