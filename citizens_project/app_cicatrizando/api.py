@@ -77,13 +77,7 @@ class UserPatientBindView(viewsets.ViewSet):
         try:
             email = data["email"]
             patient = PatientNonClinicalInfos.objects.filter(bind_code=data["code"]).get()
-            if User.objects.filter(email=email).exists():
-                return Response("Email já está sendo usado por outra conta", status=status.HTTP_409_CONFLICT)
-            if patient.user == None:
-                patient.user = User.objects.create(username=email,email=email)
-            else:
-                patient.user.username = email
-                patient.user.email = email
+            patient.user = User.objects.get(email=email)
             patient.bind_code = None
             patient.user.save()
             patient.save()
