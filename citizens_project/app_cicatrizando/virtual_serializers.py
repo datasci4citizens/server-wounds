@@ -244,25 +244,23 @@ class ImageSerializer(serializers.ModelSerializer):
 
 class VirtualTrackingRecordsSerializer(serializers.Serializer):
     tracking_id              = serializers.IntegerField(read_only=True)
-    updated_at               = serializers.DateTimeField(read_only=True)
     patient_id               = serializers.IntegerField(required=True)
-    specialist_id            = serializers.IntegerField(required=True, allow_null=True)
+    specialist_id            = serializers.IntegerField(required=True)
     wound_id                 = serializers.IntegerField(required=True)
-    track_date               = serializers.DateField(required=True)
+    track_date               = serializers.DateField(read_only=True)
     length                   = serializers.FloatField(min_value=0.0, allow_null=True, required=False)
     width                    = serializers.FloatField(min_value=0.0, allow_null=True, required=False)
-    exudate_amount           = serializers.IntegerField(allow_null=True, required=False) 
-    exudate_type             = serializers.IntegerField(allow_null=True, required=False)    
-    tissue_type              = serializers.IntegerField(allow_null=True, required=False)
-    wound_edges              = serializers.IntegerField(allow_null=True, required=False)
-    skin_around              = serializers.IntegerField(allow_null=True, required=False)
-    had_a_fever              = serializers.BooleanField(allow_null=True, required=False)
+    exudate_amount           = serializers.ChoiceField(allow_null=True, required=True, choices=virtual_models.map_exudate_amount.virtual_values()) 
+    exudate_type             = serializers.ChoiceField(allow_null=True, required=True, choices=virtual_models.map_exudate_type.virtual_values())    
+    tissue_type              = serializers.ChoiceField(allow_null=True, required=True, choices=virtual_models.map_tissue_type.virtual_values())
+    wound_edges              = serializers.ChoiceField(allow_null=True, required=True, choices=virtual_models.map_wound_edges.virtual_values())
+    skin_around              = serializers.ChoiceField(allow_null=True, required=True, choices=virtual_models.map_skin_around.virtual_values())
+    had_a_fever              = serializers.BooleanField(required=False)
     pain_level               = serializers.IntegerField(min_value=0, max_value=10, allow_null=True, required=False)
     dressing_changes_per_day = serializers.IntegerField(min_value=0, allow_null=True, required=False) 
     guidelines_to_patient    = serializers.CharField(max_length=1000, allow_null=True, required=False)
     extra_notes              = serializers.CharField(max_length=1000, allow_null=True, required=False)
-    image_url                = serializers.URLField()
-
+    image_url                = serializers.URLField(read_only=True)
     
     def _validate_concept_id_existence(self, value, field_name):
         if value:
