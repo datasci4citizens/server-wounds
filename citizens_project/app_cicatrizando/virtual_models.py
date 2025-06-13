@@ -23,6 +23,181 @@ from .django_virtualmodels.models import (
 from .django_virtualmodels.serializers import VirtualModelSerializer
 from rest_framework.routers import DefaultRouter
 
+map_drink_frequency = ChoiceMap([
+    ("0", omop_ids.CID_DRINK_NEVER),
+    ("1", omop_ids.CID_DRINK_MONTHLY_OR_LESS),
+    ("2", omop_ids.CID_DRINK_2_3_TIMES_WEEK),
+    ("3", omop_ids.CID_DRINK_4_OR_MORE_WEEK),
+
+])
+
+map_exudate_amount = ChoiceMap([
+    ("0", omop_ids.CID_NONE),
+    ("1", omop_ids.CID_QUITE_A_BIT),
+    ("2", omop_ids.CID_A_MODERATE_AMOUNT),
+    ("3", omop_ids.CID_A_LOT),
+
+])
+
+map_exudate_type = ChoiceMap([
+    ("0", omop_ids.CID_EXUDATE_SEROUS),
+    ("1", omop_ids.CID_EXUDATE_SANGUINOUS),
+    ("2", omop_ids.CID_EXUDATE_PURULENT),
+    ("3", omop_ids.CID_EXUDATE_SEROSANGUINOUS),
+    ("4", omop_ids.CID_FETID), # conceito local ( nao omop)
+    ("5", omop_ids.CID_NONE),
+])
+
+map_skin_around = ChoiceMap([
+    ("in", omop_ids.CID_SWELLING),
+    ("l2", omop_ids.CID_WOUND_ERYTHEMA),
+    ("g2", omop_ids.CID_WOUND_ERYTHEMA), 
+])
+
+map_smoke_frequency = ChoiceMap([
+    ("0 ", omop_ids.CID_NEVER),
+    ("1", omop_ids.CID_OCCASIONALLY),
+    ("2", omop_ids.CID_10_OR_LESS),
+    ("3", omop_ids.CID_10_OR_MORE),
+])
+
+map_tissue_type = ChoiceMap([
+    ("tc", omop_ids.CID_SCAR),
+    ("te", omop_ids.CID_EPITHELIALIZATION),
+    ("tg", omop_ids.CID_GRANULATION),
+    ("td", omop_ids.CID_DEVITALIZED), #conceito local (nao omop),
+    ("tn", omop_ids.CID_NECROTIC_ISSUE_ESCHAR),
+])
+
+map_wound_edges = ChoiceMap([
+    ("in", omop_ids.CID_WOUND_EDGE_POORLY_DEFINED),
+    ("df", omop_ids.CID_WOUND_EDGE_ATTACHED),
+    ("na", omop_ids.CID_WOUND_EDGE_NOT_ATTACHED),
+    ("cu", omop_ids.CID_WOUND_EDGE_ROLLED),
+    ("fb", omop_ids.CID_WOUND_EDGE_SCABBED),
+])
+
+
+#sao todos conceitos locais
+map_wound_location = ChoiceMap([
+    # Regiões Principais
+    ("cb", omop_ids.CID_REGION_HEAD),
+    ("fc", omop_ids.CID_REGION_FACE),
+    ("pc", omop_ids.CID_REGION_NECK),
+    ("pt", omop_ids.CID_REGION_CHEST),
+    ("ab", omop_ids.CID_REGION_ABDOMEN),
+    ("ds", omop_ids.CID_REGION_BACK),
+    ("pr", omop_ids.CID_REGION_PERINEAL),
+    ("ms", omop_ids.CID_REGION_UPPER_LIMB),
+    ("mi", omop_ids.CID_REGION_LOWER_LIMB),
+
+    # Sub-Regiões da Cabeça (cb)
+    ("cb ft", omop_ids.CID_SUBREGION_HEAD_FRONTAL),
+    ("cb pt", omop_ids.CID_SUBREGION_HEAD_PARIETAL),
+    ("cb oc", omop_ids.CID_SUBREGION_HEAD_OCCIPITAL),
+    ("cb tm", omop_ids.CID_SUBREGION_HEAD_TEMPORAL),
+    ("cb it", omop_ids.CID_SUBREGION_HEAD_INFRATEMPORAL),
+
+    # Sub-Regiões da Face (fc)
+    ("fc ns", omop_ids.CID_SUBREGION_FACE_NASAL),
+    ("fc ol", omop_ids.CID_SUBREGION_FACE_ORAL),
+    ("fc mn", omop_ids.CID_SUBREGION_FACE_MENTONIAN),
+    ("fc or", omop_ids.CID_SUBREGION_FACE_ORBITAL),
+    ("fc io", omop_ids.CID_SUBREGION_FACE_INFRAORBITAL),
+    ("fc jg", omop_ids.CID_SUBREGION_FACE_BUCCAL),
+    ("fc zg", omop_ids.CID_SUBREGION_FACE_ZYGOMATIC),
+    ("fc pm", omop_ids.CID_SUBREGION_FACE_PAROTIDOMASSETERIC),
+
+    # Sub-Regiões do Pescoço (pc)
+    ("pc an", omop_ids.CID_SUBREGION_NECK_ANTERIOR),
+    ("pc em", omop_ids.CID_SUBREGION_NECK_STERNOCLEIDOMASTOID),
+    ("pc lt", omop_ids.CID_SUBREGION_NECK_LATERAL),
+    ("pc pn", omop_ids.CID_SUBREGION_NECK_POSTERIOR),
+
+    # Sub-Regiões do Peito (pt)
+    ("pt ic", omop_ids.CID_SUBREGION_CHEST_INFRACLAVICULAR),
+    ("pt mm", omop_ids.CID_SUBREGION_CHEST_MAMMARY),
+    ("pt ax", omop_ids.CID_SUBREGION_CHEST_AXILLARY),
+    ("pt es", omop_ids.CID_SUBREGION_CHEST_STERNAL),
+
+    # Sub-Regiões do Abdome (aecido desvitalizadob)
+    ("ab hc", omop_ids.CID_SUBREGION_ABDOMEN_HYPOCHONDRIAC),
+    ("ab ep", omop_ids.CID_SUBREGION_ABDOMEN_EPIGASTRIC),
+    ("ab la", omop_ids.CID_SUBREGION_ABDOMEN_FLANK),
+    ("ab um", omop_ids.CID_SUBREGION_ABDOMEN_UMBILICAL),
+    ("ab ig", omop_ids.CID_SUBREGION_ABDOMEN_INGUINAL),
+    ("ab pb", omop_ids.CID_SUBREGION_ABDOMEN_PUBIC_HYPOGASTRIC),
+
+    # Sub-Regiões do Dorso (ds)
+    ("ds vt", omop_ids.CID_SUBREGION_BACK_VERTEBRAL),
+    ("ds sc", omop_ids.CID_SUBREGION_BACK_SACRAL),
+    ("ds es", omop_ids.CID_SUBREGION_BACK_SCAPULAR),
+    ("ds ie", omop_ids.CID_SUBREGION_BACK_INFRASCAPULAR),
+    ("ds lb", omop_ids.CID_SUBREGION_BACK_LUMBAR),
+    ("ds se", omop_ids.CID_SUBREGION_BACK_SUPRASCAPULAR),
+    ("ds iv", omop_ids.CID_SUBREGION_BACK_INTERSCAPULOVERTEBRAL),
+
+    # Sub-Regiões da Região Perineal (pr)
+    ("pr an", omop_ids.CID_SUBREGION_PERINEAL_ANAL),
+    ("pr ug", omop_ids.CID_SUBREGION_PERINEAL_UROGENITAL),
+
+    # Sub-Regiões do Membro Superior (ms)
+    ("ms dt", omop_ids.CID_SUBREGION_UPPER_LIMB_DELTOID),
+    ("ms ab", omop_ids.CID_SUBREGION_UPPER_LIMB_ANTERIOR_ARM),
+    ("ms pb", omop_ids.CID_SUBREGION_UPPER_LIMB_POSTERIOR_ARM),
+    ("ms ac", omop_ids.CID_SUBREGION_UPPER_LIMB_ANTERIOR_ELBOW),
+    ("ms pc", omop_ids.CID_SUBREGION_UPPER_LIMB_POSTERIOR_ELBOW),
+    ("ms aa", omop_ids.CID_SUBREGION_UPPER_LIMB_ANTERIOR_FOREARM),
+    ("ms pa", omop_ids.CID_SUBREGION_UPPER_LIMB_POSTERIOR_FOREARM),
+    ("ms dm", omop_ids.CID_SUBREGION_UPPER_LIMB_DORSUM_HAND),
+    ("ms pm", omop_ids.CID_SUBREGION_UPPER_LIMB_PALM_HAND),
+
+    # Sub-Regiões do Membro Inferior (mi)
+    ("mi gl", omop_ids.CID_SUBREGION_LOWER_LIMB_GLUTEAL),
+    ("mi ac", omop_ids.CID_SUBREGION_LOWER_LIMB_ANTERIOR_THIGH),
+    ("mi pc", omop_ids.CID_SUBREGION_LOWER_LIMB_POSTERIOR_THIGH),
+    ("mi aj", omop_ids.CID_SUBREGION_LOWER_LIMB_ANTERIOR_KNEE),
+    ("mi pj", omop_ids.CID_SUBREGION_LOWER_LIMB_POSTERIOR_KNEE),
+    ("mi pp", omop_ids.CID_SUBREGION_LOWER_LIMB_POSTERIOR_LEG),
+    ("mi ap", omop_ids.CID_SUBREGION_LOWER_LIMB_ANTERIOR_LEG),
+    ("mi cl", omop_ids.CID_SUBREGION_LOWER_LIMB_CALCANEAL),
+    ("mi dp", omop_ids.CID_SUBREGION_LOWER_LIMB_DORSUM_FOOT),
+    ("mi ppf", omop_ids.CID_SUBREGION_LOWER_LIMB_PLANTAR_FOOT), 
+])
+map_is_active = ChoiceMap([
+    (True, omop_ids.CID_CONDITION_ACTIVE),
+    (False, omop_ids.CID_CONDITION_INACTIVE),
+])
+# conceitos locais
+map_wound_size = ChoiceMap([
+    ("0", omop_ids.CID_WOUND_AREA_0_SQCM),
+    ("1", omop_ids.CID_WOUND_AREA_LT_0_3_SQCM),
+    ("2", omop_ids.CID_WOUND_AREA_0_3_0_6_SQCM),
+    ("3", omop_ids.CID_WOUND_AREA_0_7_1_SQCM),
+    ("4", omop_ids.CID_WOUND_AREA_1_1_2_SQCM),
+    ("5", omop_ids.CID_WOUND_AREA_2_1_3_SQCM),
+    ("6", omop_ids.CID_WOUND_AREA_3_1_4_SQCM),
+    ("7", omop_ids.CID_WOUND_AREA_4_1_8_SQCM),
+    ("8", omop_ids.CID_WOUND_AREA_8_1_12_SQCM),
+    ("9", omop_ids.CID_WOUND_AREA_12_1_24_SQCM),
+    ("10", omop_ids.CID_WOUND_AREA_GT_24_SQCM),
+])
+
+map_wound_type = ChoiceMap([
+    ("ud", omop_ids.CID_DIABETIC_FOOT_ULCER ),
+    ("up", omop_ids.CID_PRESSURE_INJURY),
+    ("uv", omop_ids.CID_VENEMOUS_ULCER), #conceito local (nao omop)
+    ("ua", omop_ids.CID_ARTERIAL_ULCER),
+    ("ft", omop_ids.CID_TRAUMATIC_WOUND),
+    ("fc", omop_ids.CID_SURGICAL_WOUND),
+    ("qm", omop_ids.CID_BURN),
+    ("os", omop_ids.CID_OSTOMY),
+    ("st", omop_ids.CID_TEAR_OF_SKIN),
+    ("fs", omop_ids.CID_FISTULA),
+    ("fn", omop_ids.CID_WOUND_NECROTIC),
+    ("fl", omop_ids.CID_PHLEBITIS),
+
+])
 
 class TableBindings:
     class Observation(TableBinding):
@@ -89,10 +264,15 @@ map_comorbidities = ChoiceMap([
   ("8B20", omop_ids.CID_DPOC), # TODO VERIFICAR DEPOIS
   ("5C80", omop_ids.CID_DOENCA_RENAL_CRONICA )# TODO VERIFICAR DEPOIS,
 ])
+map_had_a_fever = ChoiceMap([
+    (True , omop_ids.CID_POSITIVE),
+    (False, omop_ids.CID_NEGATIVE)
+])
 
 class VirtualPatient(VirtualModel):
     patient_id = VirtualField(source=("row_person","person_id"), key=True)
     name                  = VirtualField(source=("row_nonclinicalinfos", "name"))
+    bind_code             = VirtualField(source=("row_nonclinicalinfos", "bind_code"))
     gender                = VirtualField(source=("row_person", "gender_concept_id"), choicemap=map_gender)
     birthday              = VirtualField(source=("row_person", "birth_datetime"))
     specialist_id         = VirtualField(source=("row_person", "provider_id"))
@@ -103,7 +283,7 @@ class VirtualPatient(VirtualModel):
     accept_tcl            = VirtualField(source=("row_nonclinicalinfos", "accept_tcl"))
     smoke_frequency       = VirtualField(source=("row_smoke_frequency", "value_as_concept_id"), choicemap=map_smoke_frequency)
     drink_frequency       = VirtualField(source=("row_drink_frequency", "value_as_concept_id"), choicemap=map_drink_frequency)
-    user_id               = VirtualField(source=("row_person", "person_user_id"))
+    user_id               = VirtualField(source=("row_person", "person_user_id"), null=True)
     updated_at            = VirtualField(source=("row_height", "measurement_date"))
     main_row = "row_person"
     row_person = TableBindings.Person(
@@ -122,6 +302,7 @@ class VirtualPatient(VirtualModel):
         name         = FieldBind("name"),
         phone_number = FieldBind("phone_number"),
         accept_tcl   = FieldBind("accept_tcl"),
+        bind_code    = FieldBind("bind_code")
     )
     
     row_height = TableBindings.Measurement( 
@@ -190,11 +371,11 @@ class VirtualSpecialist(VirtualModel):
 
 class VirtualWound(VirtualModel):
     wound_id      = VirtualField(source=("row_condition", "condition_occurrence_id"), key=True)
-    region        = VirtualField(source=("row_region", "value_as_concept_id"))
-    wound_type    = VirtualField(source=("row_condition", "condition_concept_id")) 
+    region        = VirtualField(source=("row_region", "value_as_concept_id"), choicemap=map_wound_location)
+    wound_type    = VirtualField(source=("row_condition", "condition_concept_id"), choicemap=map_wound_type) 
     start_date    = VirtualField(source=("row_condition", "condition_start_date"))
-    end_date      = VirtualField(source=("row_condition", "condition_end_date"))
-    is_active     = VirtualField(source=("row_condition", "condition_status_concept_id"))
+    end_date      = VirtualField(source=("row_condition", "condition_end_date"), null=True)
+    is_active     = VirtualField(source=("row_condition", "condition_status_concept_id"), choicemap=map_is_active)
     image_id      = VirtualField(source=("row_image", "image_id"), null=True)
     patient_id    = VirtualField(source=("row_condition", "person_id"))
     specialist_id = VirtualField(source=("row_condition", "provider_id"))
@@ -241,7 +422,7 @@ class VirtualWound(VirtualModel):
 def _tr_measurement(**kwargs):
     return TableBindings.Measurement(
         person_id = FieldBind("patient_id", key=True),
-        measurement_date = FieldBind("updated_at"),
+        measurement_date = FieldBind("track_date"),
         measurement_event_id = FieldBind("tracking_id", key=True),
         meas_event_field_concept_id = FieldBind(CID_PK_PROCEDURE_OCCURRENCE, const=True),
         measurement_type_concept_id = FieldBind(CID_NULL, const=True),
@@ -250,13 +431,13 @@ def _tr_measurement(**kwargs):
 def _tr_measurement_value_cid(virtual: str, concept: int):
     return _tr_measurement(
         value_as_concept_id = FieldBind(virtual),   
-        measurement_concept_id = FieldBind(concept, const = True)
+        measurement_concept_id = FieldBind(concept, const = True, key=True)
     )    
 
 def _tr_measurement_value_number(virtual: str, concept: int, cid_unit : int):
     return _tr_measurement(
         value_as_number = FieldBind(virtual),   
-        measurement_concept_id = FieldBind(concept, const = True),
+        measurement_concept_id = FieldBind(concept, const = True, key=True),
         unit_concept_id = FieldBind(cid_unit, const = True)
     )    
 class VirtualTrackingRecords(VirtualModel):
@@ -265,18 +446,17 @@ class VirtualTrackingRecords(VirtualModel):
     specialist_id            = VirtualField(source=("row_procedure", "provider_id"))
     track_date               = VirtualField(source=("row_procedure", "procedure_date"))
     wound_id                 = VirtualField(source=("row_fact_relation", "fact_id_1"))
-    updated_at               = VirtualField(source=("row_length", "measurement_date"))
-    length                   = VirtualField(source=("row_length", "value_as_number"))
-    width                    = VirtualField(source=("row_width", "value_as_number"))
-    exudate_amount           = VirtualField(source=("row_exudate_amount", "value_as_concept_id"))
-    exudate_type             = VirtualField(source=("row_exudate_type", "value_as_concept_id"))
-    tissue_type              = VirtualField(source=("row_tissue_type", "value_as_concept_id"))
-    wound_edges              = VirtualField(source=("row_wound_edges", "value_as_concept_id"))
-    skin_around              = VirtualField(source=("row_skin_around", "value_as_concept_id"))
-    had_a_fever              = VirtualField(source=("row_had_a_fever", "value_as_concept_id"))
-    pain_level               = VirtualField(source=("row_pain_level", "value_as_concept_id"))
-    dressing_changes_per_day = VirtualField(source=("row_dressing_changes_per_day", "value_as_concept_id"))
-    image_id                 = VirtualField(source=("row_image", "image_id"))
+    length                   = VirtualField(source=("row_length", "value_as_number"), null=True)
+    width                    = VirtualField(source=("row_width", "value_as_number"), null=True)
+    exudate_amount           = VirtualField(source=("row_exudate_amount", "value_as_concept_id"),choicemap=map_exudate_amount, null=True)
+    exudate_type             = VirtualField(source=("row_exudate_type", "value_as_concept_id"),  choicemap=map_exudate_type, null=True)
+    tissue_type              = VirtualField(source=("row_tissue_type", "value_as_concept_id"),   choicemap=map_tissue_type, null=True)
+    wound_edges              = VirtualField(source=("row_wound_edges", "value_as_concept_id"),   choicemap=map_wound_edges, null=True)
+    skin_around              = VirtualField(source=("row_skin_around", "value_as_concept_id"),   choicemap=map_skin_around, null=True)
+    had_a_fever              = VirtualField(source=("row_had_a_fever", "value_as_concept_id"),   choicemap=map_had_a_fever)
+    pain_level               = VirtualField(source=("row_pain_level", "value_as_concept_id"), null=True)
+    dressing_changes_per_day = VirtualField(source=("row_dressing_changes_per_day", "value_as_concept_id"), null=True)
+    image_id                 = VirtualField(source=("row_image", "image_id"), null=True)
     guidelines_to_patient    = VirtualField(source=("row_guidelines_note", "note_text"))
     extra_notes              = VirtualField(source=("row_extra_notes", "note_text"))
 
@@ -319,7 +499,7 @@ class VirtualTrackingRecords(VirtualModel):
     # Notes
     # row_note_image = TableBindings.Note(
     #     person_id = FieldBind("patient_id"),
-    #     note_date = FieldBind("updated_at"),
+    #     note_date = FieldBind("track_date"),
     #     note_class_concept_id = FieldBind(CID_WOUND_IMAGE, const=True),
     #     encoding_concept_id = FieldBind(CID_UTF8, const=True),
     #     language_concept_id = FieldBind(CID_PORTUGUESE, const=True),
@@ -331,7 +511,7 @@ class VirtualTrackingRecords(VirtualModel):
     
     row_guidelines_note = TableBindings.Note(
         person_id = FieldBind("patient_id"),
-        note_date = FieldBind("updated_at"),
+        note_date = FieldBind("track_date"),
         note_class_concept_id = FieldBind(CID_WOUND_MANAGEMENT_NOTE, const=True, key = True),
         encoding_concept_id = FieldBind(CID_UTF8, const=True),
         language_concept_id = FieldBind(CID_PORTUGUESE, const=True),
@@ -343,7 +523,7 @@ class VirtualTrackingRecords(VirtualModel):
 
     row_extra_notes = TableBindings.Note(
         person_id = FieldBind("patient_id"),
-        note_date = FieldBind("updated_at"),
+        note_date = FieldBind("track_date"),
         note_class_concept_id = FieldBind(CID_GENERIC_NOTE, const=True, key = True),
         encoding_concept_id = FieldBind(CID_UTF8, const=True),
         language_concept_id = FieldBind(CID_PORTUGUESE, const=True),

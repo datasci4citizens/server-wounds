@@ -1,9 +1,12 @@
+import datetime
 from django.conf import settings
 from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema
 from rest_framework.request import Request
 
 from .omop.omop_models import ProcedureOccurrence
+from .omop.omop_ids import CID_CONDITION_INACTIVE
 
 from .virtual_models import (VirtualSpecialist, VirtualWound, VirtualTrackingRecords, VirtualPatient, VirtualComorbidity)
 from .virtual_serializers import (ImageSerializer, VirtualSpecialistSerializer, VirtualWoundSerializer, VirtualTrackingRecordsSerializer, 
@@ -56,7 +59,7 @@ class VirtualPatientViewSet(viewsets.ViewSet):
             instance["comorbidities"] = comorbidities
         return Response(instances)
     
-    
+
 @extend_schema(tags=["wounds"])
 class VirtualWoundViewSet(viewsets.ModelViewSet):
     queryset = VirtualWound.objects().annotate(
@@ -66,21 +69,112 @@ class VirtualWoundViewSet(viewsets.ModelViewSet):
     ).all()
     serializer_class = VirtualWoundSerializer
     
+    def create(self, request, *args, **kwargs):
+        serializer = VirtualWoundSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data;
+        data["updated_at"] = datetime.datetime.now()
+        
+        # Criar a ferida no banco usando o modelo virtual
+        instance = VirtualWound.create(data)
+        
+        # Se uma imagem foi enviada, criar o registro de imagem
+        if 'image' in request.FILES:
+            image_serializer = ImageSerializer(data={'image': request.FILES['image']})
+            if image_serializer.is_valid():
+                image = image_serializer.save()
+                WoundImage.objects.create(
+                    wound_id=instance['wound_id'],
+                    image=image
+                )
+        
+        return Response(instance, status=status.HTTP_201_CREATED)
+
     def retrieve(self, request, pk=None, *args, **kwargs):
-        instance = self.queryset.get(tracking_id=pk)
-        instance["image_url"] = request.build_absolute_uri("../" +"media/"+ instance.get("image_url"))
+        instance = self.queryset.get(wound_id=pk)
+        if instance.get("image_url"):
+            instance["image_url"] = request.build_absolute_uri("../" + "media/" + instance.get("image_url"))
+        instance.pop("image_id")
+
         serializer = VirtualWoundSerializer(data=instance)
         serializer.is_valid(raise_exception=True)
-
-        return Response(serializer.validated_data)
+        return Response(instance)
 
     def list(self, request: Request, *args, **kwargs):
         instances = list(self.queryset.all())
         for instance in instances:            
-            instance["image_url"] = request.build_absolute_uri("../" +"media/"+ instance.get("image_url"))
-        serializer =  VirtualWoundSerializer(many=True, data=instances)
+            if instance.get("image_url"):
+                instance["image_url"] = request.build_absolute_uri("../" + "media/" + instance.get("image_url"))
+            instance.pop("image_id")
+        serializer = VirtualWoundSerializer(many=True, data=instances)
         serializer.is_valid(raise_exception=True)
-        return Response(serializer.validated_data)
+        return Response(instances)
+      
+      # Método `update` implementado na View
+
+    def update(self, request, pk=None, *args, **kwargs):
+        # 1. Obtém a instância existente da ferida
+        instance = VirtualWound.get(wound_id=pk)
+        if not instance:
+            return Response({'error': 'Wound not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # 2. Instancia o serializer com os dados existentes e os dados da requisição
+        #    `partial=kwargs.get('partial', False)` permite que o mesmo método `update`
+        #    lida com PUT (false) e PATCH (true) automaticamente.
+        serializer = self.get_serializer(instance=instance, data=request.data, partial=kwargs.get('partial', False))
+        serializer.is_valid(raise_exception=True)
+
+        with transaction.atomic():
+            # 3. Prepara os dados para atualização no modelo VirtualWound
+            update_data = {
+                "wound_id": instance["wound_id"], 
+                "updated_at": datetime.now() 
+            }
+
+            # Copia apenas os campos válidos e atualizáveis do serializer para update_data
+            for field_name in [
+                "patient_id", "specialist_id", "region", "wound_type",
+                "start_date", "end_date", "is_active"
+            ]:
+                if field_name in serializer.validated_data:
+                    update_data[field_name] = serializer.validated_data[field_name]
+                # Se for PATCH e o campo não estiver em validated_data, seu valor será mantido
+
+            # 4. Chama o método .update() do seu VirtualWound para persistir as mudanças no OMOP
+            updated_instance_data = VirtualWound.update(update_data)
+
+            # 5. Lida com a atualização da imagem, se um novo arquivo for enviado
+            if 'image' in request.FILES:
+                image_serializer = ImageSerializer(data={'image': request.FILES['image']})
+                if image_serializer.is_valid(raise_exception=True):
+                    new_image = image_serializer.save() # Salva a nova imagem no sistema de arquivos/DB
+
+                    # Tenta encontrar e atualizar o registro WoundImage existente
+                    try:
+                        wound_image_record = WoundImage.objects.get(wound_id=updated_instance_data['wound_id'])
+                        wound_image_record.image = new_image
+                        wound_image_record.save()
+                    except WoundImage.DoesNotExist:
+                        # Se não havia um registro de imagem associado, cria um novo
+                        WoundImage.objects.create(
+                            wound_id=updated_instance_data['wound_id'],
+                            image=new_image
+                        )
+
+        return Response(updated_instance_data)
+
+    @action(detail=True, methods=['put'], url_path='archive', serializer_class=None)
+    def archive(self, request, pk=None):
+        instance = VirtualWound.get(wound_id=pk)
+        if not instance:
+            return Response({'error': 'Wound not found'}, status=status.HTTP_404_NOT_FOUND)
+            
+        # Marcar a ferida como inativa usando o Concept ID apropriado
+        instance["is_active"] = False
+        updated_instance = VirtualWound.update(data=instance)
+        
+        return Response(updated_instance)
+    
 @extend_schema(tags=["tracking-records"])
 class VirtualTrackingRecordsViewSet(viewsets.ModelViewSet):
     queryset = VirtualTrackingRecords.objects().all().annotate(
@@ -90,9 +184,15 @@ class VirtualTrackingRecordsViewSet(viewsets.ModelViewSet):
     )
     serializer_class = VirtualTrackingRecordsSerializer
     def create(self, request, *args, **kwargs):
-        serializer = VirtualPatientSerializer(data=request.data)
+        serializer = VirtualTrackingRecordsSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        data = serializer.create(serializer.validated_data)
+        data_to_create = serializer.validated_data
+        data_to_create["track_date"] = datetime.date.today()
+        if(data_to_create.get("extra_notes", None) == None):
+            data_to_create["extra_notes"] = ""
+        if(data_to_create.get("guidelines_to_patient", None) == None):
+            data_to_create["guidelines_to_patient"] = ""
+        data = VirtualTrackingRecords.create(data_to_create)
         return Response(data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
@@ -101,19 +201,17 @@ class VirtualTrackingRecordsViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, pk=None, *args, **kwargs):
         instance = self.queryset.get(tracking_id=pk)
         instance["image_url"] = request.build_absolute_uri("../" +"media/"+ instance.get("image_url"))
-        serializer = VirtualTrackingRecordsSerializer(data=instance)
-        serializer.is_valid(raise_exception=True)
-
-        return Response(serializer.validated_data)
+        instance.pop("image_id")
+        return Response(instance)
 
 
     def list(self, request: Request, *args, **kwargs):
         instances = list(self.queryset.all())
-        for instance in instances:            
-            instance["image_url"] = request.build_absolute_uri("../" +"media/"+ instance.get("image_url"))
-        serializer =  VirtualTrackingRecordsSerializer(many=True, data=instances)
-        serializer.is_valid(raise_exception=True)
-        return Response(serializer.validated_data)
+        for instance in instances:
+            if instance.get("image_url", None) != None:
+                instance["image_url"] = request.build_absolute_uri("../" +"media/"+ instance.get("image_url"))
+            instance.pop("image_id")
+        return Response(instances)
     
 @extend_schema(tags=["tracking-records"])
 class TrackingRecordsImageViewSet(viewsets.ViewSet):

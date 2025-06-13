@@ -52,7 +52,7 @@ class ConceptSynonym(models.Model):
         db_table = 'concept_synonym'
 
 class ConditionOccurrence(models.Model):
-    condition_occurrence_id = models.IntegerField(primary_key=True)
+    condition_occurrence_id = models.AutoField(primary_key=True)
     person = models.ForeignKey('Person', models.DO_NOTHING)
     condition_concept = models.ForeignKey(Concept, models.DO_NOTHING)
     condition_start_date = models.DateField()

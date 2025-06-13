@@ -38,6 +38,9 @@ services:
       - type: bind
         source: ./tmp/midia
         target: /code/tmp/midia
+      - type: bind
+        source: .
+        target: /code
   migration:
     image: wounds-server:v0.2
     build: .

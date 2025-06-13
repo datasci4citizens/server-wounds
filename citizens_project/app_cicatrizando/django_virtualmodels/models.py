@@ -318,9 +318,13 @@ class VirtualModel:
 	@classmethod
 	@transaction.atomic()
 	def create(cls, data):
-		result = {**cls._map_virtual_to_db(data)}
 		"""Adiciona a informação dos dados do modelo virtual no banco de dados, é usado transactions, então caso aconteça alguma falha na criação é acontece rollback e não é feita a criação incompleta"""
-		for subtables in cls.descriptor().bindings.values():
+		result = {**cls._map_virtual_to_db(data)}
+		desc = cls.descriptor()
+		for name, field in desc.fields.items():
+			if not field.key and not field.null and data.get(name, None) == None :
+				raise Exception(f"Campo \"{name}\" não nulo não está nos dados")
+		for subtables in desc.bindings.values():
 			model_data = subtables.table._default_manager.create(
 				**subtables.model_from_data(**result)
 			)
@@ -332,6 +336,7 @@ class VirtualModel:
 	def update(cls,data: dict[str, object]):
 		"""A partir do dicionario de dados, onde a chave é o nome do campo virtual que deve ser modificado, e o valor é o novo valor, é editado cada um dos respectivos valores
 		atomic: A operação é atomica então caso aconteça algum erro não é feito a modificação em partes"""
+		data = {**cls._map_virtual_to_db(data)}
 		actual = None
 		for k, subtable in cls.descriptor().bindings.items():
 			updatable_fields =	subtable.updatable_fields()
