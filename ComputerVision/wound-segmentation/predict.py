@@ -18,8 +18,8 @@ def combined_loss(y_true, y_pred):
     """
     Combina Binary Crossentropy + Dice Loss
     """
-    bce_weight = 0.3
-    dice_weight = 0.7
+    bce_weight = 0.5
+    dice_weight = 0.5
     
     bce = binary_crossentropy(y_true, y_pred)
     dice = dice_coef_loss(y_true, y_pred)
@@ -31,13 +31,13 @@ input_dim_x = 224
 input_dim_y = 224
 color_space = 'rgb'
 path = './data/Medetec_foot_ulcer_224/'
-weight_file_name = '2025-06-12 22:36:45.332568.hdf5'
-pred_save_path = '2025-06-12 22:36:45.332568/'
+weight_file_name = '2025-06-13 14:35:06.216528.hdf5'
+pred_save_path = '2025-06-13 14:35:06.216528/'
 
 # DEBUG: Verificar se as pastas existem
 print(f"Verificando path: {path}")
 print(f"Test images exist: {os.path.exists(path + 'test/images/')}")
-print(f"Predictions dir exists: {os.path.exists(path + 'test/predictions/')}")
+print(f"Predictions dir exists: {os.path.exists(path + 'test/images/')}")
 
 # Criar pasta de predições se não existir
 os.makedirs(path + 'test/predictions/' + pred_save_path, exist_ok=True)

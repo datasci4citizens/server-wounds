@@ -22,8 +22,8 @@ def combined_loss(y_true, y_pred):
     - Dice Loss: sobreposição de regiões
     """
     # Pesos das loss functions (você pode ajustar)
-    bce_weight = 0.30  # 30% Binary Crossentropy
-    dice_weight = 0.70  # 70% Dice Loss
+    bce_weight = 0.50  # 30% Binary Crossentropy
+    dice_weight = 0.50  # 70% Dice Loss
     
     # Calcular cada loss
     bce = binary_crossentropy(y_true, y_pred)
@@ -40,19 +40,14 @@ def lr_schedule(epoch):
     - Épocas 150-400: 2e-5 (refinamento)
     - Épocas 400+: 1e-5 (ajuste fino)
     """
-    if epoch < 150:
-        return 5e-5
-    elif epoch < 400:
-        return 2e-5
-    else:
-        return 1e-5
+    return 1e-4
 
 # PARÂMETROS OTIMIZADOS
 input_dim_x = 224
 input_dim_y = 224
 n_filters = 16  # Modelo menor para evitar overfitting
 dataset = 'Medetec_foot_ulcer_224'
-data_gen = DataGen('./data/' + dataset + '/', split_ratio=0.3, x=input_dim_x, y=input_dim_y)
+data_gen = DataGen('./data/' + dataset + '/', split_ratio=0.2, x=input_dim_x, y=input_dim_y)
 
 # MODELO U-NET
 unet2d = Unet2D(n_filters=n_filters, input_dim_x=input_dim_x, input_dim_y=input_dim_y, num_channels=3)
@@ -60,15 +55,15 @@ model, model_name = unet2d.get_unet_model_yuanqing()
 
 # HIPERPARÂMETROS DE TREINO
 batch_size = 4
-epochs = 1000  # ← AUMENTADO mas controlado pelo EarlyStopping
+epochs = 100  
 initial_learning_rate = 5e-5
-loss_function = combined_loss  # ← COMBINED LOSS!
+loss_function = combined_loss
 
 # CALLBACKS AVANÇADOS
 # 1. EarlyStopping - para mais cedo se não melhorar
 early_stopping = EarlyStopping(
     monitor='val_dice_coef',
-    patience=100,  # ← AUMENTADO (era 50) - mais paciência
+    patience=5,  # ← AUMENTADO (era 50)
     mode='max',
     restore_best_weights=True,
     verbose=1,
