@@ -23,63 +23,63 @@ from .django_virtualmodels.models import (
 from .django_virtualmodels.serializers import VirtualModelSerializer
 from rest_framework.routers import DefaultRouter
 
-map_drink_frequency = [
+map_drink_frequency = ChoiceMap([
     ("0", omop_ids.CID_DRINK_NEVER),
     ("1", omop_ids.CID_DRINK_MONTHLY_OR_LESS),
     ("2", omop_ids.CID_DRINK_2_3_TIMES_WEEK),
     ("3", omop_ids.CID_DRINK_4_OR_MORE_WEEK),
 
-]
+])
 
-map_exudate_amount = [
+map_exudate_amount = ChoiceMap([
     ("0", omop_ids.CID_NONE),
     ("1", omop_ids.CID_QUITE_A_BIT),
     ("2", omop_ids.CID_A_MODERATE_AMOUNT),
     ("3", omop_ids.CID_A_LOT),
 
-]
+])
 
-map_exudate_type = [
+map_exudate_type = ChoiceMap([
     ("0", omop_ids.CID_EXUDATE_SEROUS),
     ("1", omop_ids.CID_EXUDATE_SANGUINOUS),
     ("2", omop_ids.CID_EXUDATE_PURULENT),
     ("3", omop_ids.CID_EXUDATE_SEROSANGUINOUS),
     ("4", omop_ids.CID_FETID), # conceito local ( nao omop)
     ("5", omop_ids.CID_NONE),
-]
+])
 
-map_skin_around = [
+map_skin_around = ChoiceMap([
     ("in", omop_ids.CID_SWELLING),
     ("l2", omop_ids.CID_WOUND_ERYTHEMA),
     ("g2", omop_ids.CID_WOUND_ERYTHEMA), 
-]
+])
 
-map_smoke_frequency = [
+map_smoke_frequency = ChoiceMap([
     ("0 ", omop_ids.CID_NEVER),
     ("1", omop_ids.CID_OCCASIONALLY),
     ("2", omop_ids.CID_10_OR_LESS),
     ("3", omop_ids.CID_10_OR_MORE),
-]
+])
 
-map_tissue_type = [
+map_tissue_type = ChoiceMap([
     ("tc", omop_ids.CID_SCAR),
     ("te", omop_ids.CID_EPITHELIALIZATION),
     ("tg", omop_ids.CID_GRANULATION),
     ("td", omop_ids.CID_DEVITALIZED), #conceito local (nao omop),
     ("tn", omop_ids.CID_NECROTIC_ISSUE_ESCHAR),
-]
+])
 
-map_wound_edges = [
+map_wound_edges = ChoiceMap([
     ("in", omop_ids.CID_WOUND_EDGE_POORLY_DEFINED),
     ("df", omop_ids.CID_WOUND_EDGE_ATTACHED),
     ("na", omop_ids.CID_WOUND_EDGE_NOT_ATTACHED),
     ("cu", omop_ids.CID_WOUND_EDGE_ROLLED),
     ("fb", omop_ids.CID_WOUND_EDGE_SCABBED),
-]
+])
 
 
 #sao todos conceitos locais
-map_wound_location = [
+map_wound_location = ChoiceMap([
     # Regiões Principais
     ("cb", omop_ids.CID_REGION_HEAD),
     ("fc", omop_ids.CID_REGION_FACE),
@@ -163,10 +163,13 @@ map_wound_location = [
     ("mi cl", omop_ids.CID_SUBREGION_LOWER_LIMB_CALCANEAL),
     ("mi dp", omop_ids.CID_SUBREGION_LOWER_LIMB_DORSUM_FOOT),
     ("mi ppf", omop_ids.CID_SUBREGION_LOWER_LIMB_PLANTAR_FOOT), 
-]
-
+])
+map_is_active = ChoiceMap([
+    (True, omop_ids.CID_CONDITION_ACTIVE),
+    (False, omop_ids.CID_CONDITION_INACTIVE),
+])
 # conceitos locais
-map_wound_size = [
+map_wound_size = ChoiceMap([
     ("0", omop_ids.CID_WOUND_AREA_0_SQCM),
     ("1", omop_ids.CID_WOUND_AREA_LT_0_3_SQCM),
     ("2", omop_ids.CID_WOUND_AREA_0_3_0_6_SQCM),
@@ -178,9 +181,9 @@ map_wound_size = [
     ("8", omop_ids.CID_WOUND_AREA_8_1_12_SQCM),
     ("9", omop_ids.CID_WOUND_AREA_12_1_24_SQCM),
     ("10", omop_ids.CID_WOUND_AREA_GT_24_SQCM),
-]
+])
 
-map_wound_type = [
+map_wound_type = ChoiceMap([
     ("ud", omop_ids.CID_DIABETIC_FOOT_ULCER ),
     ("up", omop_ids.CID_PRESSURE_INJURY),
     ("uv", omop_ids.CID_VENEMOUS_ULCER), #conceito local (nao omop)
@@ -194,7 +197,7 @@ map_wound_type = [
     ("fn", omop_ids.CID_WOUND_NECROTIC),
     ("fl", omop_ids.CID_PHLEBITIS),
 
-]
+])
 
 class TableBindings:
     class Observation(TableBinding):
@@ -364,11 +367,11 @@ class VirtualSpecialist(VirtualModel):
 
 class VirtualWound(VirtualModel):
     wound_id      = VirtualField(source=("row_condition", "condition_occurrence_id"), key=True)
-    region        = VirtualField(source=("row_region", "value_as_concept_id"))
-    wound_type    = VirtualField(source=("row_condition", "condition_concept_id")) 
+    region        = VirtualField(source=("row_region", "value_as_concept_id"), choicemap=map_wound_location)
+    wound_type    = VirtualField(source=("row_condition", "condition_concept_id"), choicemap=map_wound_type) 
     start_date    = VirtualField(source=("row_condition", "condition_start_date"))
     end_date      = VirtualField(source=("row_condition", "condition_end_date"))
-    is_active     = VirtualField(source=("row_condition", "condition_status_concept_id"))
+    is_active     = VirtualField(source=("row_condition", "condition_status_concept_id"), choicemap=map_is_active)
     image_id      = VirtualField(source=("row_image", "image_id"), null=True)
     patient_id    = VirtualField(source=("row_condition", "person_id"))
     specialist_id = VirtualField(source=("row_condition", "provider_id"))
