@@ -5,14 +5,14 @@ from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema
 from rest_framework.request import Request
 
-from .omop.omop_models import ProcedureOccurrence
+from .omop.omop_models import ProcedureOccurrence, Provider
 from .omop.omop_ids import CID_CONDITION_INACTIVE
 
 from .virtual_models import (VirtualSpecialist, VirtualWound, VirtualTrackingRecords, VirtualPatient, VirtualComorbidity)
 from .virtual_serializers import (ImageSerializer, VirtualSpecialistSerializer, VirtualWoundSerializer, VirtualTrackingRecordsSerializer, 
                                  VirtualPatientSerializer, VirtualComorbiditySerializer, ImageSerializer)
 from django.db.models import OuterRef, Subquery
-from .models import TrackingRecordImage, WoundImage, User
+from .models import TrackingRecordImage, WoundImage, User, PatientNonClinicalInfos
 from rest_framework import generics, mixins, views
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
@@ -25,6 +25,44 @@ class VirtualSpecialistViewSet(mixins.CreateModelMixin,
 		email = Subquery(User.objects.all().filter(id=OuterRef("user_id")).values("email")[:1])
 	)
     serializer_class = VirtualSpecialistSerializer
+from rest_framework.exceptions import APIException
+
+class ForbiddenException(APIException):
+    status_code = 403
+    default_detail = 'Usuario nao autorizado.'
+
+class UserAuth:
+    user : User
+    def __init__(self, user):
+        self.user =  user
+        self.patient_info = None
+        self.provider = None
+    def load_specialist(self, raise_exception=True):
+        try: 
+            self.provider  = Provider.objects.get(provider_user_id=self.user.id)
+        except Provider.DoesNotExist:
+            if raise_exception:
+                return ForbiddenException(detail="Usuario deve ser um especialista.")
+    def load_patient(self, raise_exception=True):
+        try: 
+            self.patient_info  = PatientNonClinicalInfos.objects.get(user_id=self.user.id)
+        except PatientNonClinicalInfos.DoesNotExist:
+            if raise_exception:
+                return ForbiddenException(detail="Usuario deve ser um paciente.")
+    
+    def specialist_id_is(self, id):
+        if int(id) != self.provider.provider_id:
+            raise  ForbiddenException(detail="O especialista nao tem permissao de acesso a esse endpoint") 
+    def or_specialist_id_is(self, id):
+        if self.provider != None:
+            self.specialist_id_is(id) 
+        
+    def patient_id_is(self, id):
+        if int(id) != self.patient_info.person_id:
+            raise  ForbiddenException(detail="O paciente nao tem permissao de acessar esse endpoint.") 
+    def or_patient_id_is(self, id):
+        if self.patient_info != None:
+            self.patient_id_is(id) 
 
 @extend_schema(tags=["patients"])
 class VirtualPatientViewSet(viewsets.ViewSet):
@@ -33,23 +71,38 @@ class VirtualPatientViewSet(viewsets.ViewSet):
     def create(self, request, *args, **kwargs):
         serializer = VirtualPatientSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        data = serializer.create(serializer.validated_data)
-        VirtualPatient._map_virtual_to_db
+        auth = UserAuth(request.user)
+        auth.load_specialist()
+        auth.specialist_id_is(serializer.validated_data["specialist_id"])
+        data = serializer.create(serializer.validated_data)         
         return Response(data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
         serializer.save()
     
     def retrieve(self, request, pk=None, *args, **kwargs):
+        auth = UserAuth(request.user)
+        auth.load_patient(raise_exception=False)
+        auth.or_patient_id_is(int(pk))
+        auth.load_specialist(raise_exception=False)
+
         instance = VirtualPatient.get(patient_id=pk)
+        auth.or_specialist_id_is(instance["specialist_id"])
         comorbidities = VirtualPatient.get_comorbidities(patient_id=pk)
         instance["comorbidities"] = comorbidities
-        serializer = VirtualPatientSerializer()
         return Response(instance)
 
 
     def list(self, request, *args, **kwargs):
+        specialist_id = self.request.query_params.get('specialist_id')
         instances = VirtualPatient.objects().all()
+        auth = UserAuth(request.user)
+        auth.load_specialist()
+        if specialist_id != None and specialist_id != "":
+            auth.specialist_id_is(specialist_id)
+            instances = instances.filter(specialist_id=int(specialist_id))
+        else:
+            raise ForbiddenException(detail="Se deve usar o query param filtrando pelo especialista, /patients?specialist_id={specialist_id}")
         for instance in instances:
             comorbidities = VirtualPatient.get_comorbidities(patient_id=instance["patient_id"])
             instance["comorbidities"] = comorbidities
