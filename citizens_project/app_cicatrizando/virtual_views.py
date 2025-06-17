@@ -50,16 +50,16 @@ class UserAuth:
             if raise_exception:
                 return ForbiddenException(detail="Usuario deve ser um paciente.")
     
-    def specialist_id_is(self, id):
+    def specialist_id_is(self, id, detail="O especialista nao tem permissao de acesso a esse endpoint"):
         if int(id) != self.provider.provider_id:
-            raise  ForbiddenException(detail="O especialista nao tem permissao de acesso a esse endpoint") 
-    def or_specialist_id_is(self, id):
+            raise  ForbiddenException(detail=detail) 
+    def or_specialist_id_is(self, id, detail="O especialista nao tem permissao de acesso a esse endpoint"):
         if self.provider != None:
-            self.specialist_id_is(id) 
+            self.specialist_id_is(id, detail=detail) 
         
     def patient_id_is(self, id):
         if int(id) != self.patient_info.person_id:
-            raise  ForbiddenException(detail="O paciente nao tem permissao de acessar esse endpoint.") 
+            raise  ForbiddenException(detail="O paciente nao tem permissao de acessar este recurso.") 
     def or_patient_id_is(self, id):
         if self.patient_info != None:
             self.patient_id_is(id) 
@@ -123,7 +123,16 @@ class VirtualWoundViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data;
         data["updated_at"] = datetime.datetime.now()
-        
+        auth = UserAuth(request.user)
+        auth.load_specialist()
+        try:
+            patient_specialist = VirtualPatient.objects().filter(patient_id=data["patient_id"])[0]["specialist_id"]        
+        except:
+            return Response({"detail": "Paciente indicado nao existe"}, status.HTTP_409_CONFLICT)
+        auth.specialist_id_is(patient_specialist, "Especialista nao tem permissao de criar uma ferida para o paciente indicado")
+        if(data["specialist_id"] != patient_specialist):
+            return Response({"detail": "O especialista deve ser o mesmo do paciente"}, status=status.HTTP_409_CONFLICT)
+    
         # Criar a ferida no banco usando o modelo virtual
         instance = VirtualWound.create(data)
         
@@ -138,9 +147,17 @@ class VirtualWoundViewSet(viewsets.ModelViewSet):
                 )
         
         return Response(instance, status=status.HTTP_201_CREATED)
+    def has_permission(self, request, instance):
+        auth = UserAuth(request.user)
+        auth.load_patient(raise_exception=False)
+        print(auth.patient_info.person, instance["patient_id"])
+        auth.or_patient_id_is(instance["patient_id"])
+        auth.load_specialist(raise_exception=False)
+        auth.or_specialist_id_is(instance["specialist_id"], detail="Especialista nao tem acesso a ferida solicitada")
 
     def retrieve(self, request, pk=None, *args, **kwargs):
         instance = self.queryset.get(wound_id=pk)
+        self.has_permission(request, instance)
         if instance.get("image_url"):
             instance["image_url"] = request.build_absolute_uri("../" + "media/" + instance.get("image_url"))
         instance.pop("image_id")
@@ -164,6 +181,7 @@ class VirtualWoundViewSet(viewsets.ModelViewSet):
     def update(self, request, pk=None, *args, **kwargs):
         # 1. Obtém a instância existente da ferida
         instance = VirtualWound.get(wound_id=pk)
+        self.has_permission(request, instance)
         if not instance:
             return Response({'error': 'Wound not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -214,10 +232,12 @@ class VirtualWoundViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['put'], url_path='archive', serializer_class=None)
     def archive(self, request, pk=None):
+
+
         instance = VirtualWound.get(wound_id=pk)
+        self.has_permission(request, instance)
         if not instance:
             return Response({'error': 'Wound not found'}, status=status.HTTP_404_NOT_FOUND)
-            
         # Marcar a ferida como inativa usando o Concept ID apropriado
         instance["is_active"] = False
         updated_instance = VirtualWound.update(data=instance)
