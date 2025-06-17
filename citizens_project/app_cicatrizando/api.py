@@ -151,3 +151,16 @@ class GoogleLoginView(viewsets.ViewSet):
         }
 
         return Response(response, status=200)
+
+    @action(detail=True, url_path="dummy", methods=["POST"])
+    def dummy(self, request, pk , *args, **kwargs):
+        logger.debug("Dummy login")
+        user = User.objects.get(id=pk)
+        token = RefreshToken.for_user(user)
+        
+        # Generate JWT token
+        response = {
+            "access": str(token.access_token),
+            "refresh": str(token),
+        }
+        return Response(response, status=200)
