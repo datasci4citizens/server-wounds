@@ -31,6 +31,10 @@ class ForbiddenException(APIException):
     status_code = 403
     default_detail = 'Usuario nao autorizado.'
 
+
+class ConflictException(APIException):
+    status_code = status.HTTP_409_CONFLICT
+
 class UserAuth:
     user : User
     def __init__(self, user):
@@ -42,28 +46,45 @@ class UserAuth:
             self.provider  = Provider.objects.get(provider_user_id=self.user.id)
         except Provider.DoesNotExist:
             if raise_exception:
-                return ForbiddenException(detail="Usuario deve ser um especialista.")
+                raise ForbiddenException(detail="Usuario deve ser um especialista.")
     def load_patient(self, raise_exception=True):
         try: 
             self.patient_info  = PatientNonClinicalInfos.objects.get(user_id=self.user.id)
         except PatientNonClinicalInfos.DoesNotExist:
             if raise_exception:
-                return ForbiddenException(detail="Usuario deve ser um paciente.")
+                raise ForbiddenException(detail="Usuario deve ser um paciente.")
     
-    def specialist_id_is(self, id, detail="O especialista nao tem permissao de acesso a esse endpoint"):
+    def specialist_id_is(self, id, detail="O especialista nao tem permissao de acesso a este recurso com estes parametros especificos (pode estar faltando ou tendo parametros errados)"):
+        if self.provider == None:
+            self.load_specialist()
         if int(id) != self.provider.provider_id:
             raise  ForbiddenException(detail=detail) 
-    def or_specialist_id_is(self, id, detail="O especialista nao tem permissao de acesso a esse endpoint"):
+    def if_specialist_id_is(self, id, detail="O especialista nao tem permissao de acesso a este recurso com estes parametros especificos (pode estar faltando ou tendo parametros errados)"):
+        if self.provider == None:
+            self.load_specialist(raise_exception=None)
         if self.provider != None:
             self.specialist_id_is(id, detail=detail) 
-        
+        return self
     def patient_id_is(self, id):
+        if self.patient_info == None:
+            self.load_patient()
         if int(id) != self.patient_info.person_id:
             raise  ForbiddenException(detail="O paciente nao tem permissao de acessar este recurso.") 
-    def or_patient_id_is(self, id):
+    def if_patient_id_is(self, id):
+        if self.patient_info == None:
+            self.load_patient(raise_exception=False)
+        print(self.patient_info)
         if self.patient_info != None:
-            self.patient_id_is(id) 
-
+            self.patient_id_is(id)
+        return self
+    def if_specialist_has_patient(self, patient_id):
+        if self.provider == None:
+            self.load_specialist(raise_exception=True)
+        try:
+            patient_specialist = VirtualPatient.objects().filter(patient_id=patient_id)[0]["specialist_id"]        
+        except:
+            raise ConflictException(detail="Paciente indicado nao existe")
+        self.specialist_id_is(patient_specialist)
 @extend_schema(tags=["patients"])
 class VirtualPatientViewSet(viewsets.ViewSet):
     queryset  = VirtualPatient.objects().all()
@@ -72,7 +93,6 @@ class VirtualPatientViewSet(viewsets.ViewSet):
         serializer = VirtualPatientSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         auth = UserAuth(request.user)
-        auth.load_specialist()
         auth.specialist_id_is(serializer.validated_data["specialist_id"])
         data = serializer.create(serializer.validated_data)         
         return Response(data, status=status.HTTP_201_CREATED)
@@ -81,13 +101,12 @@ class VirtualPatientViewSet(viewsets.ViewSet):
         serializer.save()
     
     def retrieve(self, request, pk=None, *args, **kwargs):
-        auth = UserAuth(request.user)
-        auth.load_patient(raise_exception=False)
-        auth.or_patient_id_is(int(pk))
-        auth.load_specialist(raise_exception=False)
 
         instance = VirtualPatient.get(patient_id=pk)
-        auth.or_specialist_id_is(instance["specialist_id"])
+
+        UserAuth(request.user) \
+            .if_patient_id_is(int(pk)) \
+            .if_specialist_id_is(instance["specialist_id"])
         comorbidities = VirtualPatient.get_comorbidities(patient_id=pk)
         instance["comorbidities"] = comorbidities
         return Response(instance)
@@ -148,12 +167,9 @@ class VirtualWoundViewSet(viewsets.ModelViewSet):
         
         return Response(instance, status=status.HTTP_201_CREATED)
     def has_permission(self, request, instance):
-        auth = UserAuth(request.user)
-        auth.load_patient(raise_exception=False)
-        print(auth.patient_info.person, instance["patient_id"])
-        auth.or_patient_id_is(instance["patient_id"])
-        auth.load_specialist(raise_exception=False)
-        auth.or_specialist_id_is(instance["specialist_id"], detail="Especialista nao tem acesso a ferida solicitada")
+        UserAuth(request.user) \
+            .if_patient_id_is(instance["patient_id"]) \
+            .if_specialist_id_is(instance["specialist_id"], detail="Especialista nao tem acesso a ferida solicitada")
 
     def retrieve(self, request, pk=None, *args, **kwargs):
         instance = self.queryset.get(wound_id=pk)
@@ -167,12 +183,26 @@ class VirtualWoundViewSet(viewsets.ModelViewSet):
         return Response(instance)
 
     def list(self, request: Request, *args, **kwargs):
-        instances = list(self.queryset.all())
+        instances = self.queryset.all()
+        auth = UserAuth(request.user)
+        specialist_id = self.request.query_params.get('specialist_id')
+        patient_id = self.request.query_params.get('patient_id')
+        if specialist_id in [None, ""] and patient_id in [None, ""]:
+            return Response({"detail": "Eh nescessario o query param specialist_id ou patient_id"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if specialist_id not in [None, ""]:
+            auth.if_specialist_id_is(specialist_id)
+            instances = instances.filter(specialist_id=int(specialist_id))
+        if patient_id not in [None, ""]:
+            auth.if_patient_id_is(patient_id)
+            auth.if_specialist_has_patient(patient_id)
+            instances = instances.filter(patient_id=int(patient_id))
+
         for instance in instances:            
             if instance.get("image_url"):
                 instance["image_url"] = request.build_absolute_uri("../" + "media/" + instance.get("image_url"))
             instance.pop("image_id")
-        serializer = VirtualWoundSerializer(many=True, data=instances)
+        serializer = VirtualWoundSerializer(many=True, data=list(instances))
         serializer.is_valid(raise_exception=True)
         return Response(instances)
       
@@ -252,10 +282,18 @@ class VirtualTrackingRecordsViewSet(viewsets.ModelViewSet):
         )
     )
     serializer_class = VirtualTrackingRecordsSerializer
+
+    def has_permission(self, request, data):
+        UserAuth(request.user) \
+            .if_patient_id_is(data["patient_id"]) \
+            .if_specialist_id_is(data["specialist_id"]) 
     def create(self, request, *args, **kwargs):
         serializer = VirtualTrackingRecordsSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data_to_create = serializer.validated_data
+
+        self.has_permission(request, data_to_create)
+
         data_to_create["track_date"] = datetime.date.today()
         if(data_to_create.get("extra_notes", None) == None):
             data_to_create["extra_notes"] = ""
@@ -263,12 +301,10 @@ class VirtualTrackingRecordsViewSet(viewsets.ModelViewSet):
             data_to_create["guidelines_to_patient"] = ""
         data = VirtualTrackingRecords.create(data_to_create)
         return Response(data, status=status.HTTP_201_CREATED)
-
-    def perform_create(self, serializer):
-        serializer.save()
     
     def retrieve(self, request, pk=None, *args, **kwargs):
         instance = self.queryset.get(tracking_id=pk)
+        self.has_permission(request, instance)
         instance["image_url"] = request.build_absolute_uri("../" +"media/"+ instance.get("image_url"))
         instance.pop("image_id")
         return Response(instance)
@@ -276,6 +312,18 @@ class VirtualTrackingRecordsViewSet(viewsets.ModelViewSet):
 
     def list(self, request: Request, *args, **kwargs):
         instances = list(self.queryset.all())
+        auth = UserAuth(request.user)
+        specialist_id = self.request.query_params.get('specialist_id')
+        patient_id = self.request.query_params.get('patient_id')
+        if specialist_id in [None, ""] and patient_id in [None, ""]:
+            return Response({"detail": "Eh nescessario o query param specialist_id ou patient_id"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if specialist_id not in [None, ""]:
+            auth.if_specialist_id_is(specialist_id)
+            instances = instances.filter(specialist_id=int(specialist_id))
+        if patient_id not in [None, ""]:
+            auth.if_patient_id_is(patient_id)
+            instances = instances.filter(patient_id=int(patient_id))
         for instance in instances:
             if instance.get("image_url", None) != None:
                 instance["image_url"] = request.build_absolute_uri("../" +"media/"+ instance.get("image_url"))
@@ -291,6 +339,10 @@ class TrackingRecordsImageViewSet(viewsets.ViewSet):
         serializer.is_valid(raise_exception=True)
         try: 
             tracking_image_instance = TrackingRecordImage.objects.get(tracking_record_id=pk)
+            tracking_record_instance = VirtualTrackingRecords.get(tracking_id=pk)
+            UserAuth(request.user) \
+                .if_patient_id_is(tracking_record_instance["patient_id"]) \
+                .if_specialist_id_is(tracking_record_instance["specialist_id"]) 
             image_instance = serializer.save()
             tracking_image_instance.image = image_instance
             tracking_image_instance.save()
@@ -308,6 +360,10 @@ class WoundImageViewSet(viewsets.ViewSet):
 
         try: 
             wound_image_instance = WoundImage.objects.get(wound_id=pk)
+            wound_instance = VirtualWound.get(wound_id=pk)
+            UserAuth(request.user) \
+                .if_patient_id_is(wound_instance["patient_id"]) \
+                .if_specialist_id_is(wound_instance["specialist_id"])
             image_instance = serializer.save()
             wound_image_instance.image = image_instance
             wound_image_instance.save()
