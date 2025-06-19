@@ -12,10 +12,22 @@ from .virtual_models import (VirtualSpecialist, VirtualWound, VirtualTrackingRec
 from .virtual_serializers import (ImageSerializer, VirtualSpecialistSerializer, VirtualWoundSerializer, VirtualTrackingRecordsSerializer, 
                                  VirtualPatientSerializer, VirtualComorbiditySerializer, ImageSerializer)
 from django.db.models import OuterRef, Subquery
-from .models import TrackingRecordImage, WoundImage, User, PatientNonClinicalInfos
+from .models import Image, TrackingRecordImage, WoundImage, User, PatientNonClinicalInfos
 from rest_framework import generics, mixins, views
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
+from rest_framework.exceptions import APIException
+
+
+@extend_schema(tags=["images"])
+class ImageViewSet(mixins.CreateModelMixin,
+                   mixins.RetrieveModelMixin,
+                   mixins.ListModelMixin,
+                   viewsets.GenericViewSet):
+    queryset = Image.objects.all()
+    serializer_class = ImageSerializer
+    parser_classes = [MultiPartParser]
+
 @extend_schema(tags=["specialists"])
 class VirtualSpecialistViewSet(mixins.CreateModelMixin,
                    mixins.RetrieveModelMixin,
@@ -25,7 +37,6 @@ class VirtualSpecialistViewSet(mixins.CreateModelMixin,
 		email = Subquery(User.objects.all().filter(id=OuterRef("user_id")).values("email")[:1])
 	)
     serializer_class = VirtualSpecialistSerializer
-from rest_framework.exceptions import APIException
 
 class ForbiddenException(APIException):
     status_code = 403
@@ -176,7 +187,6 @@ class VirtualWoundViewSet(viewsets.ModelViewSet):
         self.has_permission(request, instance)
         if instance.get("image_url"):
             instance["image_url"] = request.build_absolute_uri("../" + "media/" + instance.get("image_url"))
-        instance.pop("image_id")
 
         serializer = VirtualWoundSerializer(data=instance)
         serializer.is_valid(raise_exception=True)
@@ -201,7 +211,6 @@ class VirtualWoundViewSet(viewsets.ModelViewSet):
         for instance in instances:            
             if instance.get("image_url"):
                 instance["image_url"] = request.build_absolute_uri("../" + "media/" + instance.get("image_url"))
-            instance.pop("image_id")
         serializer = VirtualWoundSerializer(many=True, data=list(instances))
         serializer.is_valid(raise_exception=True)
         return Response(instances)
@@ -306,7 +315,6 @@ class VirtualTrackingRecordsViewSet(viewsets.ModelViewSet):
         instance = self.queryset.get(tracking_id=pk)
         self.has_permission(request, instance)
         instance["image_url"] = request.build_absolute_uri("../" +"media/"+ instance.get("image_url"))
-        instance.pop("image_id")
         return Response(instance)
 
 
@@ -327,7 +335,6 @@ class VirtualTrackingRecordsViewSet(viewsets.ModelViewSet):
         for instance in instances:
             if instance.get("image_url", None) != None:
                 instance["image_url"] = request.build_absolute_uri("../" +"media/"+ instance.get("image_url"))
-            instance.pop("image_id")
         return Response(instances)
     
 @extend_schema(tags=["tracking-records"])
