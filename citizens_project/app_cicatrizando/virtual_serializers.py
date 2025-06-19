@@ -210,7 +210,7 @@ class VirtualWoundSerializer(serializers.Serializer):
     end_date      = TimezoneAwareDateField(allow_null=True, required=False)
     is_active     = serializers.BooleanField(required=True)
     image_url     = serializers.URLField(read_only=True)
-
+    image_id      = serializers.IntegerField(allow_null=True)
 
     def _validate_concept_id_existence(self, value, field_name):
         if value:
