@@ -118,7 +118,7 @@ class VirtualPatientSerializer(serializers.Serializer):
     name                  = serializers.CharField(max_length = 255)
     gender                = serializers.ChoiceField(choices=virtual_models.map_gender.virtual_values())
     birthday              = TimezoneAwareDateField()
-    specialist_id         = serializers.IntegerField(allow_null=True, required=False)
+    specialist_id         = serializers.IntegerField(required=False)
     hospital_registration = serializers.CharField(allow_null=True, required=False, max_length = 255)
 
     phone_regex = RegexValidator(
