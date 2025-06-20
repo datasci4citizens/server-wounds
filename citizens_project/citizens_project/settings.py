@@ -30,6 +30,7 @@ MEDIA_URL = '/media/'
 SECRET_KEY =  os.environ["SERVER_WOUNDS_SECRET_KEY"]
 GOOGLE_OAUTH2_CLIENT_ID = os.environ["GOOGLE_CLIENT_ID"]
 GOOGLE_OAUTH2_CLIENT_SECRET = os.environ["GOOGLE_CLIENT_SECRET"]
+DISABLE_AUTH = "true" == os.environ.get("SERVER_WOUNDS_DISABLE_AUTH", "false")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -58,11 +59,9 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
-
-       # 'rest_framework.permissions.IsAuthenticated',
-
-        # Comentar para permitir acesso público
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated'
+    ] if not DISABLE_AUTH else [
+        'rest_framework.permissions.AllowAny'
     ]
 }
 SPECTACULAR_SETTINGS = {
