@@ -17,6 +17,7 @@ train_img_dir = os.path.join(base_path, "train")
 val_img_dir = os.path.join(base_path, "validation")
 test_img_dir = os.path.join(base_path, "test")
 label_csv = os.path.join(base_path, "labels.csv")
+save_model_path = os.path.join("citizens_project", "app_cicatrizando")
 
 # Load and prepare labels
 df = pd.read_csv(label_csv)
@@ -146,11 +147,11 @@ for epoch in range(10):
 
     if avg_val_loss < best_val_loss:
         best_val_loss = avg_val_loss
-        torch.save(model.state_dict(), "wound_classifier_best_multiclass.pth")
+        torch.save(model.state_dict(),os.path.join(save_model_path, "wound_classifier_best_multiclass.pth"))
         print("Saved best model.")
 
 # Evaluation
-model.load_state_dict(torch.load("wound_classifier_best_multiclass.pth"))
+model.load_state_dict(torch.load(os.path.join(save_model_path, "wound_classifier_best_multiclass.pth")))
 model.eval()
 y_true = {l: [] for l in class_names}
 y_pred = {l: [] for l in class_names}

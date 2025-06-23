@@ -16,6 +16,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 train_img_dir = "identification_model/train/images"
 test_img_dir = "identification_model/test/images"
 label_csv = "identification_model/labels.csv"
+save_model_path = os.path.join("citizens_project", "app_cicatrizando")
 
 # Load string labels
 df = pd.read_csv(label_csv)
@@ -111,11 +112,16 @@ for epoch in range(10):
 
     if avg_test_loss < best_test_loss:
         best_test_loss = avg_test_loss
-        torch.save(model.state_dict(), "wound_classifier_best.pth")
+        torch.save(
+    model.state_dict(),
+    os.path.join(save_model_path, "wound_classifier_best.pth")
+)
         print("Saved best model.")
 
 # Final Evaluation on test set
-model.load_state_dict(torch.load("wound_classifier_best.pth"))
+model.load_state_dict(
+    torch.load(os.path.join(save_model_path, "wound_classifier_best.pth"))
+)
 model.eval()
 y_true, y_pred = [], []
 with torch.no_grad():
