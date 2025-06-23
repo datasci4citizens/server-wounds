@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - postgres-impexp:/home
+    restart: on-failure:5
+    shm_size: 128mb
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+
+  server:
+    image: wounds-server:v0.1
+    ports:
+      - "8000:8000"
+    environment:
+      POSTGRES_URL: postgresql://postgres:postgres@db:5432/postgres
+
+volumes:
+  postgres-data:
+    driver: "local"
+    driver_opts:
+      type: "none"
+      device: "/home/user/data/pgsql/docker"
+      o: "bind" 
+  postgres-impexp:
+    driver: "local"
+    driver_opts:
+      type: "none"
+      device: "/home/user/data/pgsql/impexp"
+      o: "bind" 
