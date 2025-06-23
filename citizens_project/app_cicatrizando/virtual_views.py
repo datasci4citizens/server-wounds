@@ -18,7 +18,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
 
 from .predict_single_image import predict_image_class, predict_multi_label
-from PIL import Image
+from PIL import Image as PILImage
 
 
 from rest_framework.exceptions import APIException
@@ -363,7 +363,7 @@ class TrackingRecordsImageViewSet(viewsets.ViewSet):
             if uploaded_image is None:
                 return Response({"error": "No image provided"}, status=status.HTTP_400_BAD_REQUEST)
 
-            pil_image = Image.open(uploaded_image).convert("RGB")
+            pil_image = PILImage.open(uploaded_image).convert("RGB")
 
             tissue_prediction = predict_image_class(pil_image)
             multihead_predictions = predict_multi_label(pil_image)
