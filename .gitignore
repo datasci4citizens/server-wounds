@@ -1,7 +1,11 @@
 __pycache__
-docker-compose.yml
 .venv/
-.idea/
+.idea/ 
+db.sqlite3
 client_secret.json
 secrets.env
-.env
+tmp
+**/.env*
+!.env*.model
+!docker/.env
+!old/.env.minio
