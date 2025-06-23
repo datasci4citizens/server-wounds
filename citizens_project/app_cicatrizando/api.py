@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from app_cicatrizando.google import google_get_user_data
+from .virtual_views import UserAuth
 from .models import PatientNonClinicalInfos
 from .virtual_models import VirtualSpecialist
 from .omop.omop_models import Provider
@@ -22,6 +23,7 @@ logger = logging.getLogger("app_saude")
 
 
 User = get_user_model()
+
 
 # Just a test endpoint to check if the user is logged in and return user info
 class MeView(viewsets.ViewSet):
@@ -43,7 +45,8 @@ class MeView(viewsets.ViewSet):
 
 
 class AuthSerializer(serializers.Serializer):
-    code = serializers.CharField(required=True, allow_null=False, allow_blank=False)
+    code = serializers.CharField(required=False, allow_null=False, allow_blank=False)
+    token = serializers.CharField(required=False, allow_null=False, allow_blank=False)
     
 class AuthTokenResponseSerializer(serializers.Serializer):
     access = serializers.CharField()
@@ -78,6 +81,8 @@ class UserPatientBindView(viewsets.ViewSet):
         data = serializer.validated_data
         try:
             email = data["email"]
+            if email != request.user.email:
+                return Response({"detail": "O email deve ser o mesmo do usuario atual"}, status=status.HTTP_403_FORBIDDEN)
             patient = PatientNonClinicalInfos.objects.filter(bind_code=data["code"]).get()
             patient.user = User.objects.get(email=email)
             patient.bind_code = None
@@ -90,8 +95,11 @@ class UserPatientBindView(viewsets.ViewSet):
     
     @action(detail=True, url_path="new", methods=['post'])
     def new_patient_bind(self, request, pk : int, *args, **kwargs):
+        auth = UserAuth(request.user)
+        auth.load_specialist()
         try:
             patient = PatientNonClinicalInfos.objects.filter(person_id=pk).get()
+            auth.if_specialist_has_patient(patient.person_id)
             patient.bind_code = random.randrange(0, 1048576)
             patient.save()
         except PatientNonClinicalInfos.DoesNotExist:
@@ -149,4 +157,17 @@ class GoogleLoginView(viewsets.ViewSet):
             "profile_completion_required": profile_completion_required
         }
 
+        return Response(response, status=200)
+
+    @action(detail=True, url_path="dummy", methods=["POST"])
+    def dummy(self, request, pk , *args, **kwargs):
+        logger.debug("Dummy login")
+        user = User.objects.get(id=pk)
+        token = RefreshToken.for_user(user)
+        
+        # Generate JWT token
+        response = {
+            "access": str(token.access_token),
+            "refresh": str(token),
+        }
         return Response(response, status=200)
