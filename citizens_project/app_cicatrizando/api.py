@@ -138,6 +138,17 @@ class GoogleLoginView(viewsets.ViewSet):
             }
         except Provider.DoesNotExist:
             pass
+        try :
+            logger.debug(f"Fetching patient non-clinical info for user {user.id}")
+            patient_info = PatientNonClinicalInfos.objects.filter(user=user).get()
+            logger.debug(f"Patient info found: {patient_info}")
+            patient_data = {
+                'patient_id': patient_info.person_id,
+                'patient_name': patient_info.name
+            }
+        except PatientNonClinicalInfos.DoesNotExist:
+            pass
+
         token = RefreshToken.for_user(user)
         
         # Determine role and profile completion status
@@ -151,9 +162,8 @@ class GoogleLoginView(viewsets.ViewSet):
             "refresh": str(token),
             "role": role,
             "is_new_user": created,
-            "specialist_id": None,  # Always None since we no longer check this model
-            "provider_id": provider_id,
-            "provider_data": provider_data,
+            "specialist_data": provider_data,
+            "patient_data": patient_data,
             "profile_completion_required": profile_completion_required
         }
 
