@@ -11,4 +11,10 @@ tmp
 !old/.env.minio
 ComputerVision/wound-segmentation/data/Foot Ulcer Segmentation Challenge/
 ComputerVision/wound-segmentation/data/Foot Ulcer Segmentation Challenge/
-ComputerVision/wound-segmentation/data/Medetec_foot_ulcer_224
+ComputerVision/wound-segmentation/data/Medetec_foot_ulcer_224/
+ComputerVision/wound-segmentation/training_history/
+# Ignorar virtualenv e arquivos grandes
+server-wounds/ComputerVision/wound-segmentation/wound_seg_env/**
+*.hdf5
+*.so
+*.dylib
