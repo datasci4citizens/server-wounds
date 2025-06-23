@@ -1,0 +1,1887 @@
+filename,tissue_type
+0001.png,Necrose
+0002.png,Granulação
+0003.png,Esfacelo
+0004.png,Esfacelo
+0005.png,Esfacelo
+0006.png,Esfacelo
+0007.png,Esfacelo
+0008.png,Granulação
+0009.png,Necrose
+0010.png,Esfacelo
+0011.png,Granulação
+0012.png,Granulação
+0013.png,Granulação
+0014.png,Esfacelo
+0015.png,Granulação
+0016.png,Esfacelo
+0017.png,Epitelização
+0018.png,Granulação
+0019.png,Necrose
+0020.png,Granulação
+0021.png,Necrose
+0022.png,NI
+0023.png,Granulação
+0024.png,Granulação
+0025.png,Necrose
+0026.png,NI
+0027.png,Granulação
+0028.png,Granulação
+0029.png,Necrose
+0030.png,Granulação
+0031.png,Esfacelo
+0032.png,Esfacelo
+0033.png,Esfacelo
+0034.png,NI
+0035.png,Necrose
+0036.png,NI
+0037.png,Epitelização
+0038.png,Epitelização
+0039.png,Necrose
+0040.png,Granulação
+0041.png,Necrose
+0042.png,Granulação
+0043.png,Necrose
+0044.png,NI
+0045.png,Esfacelo
+0046.png,NI
+0047.png,Granulação
+0048.png,Necrose
+0049.png,Esfacelo
+0050.png,Necrose
+0051.png,Necrose
+0052.png,Necrose
+0053.png,NI
+0054.png,Granulação
+0055.png,Esfacelo
+0056.png,Necrose
+0057.png,Granulação
+0058.png,Granulação
+0059.png,Esfacelo
+0060.png,Granulação
+0061.png,Granulação
+0062.png,Granulação
+0063.png,Granulação
+0064.png,Granulação
+0065.png,Necrose
+0066.png,Granulação
+0067.png,NI
+0068.png,Necrose
+0069.png,Granulação
+0070.png,Granulação
+0071.png,NI
+0072.png,Granulação
+0073.png,Esfacelo
+0074.png,Esfacelo
+0075.png,NI
+0076.png,Esfacelo
+0077.png,Granulação
+0078.png,Granulação
+0079.png,Esfacelo
+0080.png,Granulação
+0081.png,Granulação
+0082.png,Esfacelo
+0083.png,Granulação
+0084.png,Granulação
+0085.png,Granulação
+0086.png,Granulação
+0087.png,Esfacelo
+0088.png,Granulação
+0089.png,Granulação
+0090.png,Necrose
+0091.png,Granulação
+0092.png,NI
+0093.png,Esfacelo
+0094.png,Esfacelo
+0095.png,Granulação
+0096.png,Granulação
+0097.png,Esfacelo
+0098.png,Granulação
+0099.png,Granulação
+0100.png,NI
+0101.png,NI
+0102.png,Granulação
+0103.png,NI
+0104.png,Granulação
+0105.png,Granulação
+0106.png,Granulação
+0107.png,Granulação
+0108.png,Granulação
+0109.png,Esfacelo
+0110.png,NI
+0111.png,Granulação
+0112.png,Granulação
+0113.png,Granulação
+0114.png,Granulação
+0115.png,Necrose
+0116.png,Necrose
+0117.png,Necrose
+0118.png,Necrose
+0119.png,Necrose
+0120.png,Granulação
+0121.png,Granulação
+0122.png,Esfacelo
+0123.png,Granulação
+0124.png,Esfacelo
+0125.png,Necrose
+0126.png,Esfacelo
+0127.png,Granulação
+0128.png,NI
+0129.png,Granulação
+0130.png,NI
+0131.png,Necrose
+0132.png,Granulação
+0133.png,Necrose
+0134.png,Esfacelo
+0135.png,Necrose
+0136.png,Necrose
+0137.png,Necrose
+0138.png,Granulação
+0139.png,Necrose
+0140.png,Esfacelo
+0141.png,Granulação
+0142.png,Granulação
+0143.png,Granulação
+0144.png,Granulação
+0145.png,Granulação
+0146.png,Granulação
+0147.png,Granulação
+0148.png,Necrose
+0149.png,Granulação
+0150.png,Esfacelo
+0151.png,Granulação
+0152.png,Granulação
+0153.png,NI
+0154.png,Granulação
+0155.png,Granulação
+0156.png,Granulação
+0157.png,Granulação
+0158.png,Granulação
+0159.png,Granulação
+0160.png,Granulação
+0161.png,Granulação
+0162.png,Granulação
+0163.png,Granulação
+0164.png,Granulação
+0165.png,Granulação
+0166.png,Granulação
+0167.png,Granulação
+0168.png,NI
+0169.png,Granulação
+0170.png,Granulação
+0171.png,Granulação
+0172.png,Granulação
+0173.png,Esfacelo
+0174.png,Granulação
+0175.png,Granulação
+0176.png,Esfacelo
+0177.png,Necrose
+0178.png,Granulação
+0179.png,Granulação
+0180.png,Necrose
+0181.png,Granulação
+0182.png,Granulação
+0183.png,Necrose
+0184.png,Esfacelo
+0185.png,Necrose
+0186.png,Granulação
+0187.png,Necrose
+0188.png,Granulação
+0189.png,NI
+0190.png,Granulação
+0191.png,Granulação
+0192.png,Granulação
+0193.png,Granulação
+0194.png,Esfacelo
+0195.png,Esfacelo
+0196.png,Granulação
+0197.png,Esfacelo
+0198.png,Granulação
+0199.png,Granulação
+0200.png,Granulação
+0201.png,Granulação
+0202.png,Granulação
+0203.png,Granulação
+0204.png,Necrose
+0205.png,Necrose
+0206.png,Necrose
+0207.png,NI
+0208.png,Esfacelo
+0209.png,Esfacelo
+0210.png,Granulação
+0211.png,Granulação
+0212.png,Granulação
+0213.png,Granulação
+0214.png,Granulação
+0215.png,NI
+0216.png,Granulação
+0217.png,Esfacelo
+0218.png,Granulação
+0219.png,Esfacelo
+0220.png,Granulação
+0221.png,Granulação
+0222.png,Necrose
+0223.png,Granulação
+0224.png,NI
+0225.png,Granulação
+0226.png,Necrose
+0227.png,Granulação
+0228.png,Granulação
+0229.png,Esfacelo
+0230.png,Granulação
+0231.png,Esfacelo
+0232.png,Granulação
+0233.png,Granulação
+0234.png,Granulação
+0235.png,Necrose
+0236.png,Esfacelo
+0237.png,Granulação
+0238.png,Granulação
+0239.png,Granulação
+0240.png,Granulação
+0241.png,Esfacelo
+0242.png,Granulação
+0243.png,NI
+0244.png,Granulação
+0245.png,Epitelização
+0246.png,Esfacelo
+0247.png,Necrose
+0248.png,Granulação
+0249.png,Esfacelo
+0250.png,Esfacelo
+0251.png,NI
+0252.png,Necrose
+0253.png,NI
+0254.png,NI
+0255.png,Granulação
+0256.png,Granulação
+0257.png,Granulação
+0258.png,Granulação
+0259.png,NI
+0260.png,Necrose
+0261.png,Granulação
+0262.png,Esfacelo
+0263.png,Granulação
+0264.png,Granulação
+0265.png,Esfacelo
+0266.png,Granulação
+0267.png,Granulação
+0268.png,Esfacelo
+0269.png,Granulação
+0270.png,Granulação
+0271.png,Granulação
+0272.png,Necrose
+0273.png,Granulação
+0274.png,Granulação
+0275.png,Granulação
+0276.png,Granulação
+0277.png,Necrose
+0278.png,Granulação
+0279.png,Granulação
+0280.png,Granulação
+0281.png,Necrose
+0282.png,Esfacelo
+0283.png,Granulação
+0284.png,Granulação
+0285.png,Granulação
+0286.png,Esfacelo
+0287.png,Granulação
+0288.png,NI
+0289.png,Granulação
+0290.png,Esfacelo
+0291.png,Esfacelo
+0292.png,Esfacelo
+0293.png,Esfacelo
+0294.png,NI
+0295.png,Granulação
+0296.png,Granulação
+0297.png,Granulação
+0298.png,Granulação
+0299.png,Granulação
+0300.png,Granulação
+0301.png,Granulação
+0302.png,Granulação
+0303.png,Granulação
+0304.png,Granulação
+0305.png,Granulação
+0306.png,Necrose
+0307.png,Necrose
+0308.png,Granulação
+0309.png,Esfacelo
+0310.png,Granulação
+0311.png,Granulação
+0312.png,Esfacelo
+0313.png,Granulação
+0314.png,Esfacelo
+0315.png,Granulação
+0316.png,Esfacelo
+0317.png,Granulação
+0318.png,Granulação
+0319.png,Granulação
+0320.png,Granulação
+0321.png,NI
+0322.png,Granulação
+0323.png,Granulação
+0324.png,Esfacelo
+0325.png,Granulação
+0326.png,Granulação
+0327.png,Granulação
+0328.png,Granulação
+0329.png,Granulação
+0330.png,Esfacelo
+0331.png,Granulação
+0332.png,Esfacelo
+0333.png,Granulação
+0334.png,Granulação
+0335.png,Epitelização
+0336.png,Esfacelo
+0337.png,Epitelização
+0338.png,Granulação
+0339.png,Granulação
+0340.png,Granulação
+0341.png,Esfacelo
+0342.png,Necrose
+0343.png,NI
+0344.png,Necrose
+0345.png,Granulação
+0346.png,Granulação
+0347.png,NI
+0348.png,Granulação
+0349.png,NI
+0350.png,Granulação
+0351.png,Granulação
+0352.png,Granulação
+0353.png,Granulação
+0354.png,Granulação
+0355.png,Granulação
+0356.png,Granulação
+0357.png,Esfacelo
+0358.png,Necrose
+0359.png,Esfacelo
+0360.png,Esfacelo
+0361.png,NI
+0362.png,NI
+0363.png,NI
+0364.png,Granulação
+0365.png,Necrose
+0366.png,Necrose
+0367.png,Granulação
+0368.png,Granulação
+0369.png,Granulação
+0370.png,Granulação
+0371.png,Granulação
+0372.png,Granulação
+0373.png,Granulação
+0374.png,Granulação
+0375.png,Granulação
+0376.png,NI
+0377.png,Necrose
+0378.png,NI
+0379.png,Necrose
+0380.png,Necrose
+0381.png,Esfacelo
+0382.png,Granulação
+0383.png,Granulação
+0384.png,Granulação
+0385.png,Necrose
+0386.png,Granulação
+0387.png,Granulação
+0388.png,Granulação
+0389.png,Necrose
+0390.png,Granulação
+0391.png,Granulação
+0392.png,Esfacelo
+0393.png,NI
+0394.png,Granulação
+0395.png,Granulação
+0396.png,Granulação
+0397.png,Granulação
+0398.png,Granulação
+0399.png,Granulação
+0400.png,Granulação
+0401.png,Granulação
+0402.png,Esfacelo
+0403.png,NI
+0404.png,Esfacelo
+0405.png,Granulação
+0406.png,Necrose
+0407.png,Esfacelo
+0408.png,Necrose
+0409.png,Granulação
+0410.png,Esfacelo
+0411.png,Esfacelo
+0412.png,Granulação
+0413.png,Esfacelo
+0414.png,Granulação
+0415.png,Granulação
+0416.png,Granulação
+0417.png,Granulação
+0418.png,Granulação
+0419.png,Epitelização
+0420.png,Necrose
+0421.png,Epitelização
+0422.png,Granulação
+0423.png,Granulação
+0424.png,Granulação
+0425.png,Esfacelo
+0426.png,Esfacelo
+0427.png,NI
+0428.png,Granulação
+0429.png,Granulação
+0430.png,Granulação
+0431.png,Granulação
+0432.png,Granulação
+0433.png,Esfacelo
+0434.png,Granulação
+0435.png,Granulação
+0436.png,Esfacelo
+0437.png,Granulação
+0438.png,Esfacelo
+0439.png,Granulação
+0440.png,Granulação
+0441.png,Granulação
+0442.png,NI
+0443.png,Necrose
+0444.png,Granulação
+0445.png,Granulação
+0446.png,Esfacelo
+0447.png,Granulação
+0448.png,Granulação
+0449.png,Granulação
+0450.png,Necrose
+0451.png,Necrose
+0452.png,Esfacelo
+0453.png,Granulação
+0454.png,Granulação
+0455.png,Granulação
+0456.png,Epitelização
+0457.png,Necrose
+0458.png,Granulação
+0459.png,Granulação
+0460.png,Granulação
+0461.png,Granulação
+0462.png,Granulação
+0463.png,Esfacelo
+0464.png,Granulação
+0465.png,Granulação
+0466.png,Necrose
+0467.png,Granulação
+0468.png,Necrose
+0469.png,Granulação
+0470.png,Esfacelo
+0471.png,Granulação
+0472.png,Granulação
+0473.png,Esfacelo
+0474.png,Esfacelo
+0475.png,NI
+0476.png,Granulação
+0477.png,Granulação
+0478.png,Granulação
+0479.png,NI
+0480.png,Esfacelo
+0481.png,Esfacelo
+0482.png,Granulação
+0483.png,Necrose
+0484.png,Granulação
+0485.png,NI
+0486.png,NI
+0487.png,Esfacelo
+0488.png,Granulação
+0489.png,Granulação
+0490.png,Granulação
+0491.png,Granulação
+0492.png,Esfacelo
+0493.png,Esfacelo
+0494.png,Necrose
+0495.png,Granulação
+0496.png,Granulação
+0497.png,Necrose
+0498.png,Esfacelo
+0499.png,NI
+0500.png,Esfacelo
+0501.png,Granulação
+0502.png,Granulação
+0503.png,Granulação
+0504.png,Necrose
+0505.png,Esfacelo
+0506.png,Necrose
+0507.png,Granulação
+0508.png,Granulação
+0509.png,Granulação
+0510.png,Necrose
+0511.png,Granulação
+0512.png,Granulação
+0513.png,Necrose
+0514.png,Granulação
+0515.png,Esfacelo
+0516.png,Granulação
+0517.png,Granulação
+0518.png,Granulação
+0519.png,Granulação
+0520.png,Granulação
+0521.png,Necrose
+0522.png,Necrose
+0523.png,NI
+0524.png,Esfacelo
+0525.png,Granulação
+0526.png,Granulação
+0527.png,Esfacelo
+0528.png,Granulação
+0529.png,Esfacelo
+0530.png,Esfacelo
+0531.png,Esfacelo
+0532.png,Granulação
+0533.png,Necrose
+0534.png,Granulação
+0535.png,Granulação
+0536.png,Granulação
+0537.png,Granulação
+0538.png,Granulação
+0539.png,NI
+0540.png,Granulação
+0541.png,Esfacelo
+0542.png,NI
+0543.png,Esfacelo
+0544.png,Granulação
+0545.png,Granulação
+0546.png,Granulação
+0547.png,Esfacelo
+0548.png,Necrose
+0549.png,Granulação
+0550.png,Granulação
+0551.png,Granulação
+0552.png,Granulação
+0553.png,Esfacelo
+0554.png,Esfacelo
+0555.png,Esfacelo
+0556.png,Granulação
+0557.png,Granulação
+0558.png,Granulação
+0559.png,Granulação
+0560.png,Necrose
+0561.png,Esfacelo
+0562.png,Granulação
+0563.png,Granulação
+0564.png,NI
+0565.png,Esfacelo
+0566.png,Esfacelo
+0567.png,Necrose
+0568.png,Granulação
+0569.png,Granulação
+0570.png,Esfacelo
+0571.png,Granulação
+0572.png,Granulação
+0573.png,Esfacelo
+0574.png,Necrose
+0575.png,Necrose
+0576.png,Necrose
+0577.png,Granulação
+0578.png,Esfacelo
+0579.png,Granulação
+0580.png,NI
+0581.png,NI
+0582.png,Granulação
+0583.png,Esfacelo
+0584.png,Esfacelo
+0585.png,Esfacelo
+0586.png,Esfacelo
+0587.png,Granulação
+0588.png,NI
+0589.png,NI
+0590.png,Granulação
+0591.png,NI
+0592.png,Esfacelo
+0593.png,NI
+0594.png,Necrose
+0595.png,Granulação
+0596.png,Necrose
+0597.png,Granulação
+0598.png,Esfacelo
+0599.png,Granulação
+0600.png,NI
+0601.png,Granulação
+0602.png,Granulação
+0603.png,Necrose
+0604.png,Granulação
+0605.png,Granulação
+0606.png,Granulação
+0607.png,Necrose
+0608.png,Esfacelo
+0609.png,NI
+0610.png,Granulação
+0611.png,Granulação
+0612.png,Esfacelo
+0613.png,NI
+0614.png,Granulação
+0615.png,Esfacelo
+0616.png,Necrose
+0617.png,Esfacelo
+0618.png,Granulação
+0619.png,Granulação
+0620.png,Granulação
+0621.png,Granulação
+0622.png,Necrose
+0623.png,NI
+0624.png,Granulação
+0625.png,Granulação
+0626.png,Granulação
+0627.png,Granulação
+0628.png,NI
+0629.png,Granulação
+0630.png,Granulação
+0631.png,Granulação
+0632.png,Granulação
+0633.png,Granulação
+0634.png,Esfacelo
+0635.png,Esfacelo
+0636.png,Granulação
+0637.png,NI
+0638.png,Esfacelo
+0639.png,Esfacelo
+0640.png,NI
+0641.png,Granulação
+0642.png,Granulação
+0643.png,NI
+0644.png,NI
+0645.png,Granulação
+0646.png,Granulação
+0647.png,NI
+0648.png,NI
+0649.png,NI
+0650.png,Granulação
+0651.png,Granulação
+0652.png,Granulação
+0653.png,NI
+0654.png,Esfacelo
+0655.png,NI
+0656.png,Granulação
+0657.png,Granulação
+0658.png,Granulação
+0659.png,Esfacelo
+0660.png,Necrose
+0661.png,Esfacelo
+0662.png,Esfacelo
+0663.png,NI
+0664.png,Granulação
+0665.png,NI
+0666.png,NI
+0667.png,NI
+0668.png,Esfacelo
+0669.png,Granulação
+0670.png,Granulação
+0671.png,Esfacelo
+0672.png,Esfacelo
+0673.png,Esfacelo
+0674.png,Granulação
+0675.png,Granulação
+0676.png,Esfacelo
+0677.png,NI
+0678.png,Necrose
+0679.png,Necrose
+0680.png,Granulação
+0681.png,Granulação
+0682.png,Granulação
+0683.png,Granulação
+0684.png,Esfacelo
+0685.png,Granulação
+0686.png,NI
+0687.png,NI
+0688.png,Granulação
+0689.png,Necrose
+0690.png,Granulação
+0691.png,Granulação
+0692.png,NI
+0693.png,NI
+0694.png,Granulação
+0695.png,NI
+0696.png,Granulação
+0697.png,Necrose
+0698.png,Granulação
+0699.png,NI
+0700.png,Granulação
+0701.png,Esfacelo
+0702.png,Necrose
+0703.png,NI
+0704.png,Esfacelo
+0705.png,NI
+0706.png,Granulação
+0707.png,Esfacelo
+0708.png,Epitelização
+0709.png,Granulação
+0710.png,Granulação
+0711.png,Granulação
+0712.png,Granulação
+0713.png,Granulação
+0714.png,Esfacelo
+0715.png,Granulação
+0716.png,Granulação
+0717.png,Esfacelo
+0718.png,NI
+0719.png,Granulação
+0720.png,Necrose
+0721.png,NI
+0722.png,Esfacelo
+0723.png,NI
+0724.png,Granulação
+0725.png,Epitelização
+0726.png,NI
+0727.png,Granulação
+0728.png,Necrose
+0729.png,Granulação
+0730.png,NI
+0731.png,Granulação
+0732.png,Esfacelo
+0733.png,Esfacelo
+0734.png,Granulação
+0735.png,Granulação
+0736.png,Esfacelo
+0737.png,Esfacelo
+0738.png,Granulação
+0739.png,Granulação
+0740.png,Necrose
+0741.png,Granulação
+0742.png,NI
+0743.png,Granulação
+0744.png,Esfacelo
+0745.png,Esfacelo
+0746.png,Granulação
+0747.png,Granulação
+0748.png,Epitelização
+0749.png,Esfacelo
+0750.png,Granulação
+0751.png,Granulação
+0752.png,Esfacelo
+0753.png,NI
+0754.png,NI
+0755.png,NI
+0756.png,NI
+0757.png,NI
+0758.png,Granulação
+0759.png,Granulação
+0760.png,NI
+0761.png,Necrose
+0762.png,Esfacelo
+0763.png,Esfacelo
+0764.png,Granulação
+0765.png,Granulação
+0766.png,Esfacelo
+0767.png,Esfacelo
+0768.png,Esfacelo
+0769.png,Esfacelo
+0770.png,Esfacelo
+0771.png,Granulação
+0772.png,Granulação
+0773.png,Granulação
+0774.png,Granulação
+0775.png,Esfacelo
+0776.png,NI
+0777.png,NI
+0778.png,Granulação
+0779.png,Necrose
+0780.png,NI
+0781.png,Esfacelo
+0782.png,Granulação
+0783.png,Granulação
+0784.png,Esfacelo
+0785.png,Esfacelo
+0786.png,NI
+0787.png,NI
+0788.png,Esfacelo
+0789.png,Esfacelo
+0790.png,NI
+0791.png,NI
+0792.png,Granulação
+0793.png,Esfacelo
+0794.png,NI
+0795.png,Granulação
+0796.png,Granulação
+0797.png,Granulação
+0798.png,NI
+0799.png,NI
+0800.png,NI
+0801.png,Esfacelo
+0802.png,Esfacelo
+0803.png,Granulação
+0804.png,Granulação
+0805.png,NI
+0806.png,Granulação
+0807.png,Necrose
+0808.png,Granulação
+0809.png,NI
+0810.png,NI
+0811.png,NI
+0812.png,NI
+0813.png,Esfacelo
+0814.png,Granulação
+0815.png,NI
+0816.png,NI
+0817.png,Granulação
+0818.png,Necrose
+0819.png,Esfacelo
+0820.png,Granulação
+0821.png,Necrose
+0822.png,NI
+0823.png,Esfacelo
+0824.png,Esfacelo
+0825.png,Esfacelo
+0826.png,Esfacelo
+0827.png,Granulação
+0828.png,Granulação
+0829.png,Esfacelo
+0830.png,Necrose
+0831.png,Granulação
+0832.png,Esfacelo
+0833.png,Esfacelo
+0834.png,Esfacelo
+0835.png,Esfacelo
+0836.png,NI
+0837.png,Granulação
+0838.png,Granulação
+0839.png,Epitelização
+0840.png,Necrose
+0841.png,Granulação
+0842.png,Granulação
+0843.png,Granulação
+0844.png,Granulação
+0845.png,Esfacelo
+0846.png,Granulação
+0847.png,Granulação
+0848.png,Granulação
+0849.png,Granulação
+0850.png,NI
+0851.png,Granulação
+0852.png,NI
+0853.png,Esfacelo
+0854.png,Esfacelo
+0855.png,NI
+0856.png,Granulação
+0857.png,Necrose
+0858.png,Granulação
+0859.png,Granulação
+0860.png,NI
+0861.png,Granulação
+0862.png,Granulação
+0863.png,NI
+0864.png,NI
+0865.png,Esfacelo
+0866.png,NI
+0867.png,NI
+0868.png,Granulação
+0869.png,NI
+0870.png,NI
+0871.png,NI
+0872.png,Granulação
+0873.png,Esfacelo
+0874.png,Granulação
+0875.png,NI
+0876.png,NI
+0877.png,Granulação
+0878.png,Necrose
+0879.png,NI
+0880.png,NI
+0881.png,NI
+0882.png,Esfacelo
+0883.png,Granulação
+0884.png,Necrose
+0885.png,Esfacelo
+0886.png,Esfacelo
+0887.png,Necrose
+0888.png,Necrose
+0889.png,Granulação
+0890.png,Esfacelo
+0891.png,Granulação
+0892.png,Granulação
+0893.png,Granulação
+0894.png,Granulação
+0895.png,Granulação
+0896.png,Necrose
+0897.png,Granulação
+0898.png,Esfacelo
+0899.png,Esfacelo
+0900.png,Granulação
+0901.png,Granulação
+0902.png,Granulação
+0903.png,Granulação
+0904.png,NI
+0905.png,NI
+0906.png,Granulação
+0907.png,Esfacelo
+0908.png,Esfacelo
+0909.png,Granulação
+0910.png,Granulação
+0911.png,Esfacelo
+0912.png,NI
+0913.png,Necrose
+0914.png,Esfacelo
+0915.png,Esfacelo
+0916.png,Esfacelo
+0917.png,Esfacelo
+0918.png,NI
+0919.png,Granulação
+0920.png,Granulação
+0921.png,NI
+0922.png,NI
+0923.png,NI
+0924.png,NI
+0925.png,Granulação
+0926.png,Granulação
+0927.png,Esfacelo
+0928.png,Granulação
+0929.png,NI
+0930.png,Granulação
+0931.png,NI
+0932.png,Esfacelo
+0933.png,Necrose
+0934.png,Esfacelo
+0935.png,Granulação
+0936.png,Granulação
+0937.png,NI
+0938.png,Necrose
+0939.png,Granulação
+0940.png,Esfacelo
+0941.png,Necrose
+0942.png,Necrose
+0943.png,Granulação
+0944.png,NI
+0945.png,NI
+0946.png,NI
+0947.png,Granulação
+0948.png,Esfacelo
+0949.png,NI
+0950.png,Granulação
+0951.png,NI
+0952.png,Necrose
+0953.png,Necrose
+0954.png,Esfacelo
+0955.png,NI
+0956.png,Necrose
+0957.png,NI
+0958.png,NI
+0959.png,Granulação
+0960.png,Granulação
+0961.png,Esfacelo
+0962.png,Esfacelo
+0963.png,NI
+0964.png,Granulação
+0965.png,Granulação
+0966.png,Esfacelo
+0967.png,NI
+0968.png,Granulação
+0969.png,Esfacelo
+0970.png,NI
+0971.png,Granulação
+0972.png,NI
+0973.png,NI
+0974.png,Granulação
+0975.png,Esfacelo
+0976.png,Granulação
+0977.png,Granulação
+0978.png,Esfacelo
+0979.png,Granulação
+0980.png,NI
+0981.png,Granulação
+0982.png,Granulação
+0983.png,Granulação
+0984.png,NI
+0985.png,Necrose
+0986.png,Esfacelo
+0987.png,NI
+0988.png,NI
+0989.png,Granulação
+0990.png,NI
+0991.png,Necrose
+0992.png,Granulação
+0993.png,Esfacelo
+0994.png,Granulação
+0995.png,Granulação
+0996.png,NI
+0997.png,Granulação
+0998.png,Esfacelo
+0999.png,Granulação
+1000.png,Granulação
+1001.png,Granulação
+1002.png,Esfacelo
+1003.png,Esfacelo
+1004.png,Esfacelo
+1005.png,Granulação
+1006.png,Granulação
+1007.png,Granulação
+1008.png,Necrose
+1009.png,Esfacelo
+1010.png,Esfacelo
+1011.png,Granulação
+1014.png,Esfacelo
+1016.png,Epitelização
+1018.png,Esfacelo
+1020.png,Necrose
+1021.png,Granulação
+1022.png,NI
+1024.png,Granulação
+1028.png,Granulação
+1029.png,NI
+1034.png,Granulação
+1036.png,Necrose
+1037.png,NI
+1038.png,Granulação
+1039.png,Granulação
+1042.png,Granulação
+1046.png,Esfacelo
+1047.png,Granulação
+1048.png,Granulação
+1050.png,NI
+1054.png,Granulação
+1055.png,Granulação
+1058.png,NI
+1059.png,Granulação
+1060.png,Granulação
+1061.png,Granulação
+1064.png,Granulação
+1065.png,Granulação
+1066.png,Necrose
+1071.png,Granulação
+1073.png,Granulação
+1074.png,Granulação
+1075.png,Esfacelo
+1078.png,Esfacelo
+1083.png,Esfacelo
+1086.png,Granulação
+1089.png,Granulação
+1098.png,Granulação
+1101.png,Granulação
+1105.png,Granulação
+1108.png,Granulação
+1109.png,Granulação
+1110.png,Granulação
+1112.png,Granulação
+1114.png,Granulação
+1115.png,Granulação
+1118.png,NI
+1119.png,Granulação
+1121.png,Granulação
+1123.png,Esfacelo
+1130.png,Esfacelo
+1131.png,Esfacelo
+1135.png,NI
+1136.png,Granulação
+1137.png,Granulação
+1139.png,Granulação
+1140.png,Granulação
+1143.png,NI
+1144.png,Granulação
+1152.png,Granulação
+1156.png,Esfacelo
+1157.png,Esfacelo
+1158.png,Granulação
+1159.png,Esfacelo
+1160.png,Granulação
+1163.png,Granulação
+1165.png,Esfacelo
+1168.png,NI
+1171.png,Granulação
+1173.png,Esfacelo
+1174.png,Granulação
+1176.png,Granulação
+1177.png,NI
+1183.png,Granulação
+1190.png,Granulação
+1194.png,Granulação
+1196.png,NI
+1198.png,Granulação
+1199.png,Granulação
+1204.png,Granulação
+1205.png,Granulação
+1206.png,NI
+1211.png,Granulação
+1212.png,Esfacelo
+1213.png,Granulação
+1216.png,Granulação
+1217.png,Granulação
+1220.png,Esfacelo
+1221.png,Necrose
+1222.png,Granulação
+1232.png,Esfacelo
+1233.png,Necrose
+1235.png,Granulação
+1237.png,Esfacelo
+1238.png,Granulação
+1239.png,Granulação
+1240.png,Granulação
+1242.png,Esfacelo
+1246.png,Granulação
+1253.png,Esfacelo
+1254.png,Granulação
+1259.png,Granulação
+1260.png,Granulação
+1266.png,Granulação
+1267.png,Esfacelo
+1269.png,NI
+1271.png,Granulação
+1276.png,NI
+1277.png,Granulação
+1278.png,Granulação
+1279.png,Granulação
+1281.png,Esfacelo
+1282.png,Necrose
+1283.png,Granulação
+1284.png,NI
+1285.png,Granulação
+1287.png,Granulação
+1288.png,NI
+1291.png,Granulação
+1296.png,Granulação
+1298.png,Granulação
+1299.png,Granulação
+1300.png,Esfacelo
+1303.png,Granulação
+1305.png,Granulação
+1306.png,Granulação
+1307.png,Esfacelo
+1310.png,Granulação
+1312.png,Esfacelo
+1313.png,Granulação
+1316.png,Granulação
+1318.png,Esfacelo
+1319.png,NI
+1321.png,NI
+1322.png,Necrose
+1324.png,Esfacelo
+1326.png,Granulação
+1331.png,Granulação
+1332.png,NI
+1333.png,Granulação
+1334.png,Granulação
+1337.png,Granulação
+1338.png,Granulação
+1339.png,Granulação
+1342.png,Esfacelo
+1343.png,Granulação
+1347.png,Granulação
+1348.png,Granulação
+1350.png,Granulação
+1355.png,Granulação
+1357.png,Granulação
+1358.png,Granulação
+1359.png,Granulação
+1361.png,Necrose
+1363.png,Granulação
+1365.png,Esfacelo
+1370.png,Granulação
+1373.png,Granulação
+1379.png,Granulação
+1381.png,Esfacelo
+1382.png,Granulação
+1389.png,Esfacelo
+1390.png,Granulação
+1395.png,Granulação
+1396.png,Granulação
+1397.png,Esfacelo
+1399.png,Granulação
+1404.png,Necrose
+1405.png,Esfacelo
+1406.png,Granulação
+1412.png,Granulação
+1416.png,Esfacelo
+1418.png,Granulação
+1419.png,Granulação
+1421.png,Esfacelo
+1423.png,Granulação
+1424.png,NI
+1427.png,Granulação
+1437.png,Esfacelo
+1439.png,Granulação
+1442.png,Esfacelo
+1443.png,Granulação
+1444.png,Esfacelo
+1445.png,Esfacelo
+1446.png,Esfacelo
+1448.png,Granulação
+1450.png,Granulação
+1459.png,Esfacelo
+1460.png,NI
+1462.png,Esfacelo
+1464.png,Granulação
+1465.png,Esfacelo
+1466.png,NI
+1467.png,Granulação
+1469.png,Esfacelo
+1470.png,Granulação
+1471.png,Esfacelo
+1473.png,Granulação
+1475.png,Granulação
+1476.png,NI
+Alz (331).jpg,Esfacelo
+Alz (332).jpg,Granulação
+Alz (333).jpg,Granulação
+Alz (334).jpg,NI
+Alz (335).jpg,Granulação
+Alz (336).JPG,NI
+Alz (337).jpg,Granulação
+Alz (338).jpg,Granulação
+Alz (339).jpg,NI
+Alz (340).jpg,Esfacelo
+Alz (341).JPG,NI
+Alz (342).jpg,NI
+Alz (343).jpg,NI
+Alz (344).jpg,Esfacelo
+Alz (345).jpg,Granulação
+Alz (346).jpg,Granulação
+Alz (347).jpg,NI
+Alz (348).jpg,Granulação
+Alz (349).jpg,Granulação
+Alz (350).jpg,NI
+Alz (351).jpg,Granulação
+Alz (352).jpg,NI
+Alz (353).JPG,NI
+Alz (354).jpg,Granulação
+Alz (355).png,NI
+Alz (356).jpg,NI
+MH_1.jpg,Granulação
+MH_10.jpg,Granulação
+MH_11.jpg,Granulação
+MH_12.jpg,NI
+MH_13.jpg,NI
+MH_14.jpg,NI
+MH_15.jpg,NI
+MH_16.jpg,NI
+MH_17.jpg,NI
+MH_18.jpg,Granulação
+MH_19.jpg,Granulação
+MH_2.jpg,NI
+MH_20.jpg,Granulação
+MH_21.jpg,Granulação
+MH_22.jpg,Esfacelo
+MH_23.jpg,NI
+MH_24.jpg,NI
+MH_25.jpg,Granulação
+MH_26.jpg,Granulação
+MH_27.jpg,Granulação
+MH_28.jpg,Granulação
+MH_29.jpg,Granulação
+MH_3.jpg,NI
+MH_30.jpg,Granulação
+MH_31.jpg,Granulação
+MH_32.jpg,Granulação
+MH_33.jpg,NI
+MH_34.jpg,NI
+MH_35.jpg,NI
+MH_36.jpg,NI
+MH_37.jpg,Necrose
+MH_38.jpg,Esfacelo
+MH_39.jpg,Granulação
+MH_4.jpg,Granulação
+MH_40.jpg,Granulação
+MH_41.jpg,Esfacelo
+MH_42.jpg,Granulação
+MH_43.jpg,Granulação
+MH_44.jpg,Epitelização
+MH_45.jpg,Granulação
+MH_46.jpg,Esfacelo
+MH_47.jpg,Granulação
+MH_48.jpg,NI
+MH_49.jpg,Esfacelo
+MH_5.jpg,NI
+MH_50.jpg,Esfacelo
+MH_51.jpg,Esfacelo
+MH_6.jpg,NI
+MH_7.jpg,NI
+MH_8.jpg,NI
+MH_9.jpg,NI
+Paciente C_ APR2.jpg,NI
+Paciente C_AFS1.jpg,NI
+Paciente C_AFS2.jpg,NI
+Paciente C_APR1.jpg,NI
+Paciente C_APR3.jpg,Granulação
+Paciente C_CAF1.jpg,NI
+Paciente C_CAF2.jpg,NI
+Paciente C_CAF3.jpg,NI
+Paciente C_CAF4.jpg,NI
+Paciente C_CAF5.jpg,NI
+Paciente C_CAF6.jpg,NI
+Paciente C_CC1.jpg,NI
+Paciente C_CC2.jpg,NI
+Paciente C_CC3.jpg,NI
+Paciente C_CC4.jpg,NI
+Paciente C_CC5.jpg,NI
+Paciente C_CC6.jpg,NI
+Paciente C_CWRM1.jpg,NI
+Paciente C_CWRM10.jpg,NI
+Paciente C_CWRM11.jpg,NI
+Paciente C_CWRM12.jpg,NI
+Paciente C_CWRM13.jpg,NI
+Paciente C_CWRM14.jpg,NI
+Paciente C_CWRM15.jpg,NI
+Paciente C_CWRM16.jpg,NI
+Paciente C_CWRM17.jpg,NI
+Paciente C_CWRM18.jpg,NI
+Paciente C_CWRM19.jpg,NI
+Paciente C_CWRM2.jpg,NI
+Paciente C_CWRM20.jpg,NI
+Paciente C_CWRM21.jpg,NI
+Paciente C_CWRM22.jpg,NI
+Paciente C_CWRM23.jpg,NI
+Paciente C_CWRM24.jpg,Esfacelo
+Paciente C_CWRM25.jpg,NI
+Paciente C_CWRM3.jpg,NI
+Paciente C_CWRM4.jpg,NI
+Paciente C_CWRM5.jpg,NI
+Paciente C_CWRM6.jpg,NI
+Paciente C_CWRM7.jpg,NI
+Paciente C_CWRM8.jpg,NI
+Paciente C_CWRM9.jpg,NI
+Paciente C_FT1.jpg,NI
+Paciente C_FT2.jpg,NI
+PacienteB_AM_05 T0.JPG,Esfacelo
+PacienteB_AM_05 T4.JPG,NI
+PacienteB_AM_05 T8.JPG,Epitelização
+PacienteB_CCSA_01 T0.JPG,NI
+PacienteB_CCSA_01 T4.JPG,NI
+PacienteB_CCSA_01 T8.JPG,Granulação
+PacienteB_CCSA_02 T0.JPG,Esfacelo
+PacienteB_CCSA_02 T7.JPG,Epitelização
+PacienteB_CPA_13 T0.png,Esfacelo
+PacienteB_CPA_13 T2.png,Esfacelo
+PacienteB_CPA_13 T4.JPG,Granulação
+PacienteB_CRRD_04 T1.png,Granulação
+PacienteB_CRRD_04 T4.png,Granulação
+PacienteB_CRRD_04 T8.png,Granulação
+PacienteB_JNS_09 T0.JPG,Granulação
+PacienteB_JNS_09 T4.JPG,Granulação
+PacienteB_JNS_09 T8.JPG,NI
+PacienteB_PEA_16 T0.JPG,NI
+PacienteB_PEA_16 T4.JPG,NI
+PacienteB_TSO_06 T0.png,Granulação
+PacienteB_TSO_06 T10.png,Granulação
+PacienteB_TSO_06 T4.png,Granulação
+PacienteB_VFS_10 T0.png,Granulação
+PacienteB_VFS_10 T4.png,Granulação
+PacienteB_VFS_10 T8.png,Granulação
+PacienteC_JAL1.jpg,NI
+PacienteC_JAL2.jpg,Epitelização
+PacienteC_JAL3.jpg,NI
+PacienteC_JAL4.jpg,Granulação
+PacienteC_JEMP1.jpg,Granulação
+PacienteC_JEMP2.jpg,Granulação
+PacienteC_JEMP3.jpg,Granulação
+PacienteC_JEMP4.jpg,Granulação
+PacienteC_JEMP5.jpg,Granulação
+PacienteC_JMC1.jpg,Necrose
+PacienteC_JMC2.jpg,NI
+PacienteC_LCR1.jpg,NI
+PacienteC_LEL1.jpg,NI
+PacienteC_LEL2.jpg,NI
+PacienteC_LEL3.jpg,NI
+PacienteC_LEL4.jpg,NI
+PacienteC_MARR1.jpg,NI
+PacienteC_MARR10.jpg,NI
+PacienteC_MARR11.jpg,NI
+PacienteC_MARR12.jpg,Granulação
+PacienteC_MARR13.jpg,Granulação
+PacienteC_MARR2.jpg,NI
+PacienteC_MARR3.jpg,NI
+PacienteC_MARR4.jpg,Granulação
+PacienteC_MARR5.jpg,Granulação
+PacienteC_MARR6.jpg,NI
+PacienteC_MARR7.jpg,NI
+PacienteC_MARR8.jpg,Granulação
+PacienteC_MARR9.jpg,NI
+PacienteC_MEB1.jpg,Necrose
+PacienteC_MEB10.jpg,Granulação
+PacienteC_MEB11.jpg,Esfacelo
+PacienteC_MEB12.jpg,Esfacelo
+PacienteC_MEB13.jpg,Esfacelo
+PacienteC_MEB14.jpg,Esfacelo
+PacienteC_MEB15.jpg,Esfacelo
+PacienteC_MEB16.jpg,Esfacelo
+PacienteC_MEB17.jpg,Esfacelo
+PacienteC_MEB18.jpg,Esfacelo
+PacienteC_MEB19.jpg,Esfacelo
+PacienteC_MEB2.jpg,Necrose
+PacienteC_MEB20.jpg,NI
+PacienteC_MEB21.jpg,NI
+PacienteC_MEB22.jpg,NI
+PacienteC_MEB23.jpg,NI
+PacienteC_MEB24.jpg,NI
+PacienteC_MEB25.jpg,NI
+PacienteC_MEB26.jpg,NI
+PacienteC_MEB27.jpg,NI
+PacienteC_MEB28.jpg,NI
+PacienteC_MEB3.jpg,NI
+PacienteC_MEB4.jpg,Esfacelo
+PacienteC_MEB5.jpg,Esfacelo
+PacienteC_MEB6.jpg,Esfacelo
+PacienteC_MEB7.jpg,Esfacelo
+PacienteC_MEB8.jpg,Esfacelo
+PacienteC_MEB9.jpg,Esfacelo
+PacienteC_MFL1.jpg,NI
+PacienteC_MFL2.jpg,NI
+PacienteC_MGFL1.jpg,NI
+PacienteC_MGFL2.jpg,NI
+PacienteC_MGFL3.jpg,Granulação
+PacienteC_MGFL4.jpg,Granulação
+PacienteC_MRFO1.jpg,NI
+PacienteC_MRFO10.jpg,NI
+PacienteC_MRFO11.jpg,NI
+PacienteC_MRFO12.jpg,NI
+PacienteC_MRFO13.jpg,NI
+PacienteC_MRFO14.jpg,NI
+PacienteC_MRFO15.jpg,NI
+PacienteC_MRFO16.jpg,NI
+PacienteC_MRFO17.jpg,NI
+PacienteC_MRFO18.jpg,NI
+PacienteC_MRFO2.jpg,NI
+PacienteC_MRFO3.jpg,Granulação
+PacienteC_MRFO4.jpg,NI
+PacienteC_MRFO5.jpg,Granulação
+PacienteC_MRFO6.jpg,Granulação
+PacienteC_MRFO7.jpg,NI
+PacienteC_MRFO8.jpg,NI
+PacienteC_MRFO9.jpg,NI
+PacienteC_outro1.jpg,NI
+PacienteC_outro2.jpg,Necrose
+PacienteC_outro3.jpg,Granulação
+PacienteC_outro4.jpg,Esfacelo
+PacienteC_outro5.jpg,NI
+PacienteC_outro6.jpg,NI
+PAcienteC_outro7.jpg,NI
+PacienteC_PAA1.jpg,Necrose
+PacienteC_PAA2.jpg,Necrose
+PacienteC_PAA3.jpg,Necrose
+PacienteC_PAA4.jpg,Necrose
+PacienteC_PAA5.jpg,Necrose
+PacienteC_PAA6.jpg,Necrose
+PacienteC_PAA7.jpg,Necrose
+PacienteC_RBDO1.jpg,NI
+PacienteC_RBDO2.jpg,NI
+PacienteC_RBDO3.jpg,NI
+PacienteC_RBDO4.jpg,NI
+PacienteC_RBDO5.jpg,NI
+PacienteC_SAAmp.1.jpg,NI
+PacienteC_SAAmp.2.jpg,NI
+PacienteC_SAAmp.3.jpg,NI
+PacienteC_SAAmp.4.jpg,NI
+PacienteC_SAAmp.5.jpg,NI
+PacienteC_SAAmp.6.jpg,NI
+PacienteC_SAAmp.7.jpg,NI
+PacienteC_SROC1.jpg,NI
+PacienteC_SROC10.jpg,NI
+PacienteC_SROC11.jpg,NI
+PacienteC_SROC12.jpg,NI
+PacienteC_SROC13.jpg,NI
+PacienteC_SROC14.jpg,NI
+PacienteC_SROC15.jpg,NI
+PacienteC_SROC16.jpg,NI
+PacienteC_SROC17.jpg,NI
+PacienteC_SROC18.jpg,NI
+PacienteC_SROC19.jpg,NI
+PacienteC_SROC2.jpg,NI
+PacienteC_SROC20.jpg,NI
+PacienteC_SROC21.jpg,NI
+PacienteC_SROC22.jpg,NI
+PacienteC_SROC23.jpg,NI
+PacienteC_SROC24.jpg,NI
+PacienteC_SROC25.jpg,NI
+PacienteC_SROC26.jpg,NI
+PacienteC_SROC27.jpg,NI
+PacienteC_SROC28.jpg,NI
+PacienteC_SROC29.jpg,NI
+PacienteC_SROC3.jpg,NI
+PacienteC_SROC30.jpg,NI
+PacienteC_SROC31.jpg,NI
+PacienteC_SROC32.jpg,NI
+PacienteC_SROC33.jpg,NI
+PacienteC_SROC34.jpg,NI
+PacienteC_SROC35.jpg,NI
+PacienteC_SROC36.jpg,NI
+PacienteC_SROC37.jpg,NI
+PacienteC_SROC38.jpg,NI
+PacienteC_SROC4.jpg,NI
+PacienteC_SROC5.jpg,NI
+PacienteC_SROC6.jpg,NI
+PacienteC_SROC7.jpg,NI
+PacienteC_SROC8.jpg,NI
+PacienteC_SROC9.jpg,NI
+PacienteC_SRTO1.jpg,Esfacelo
+PacienteC_SRTO2.jpg,Esfacelo
+PacienteC_VCN1.jpg,Granulação
+PacienteC_VCN2.jpg,Granulação
+PacienteC_VCN3.jpg,NI
+PacienteC_VCN4.jpg,Granulação
+PacienteC_VCN5.jpg,Granulação
+PacienteC_VCN6.jpg,NI
+PacienteC_VCN7.jpg,Granulação
+PacienteC_VCN8.jpg,Granulação
+PacienteC_VCN9.jpg,Granulação
+PacienteC_WM_amp1.jpg,NI
+PacienteC_WM_amp2.jpg,NI
+PacienteC_WM_amp3.jpg,NI
+toes-0001.jpg,NI
+toes-0002.jpg,NI
+toes-0003.jpg,NI
+toes-0004.jpg,NI
+toes-0005.jpg,NI
+toes-0006.jpg,NI
+toes-0007.jpg,NI
+toes-0008.jpg,NI
+toes-0009.jpg,NI
+toes-0010.jpg,NI
+toes-0011.jpg,NI
+toes-0013.jpg,Esfacelo
+toes-0014.jpg,NI
+toes-0015.jpg,NI
+toes-0016.jpg,Esfacelo
+toes-0018.jpg,Granulação
+toes-0019.jpg,Esfacelo
+toes-0020.jpg,Esfacelo
+toes-0021.jpg,Necrose
+toes-0022.jpg,NI
+toes-0023.jpg,NI
+toes-0024.jpg,NI
+toes-0025.jpg,NI
+toes-0029.jpg,NI
+toes-0030.jpg,NI
+toes-0031.jpg,NI
+toes-0032.jpg,NI
+toes-0035.jpg,NI
+toes-0036.jpg,NI
+toes-0039.jpg,NI
+toes-0040.jpg,NI
+toes-0041.jpg,NI
+toes-0042.jpg,NI
+toes-00431.jpg,NI
+1.jpg,Esfacelo
+11 T0.JPG,Granulação
+11 T4.JPG,Granulação
+11 T8.JPG,Granulação
+2.jpg,Esfacelo
+3.jpg,Esfacelo
+4.jpg,Esfacelo
+5.jpg,Esfacelo
+Alz (1).png,Granulação
+Alz (10).jpg,NI
+Alz (100).jpg,Granulação
+Alz (101).jpg,Esfacelo
+Alz (102).jpg,NI
+Alz (103).jpg,NI
+Alz (104).jpg,NI
+Alz (105).jpg,Esfacelo
+Alz (106).jpg,Granulação
+Alz (107).jpg,NI
+Alz (108).jpg,NI
+Alz (109).jpg,NI
+Alz (11).jpg,NI
+Alz (110).jpg,NI
+Alz (111).jpg,NI
+Alz (112).jpg,NI
+Alz (113).jpg,NI
+Alz (114).jpg,Granulação
+Alz (115).jpg,Granulação
+Alz (116).jpg,Granulação
+Alz (117).jpg,NI
+Alz (118).jpg,NI
+Alz (119).jpg,NI
+Alz (120).jpg,NI
+Alz (121).jpg,NI
+Alz (122).jpg,NI
+Alz (123).jpg,NI
+Alz (124).jpg,NI
+Alz (125).jpg,NI
+Alz (126).jpg,NI
+Alz (127).jpg,NI
+Alz (128).jpg,NI
+Alz (129).jpg,NI
+Alz (13).jpg,Granulação
+Alz (130).jpg,Esfacelo
+Alz (131).jpg,Necrose
+Alz (132).jpg,Esfacelo
+Alz (133).jpg,Esfacelo
+Alz (134).jpg,Granulação
+Alz (135).jpg,Granulação
+Alz (136).jpg,NI
+Alz (137).jpg,NI
+Alz (138).jpg,Granulação
+Alz (139).jpg,NI
+Alz (14).jpg,NI
+Alz (140).jpg,Necrose
+Alz (141).jpg,NI
+Alz (142).jpg,Necrose
+Alz (143).jpg,NI
+Alz (144).jpg,Necrose
+Alz (145).jpg,NI
+Alz (146).jpg,Esfacelo
+Alz (147).jpg,NI
+Alz (148).jpg,NI
+Alz (149).jpg,NI
+Alz (15).jpg,Esfacelo
+Alz (150).jpg,NI
+Alz (151).jpg,NI
+Alz (152).jpg,Esfacelo
+Alz (153).jpg,Granulação
+Alz (154).jpg,Esfacelo
+Alz (155).jpg,Granulação
+Alz (156).jpg,Esfacelo
+Alz (157).jpg,NI
+Alz (158).jpg,NI
+Alz (159).jpg,Esfacelo
+Alz (16).jpg,NI
+Alz (160).jpg,NI
+Alz (161).jpg,Granulação
+Alz (162).jpg,Esfacelo
+Alz (163).jpg,Esfacelo
+Alz (164).jpg,Granulação
+Alz (165).jpg,NI
+Alz (166).jpg,NI
+Alz (167).jpg,NI
+Alz (168).jpg,NI
+Alz (169).jpg,Granulação
+Alz (17).jpg,Granulação
+Alz (170).jpg,Esfacelo
+Alz (171).jpg,Esfacelo
+Alz (172).jpg,Esfacelo
+Alz (173).jpg,NI
+Alz (174).jpg,Granulação
+Alz (175).jpg,NI
+Alz (176).jpg,Necrose
+Alz (177).jpg,NI
+Alz (178).jpg,NI
+Alz (179).jpg,Necrose
+Alz (18).jpg,NI
+Alz (180).jpg,NI
+Alz (181).jpg,NI
+Alz (182).jpg,NI
+Alz (183).jpg,NI
+Alz (184).jpg,Granulação
+Alz (185).jpg,NI
+Alz (186).jpg,NI
+Alz (187).jpg,NI
+Alz (188).jpg,NI
+Alz (189).jpg,Granulação
+Alz (19).jpg,NI
+Alz (190).jpg,NI
+Alz (191).jpg,NI
+Alz (192).jpg,Granulação
+Alz (193).jpg,Granulação
+Alz (194).jpg,Granulação
+Alz (195).jpg,NI
+Alz (196).jpg,NI
+Alz (197).jpg,NI
+Alz (198).jpg,NI
+Alz (199).jpg,NI
+Alz (2).png,Granulação
+Alz (20).JPG,Granulação
+Alz (200).jpg,Granulação
+Alz (201).jpg,Granulação
+Alz (202).jpg,Granulação
+Alz (203).jpg,Granulação
+Alz (204).jpg,NI
+Alz (205).jpg,NI
+Alz (206).jpg,NI
+Alz (207).jpg,Granulação
+Alz (208).jpg,NI
+Alz (209).jpg,Granulação
+Alz (21).jpg,NI
+Alz (210).jpg,NI
+Alz (211).jpg,Granulação
+Alz (212).jpg,NI
+Alz (213).jpg,Granulação
+Alz (214).jpg,NI
+Alz (215).jpg,Esfacelo
+Alz (216).jpg,NI
+Alz (217).jpg,Granulação
+Alz (218).jpg,NI
+Alz (219).jpg,NI
+Alz (22).jpg,NI
+Alz (220).jpg,NI
+Alz (221).jpg,NI
+Alz (222).jpg,NI
+Alz (223).jpg,NI
+Alz (224).jpg,Granulação
+Alz (225).jpg,NI
+Alz (226).jpg,NI
+Alz (227).jpg,NI
+Alz (228).jpg,NI
+Alz (229).jpg,NI
+Alz (23).jpg,NI
+Alz (230).jpg,NI
+Alz (231).jpg,NI
+Alz (232).jpg,NI
+Alz (233).jpg,NI
+Alz (234).jpg,NI
+Alz (235).jpg,NI
+Alz (236).jpg,NI
+Alz (237).jpg,NI
+Alz (238).jpg,NI
+Alz (239).jpg,NI
+Alz (24).jpg,Granulação
+Alz (240).jpg,NI
+Alz (241).jpg,NI
+Alz (242).jpg,NI
+Alz (243).jpg,NI
+Alz (244).jpg,NI
+Alz (245).jpg,NI
+Alz (246).jpg,NI
+Alz (247).jpg,Esfacelo
+Alz (248).jpg,NI
+Alz (249).jpg,NI
+Alz (25).jpg,Granulação
+Alz (250).jpg,NI
+Alz (251).jpg,NI
+Alz (252).jpg,NI
+Alz (253).jpg,NI
+Alz (254).jpg,Granulação
+Alz (255).jpg,NI
+Alz (256).jpg,NI
+Alz (257).jpg,NI
+Alz (258).jpg,NI
+Alz (259).jpg,NI
+Alz (26).jpg,NI
+Alz (260).jpg,NI
+Alz (261).jpg,NI
+Alz (262).jpg,NI
+Alz (263).jpg,NI
+Alz (264).jpg,NI
+Alz (265).jpg,NI
+Alz (266).jpg,NI
+Alz (267).jpg,NI
+Alz (268).jpg,NI
+Alz (269).jpg,NI
+Alz (27).jpg,NI
+Alz (270).jpg,NI
+Alz (271).jpg,NI
+Alz (272).jpg,NI
+Alz (273).jpg,NI
+Alz (274).jpg,NI
+Alz (275).jpg,NI
+Alz (276).jpg,NI
+Alz (277).jpg,NI
+Alz (278).jpg,Necrose
+Alz (279).jpg,Necrose
+Alz (28).jpg,Granulação
+Alz (280).jpg,NI
+Alz (281).jpg,NI
+Alz (282).jpg,NI
+Alz (283).jpg,NI
+Alz (284).jpg,NI
+Alz (285).jpg,NI
+Alz (286).jpg,NI
+Alz (287).jpg,NI
+Alz (288).jpg,NI
+Alz (289).jpg,NI
+Alz (29).jpg,Granulação
+Alz (290).jpg,NI
+Alz (291).jpg,NI
+Alz (292).jpg,NI
+Alz (293).jpg,NI
+Alz (294).jpg,NI
+Alz (295).jpg,NI
+Alz (296).jpg,Esfacelo
+Alz (297).jpg,NI
+Alz (298).jpg,NI
+Alz (299).jpg,NI
+Alz (3).png,NI
+Alz (30).JPG,NI
+Alz (300).jpg,NI
+Alz (301).jpg,NI
+Alz (302).jpg,NI
+Alz (303).jpg,NI
+Alz (304).jpg,NI
+Alz (305).jpg,NI
+Alz (306).jpg,NI
+Alz (307).jpg,Esfacelo
+Alz (308).jpg,Granulação
+Alz (309).jpg,NI
+Alz (31).jpg,Granulação
+Alz (310).jpg,Esfacelo
+Alz (311).jpg,NI
+Alz (312).jpg,Necrose
+Alz (313).jpg,NI
+Alz (314).jpg,Granulação
+Alz (315).jpg,Granulação
+Alz (316).jpg,Granulação
+Alz (317).jpg,NI
+Alz (318).jpg,NI
+Alz (319).jpg,NI
+Alz (32).jpg,NI
+Alz (320).jpg,NI
+Alz (321).jpg,Esfacelo
+Alz (322).jpg,NI
+Alz (323).jpg,NI
+Alz (324).jpg,NI
+Alz (325).jpg,NI
+Alz (326).jpg,Granulação
+Alz (327).jpg,NI
+Alz (328).jpg,Granulação
+Alz (329).jpg,Granulação
+Alz (33).jpg,NI
+Alz (330).jpg,NI
+Alz (34).jpg,NI
+Alz (35).jpg,NI
+Alz (36).jpg,NI
+Alz (37).jpg,NI
+Alz (38).jpg,Granulação
+Alz (39).jpg,Necrose
+Alz (4).jpg,NI
+Alz (40).jpg,Granulação
+Alz (41).jpg,NI
+Alz (42).jpg,Esfacelo
+Alz (43).jpg,NI
+Alz (44).jpg,NI
+Alz (45).jpg,Granulação
+Alz (46).jpg,NI
+Alz (47).jpg,Esfacelo
+Alz (48).jpg,NI
+Alz (49).jpg,Necrose
+Alz (5).jpg,NI
+Alz (50).jpg,NI
+Alz (51).jpg,NI
+Alz (52).jpg,Granulação
+Alz (53).jpg,Granulação
+Alz (54).jpg,Granulação
+Alz (55).jpg,Granulação
+Alz (56).jpg,Necrose
+Alz (57).jpg,NI
+Alz (58).jpg,NI
+Alz (59).jpg,NI
+Alz (6).jpg,NI
+Alz (60).jpg,NI
+Alz (61).jpg,NI
+Alz (62).jpg,NI
+Alz (63).jpg,NI
+Alz (64).jpg,Necrose
+Alz (65).jpg,NI
+Alz (66).jpg,NI
+Alz (67).jpg,NI
+Alz (68).jpg,NI
+Alz (69).jpg,NI
+Alz (7).jpg,NI
+Alz (70).jpg,NI
+Alz (71).jpg,NI
+Alz (72).jpg,NI
+Alz (73).jpg,NI
+Alz (74).jpg,NI
+Alz (75).jpg,NI
+Alz (76).jpg,NI
+Alz (77).jpg,NI
+Alz (78).jpg,NI
+Alz (79).jpg,NI
+Alz (8).jpg,NI
+Alz (80).jpg,Granulação
+Alz (81).jpg,NI
+Alz (82).jpg,NI
+Alz (83).jpg,Granulação
+Alz (84).jpg,Esfacelo
+Alz (85).jpg,NI
+Alz (86).jpg,Esfacelo
+Alz (87).jpg,Necrose
+Alz (88).jpg,Granulação
+Alz (89).jpg,NI
+Alz (9).jpg,Necrose
+Alz (90).jpg,NI
+Alz (91).jpg,Esfacelo
+Alz (92).jpg,Granulação
+Alz (93).jpg,Granulação
+Alz (94).jpg,NI
+Alz (95).jpg,Granulação
+Alz (96).jpg,Esfacelo
+Alz (97).jpg,NI
+Alz (98).jpg,NI
+Alz (99).jpg,NI
