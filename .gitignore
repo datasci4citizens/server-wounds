@@ -17,4 +17,7 @@ ComputerVision/wound-segmentation/training_history/
 server-wounds/ComputerVision/wound-segmentation/wound_seg_env/**
 *.hdf5
 *.so
-*.dylib
+*.dylibwound_seg_env/
+*.hdf5
+__pycache__/
+*.pyc
