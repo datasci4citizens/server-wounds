@@ -17,6 +17,7 @@ from rest_framework import generics, mixins, views
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
 
+from wound_pixel_counter import count_pixels_simple
 from .predict_single_image import predict_image_class, predict_multi_label
 from PIL import Image as PILImage
 from .identifica_ref import get_reference_area
@@ -367,7 +368,8 @@ class TrackingRecordsImageViewSet(viewsets.ViewSet):
 
             tissue_prediction = predict_image_class(pil_image)
             multihead_predictions = predict_multi_label(pil_image)
-            wound_pixels =
+            wound_pixels = count_pixels_simple(model_path="wound_segmentation_model2.hdf5",image_path=pil_image,threshold=0.5)
+
             reference_pixels = get_reference_area(pil_image)
             reference_diameter = 7
             reference_size = 3,14*(reference_diameter/2)^2
@@ -411,7 +413,7 @@ class WoundImageViewSet(viewsets.ViewSet):
 
             tissue_prediction = predict_image_class(pil_image)
             multihead_predictions = predict_multi_label(pil_image)
-            wound_pixels =
+            wound_pixels = count_pixels_simple(model_path="wound_segmentation_model2.hdf5",image_path=pil_image,threshold=0.5)
             reference_pixels = get_reference_area(pil_image)
             reference_diameter = 7
             reference_size = 3,14*(reference_diameter/2)^2
