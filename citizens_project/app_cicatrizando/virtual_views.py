@@ -367,6 +367,11 @@ class TrackingRecordsImageViewSet(viewsets.ViewSet):
 
             tissue_prediction = predict_image_class(pil_image)
             multihead_predictions = predict_multi_label(pil_image)
+            wound_pixels =
+            reference_pixels = 
+            reference_diameter = 7
+            reference_size = 2*3,14*reference_diameter
+            wound_size = wound_pixels*reference_size/reference_pixels
 
         except TrackingRecordImage.DoesNotExist:
             return Response({"error": "Tracking record not found"}, status=status.HTTP_404_NOT_FOUND)
@@ -374,7 +379,8 @@ class TrackingRecordsImageViewSet(viewsets.ViewSet):
                 "message": "Image updated successfully",
                 "predictions": {
                     "tissue_type": tissue_prediction,
-                    "W_I_Fi": multihead_predictions
+                    "W_I_Fi": multihead_predictions,
+                    "Wound Size": wound_size
                 }
             }, status=status.HTTP_200_OK)
 
