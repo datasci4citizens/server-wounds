@@ -22,8 +22,8 @@ def combined_loss(y_true, y_pred):
     - Dice Loss: sobreposição de regiões
     """
     # Pesos das loss functions (você pode ajustar)
-    bce_weight = 0.50  # 30% Binary Crossentropy
-    dice_weight = 0.50  # 70% Dice Loss
+    bce_weight = 0.50  # 50% Binary Crossentropy
+    dice_weight = 0.50  # 50% Dice Loss
     
     # Calcular cada loss
     bce = binary_crossentropy(y_true, y_pred)
@@ -43,10 +43,10 @@ def lr_schedule(epoch):
     return 1e-4
 
 # PARÂMETROS OTIMIZADOS
-input_dim_x = 224
-input_dim_y = 224
+input_dim_x = 512
+input_dim_y = 512
 n_filters = 16  # Modelo menor para evitar overfitting
-dataset = 'Medetec_foot_ulcer_224'
+dataset = 'Foot_Ulcer_Segmentation_Challenge'
 data_gen = DataGen('./data/' + dataset + '/', split_ratio=0.2, x=input_dim_x, y=input_dim_y)
 
 # MODELO U-NET
@@ -56,14 +56,14 @@ model, model_name = unet2d.get_unet_model_yuanqing()
 # HIPERPARÂMETROS DE TREINO
 batch_size = 4
 epochs = 100  
-initial_learning_rate = 5e-5
+initial_learning_rate = 1e-4
 loss_function = combined_loss
 
 # CALLBACKS AVANÇADOS
 # 1. EarlyStopping - para mais cedo se não melhorar
 early_stopping = EarlyStopping(
     monitor='val_dice_coef',
-    patience=5,  # ← AUMENTADO (era 50)
+    patience=3,  # ← AUMENTADO (era 50)
     mode='max',
     restore_best_weights=True,
     verbose=1,
@@ -74,7 +74,7 @@ early_stopping = EarlyStopping(
 reduce_lr = ReduceLROnPlateau(
     monitor='val_dice_coef',
     factor=0.5,
-    patience=30,  # Reduz LR se não melhorar por 30 épocas
+    patience=5,  # Reduz LR se não melhorar por 30 épocas
     min_lr=1e-7,
     verbose=1
 )
