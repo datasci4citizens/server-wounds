@@ -370,7 +370,7 @@ class TrackingRecordsImageViewSet(viewsets.ViewSet):
             wound_pixels =
             reference_pixels = get_reference_area(pil_image)
             reference_diameter = 7
-            reference_size = 2*3,14*reference_diameter
+            reference_size = 3,14*(reference_diameter/2)^2
             wound_size = wound_pixels*reference_size/reference_pixels
 
         except TrackingRecordImage.DoesNotExist:
@@ -414,7 +414,7 @@ class WoundImageViewSet(viewsets.ViewSet):
             wound_pixels =
             reference_pixels = get_reference_area(pil_image)
             reference_diameter = 7
-            reference_size = 2*3,14*reference_diameter
+            reference_size = 3,14*(reference_diameter/2)^2
             wound_size = wound_pixels*reference_size/reference_pixels
 
         except WoundImage.DoesNotExist:
