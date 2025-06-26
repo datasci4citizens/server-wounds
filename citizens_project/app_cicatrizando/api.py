@@ -138,6 +138,7 @@ class GoogleLoginView(viewsets.ViewSet):
             }
         except Provider.DoesNotExist:
             pass
+        patient_data = None
         try :
             logger.debug(f"Fetching patient non-clinical info for user {user.id}")
             patient_info = PatientNonClinicalInfos.objects.filter(user=user).get()
