@@ -19,7 +19,7 @@ from rest_framework.parsers import MultiPartParser
 
 from .predict_single_image import predict_image_class, predict_multi_label
 from PIL import Image as PILImage
-
+from .identifica_ref import get_reference_area
 
 from rest_framework.exceptions import APIException
 
@@ -368,7 +368,7 @@ class TrackingRecordsImageViewSet(viewsets.ViewSet):
             tissue_prediction = predict_image_class(pil_image)
             multihead_predictions = predict_multi_label(pil_image)
             wound_pixels =
-            reference_pixels = 
+            reference_pixels = get_reference_area(pil_image)
             reference_diameter = 7
             reference_size = 2*3,14*reference_diameter
             wound_size = wound_pixels*reference_size/reference_pixels
@@ -380,7 +380,7 @@ class TrackingRecordsImageViewSet(viewsets.ViewSet):
                 "predictions": {
                     "tissue_type": tissue_prediction,
                     "W_I_Fi": multihead_predictions,
-                    "Wound Size": wound_size
+                    "Wound Size(cm^2)": wound_size
                 }
             }, status=status.HTTP_200_OK)
 
@@ -411,7 +411,11 @@ class WoundImageViewSet(viewsets.ViewSet):
 
             tissue_prediction = predict_image_class(pil_image)
             multihead_predictions = predict_multi_label(pil_image)
-            
+            wound_pixels =
+            reference_pixels = get_reference_area(pil_image)
+            reference_diameter = 7
+            reference_size = 2*3,14*reference_diameter
+            wound_size = wound_pixels*reference_size/reference_pixels
 
         except WoundImage.DoesNotExist:
             return Response({"error": "Tracking record not found"}, status=status.HTTP_404_NOT_FOUND)
@@ -419,7 +423,8 @@ class WoundImageViewSet(viewsets.ViewSet):
                 "message": "Image updated successfully",
                 "predictions": {
                     "tissue_type": tissue_prediction,
-                    "W_I_Fi": multihead_predictions
+                    "W_I_Fi": multihead_predictions,
+                    "Wound Size(cm^2)": wound_size
                 }
             }, status=status.HTTP_200_OK)
 
