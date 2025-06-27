@@ -13,31 +13,43 @@ from utils.learning.metrics import dice_coef, precision, recall
 from utils.learning.losses import dice_coef_loss
 from utils.io.data import DataGen
 
-# ========== CONFIGURAÇÃO GPU 0 ESPECÍFICA ==========
-print("🔧 Configurando GPU 0 (RTX A5500)...")
+# ========== CONFIGURAÇÃO GPU FLEXÍVEL ==========
+print("🔧 Configurando GPU...")
 
-# Forçar uso da GPU 0 especificamente
-os.environ['CUDA_VISIBLE_DEVICES'] = '3'
+# Permitir crescimento de memória e otimizações
 os.environ['TF_GPU_ALLOCATOR'] = 'cuda_malloc_async'
 
-# Configurar GPU
+# Configurar GPU disponível (controlada por CUDA_VISIBLE_DEVICES)
 gpus = tf.config.experimental.list_physical_devices('GPU')
 if gpus:
     try:
-        gpu = gpus[3]
-        tf.config.experimental.set_device_policy('warn_on_error')
-        tf.config.experimental.set_memory_growth(gpu, True)
+        # Configurar todas as GPUs visíveis
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
         
-        # Otimizações avançadas
+        # Otimizações de performance
         tf.config.optimizer.set_jit(True)  # XLA
         tf.config.optimizer.set_experimental_options({"layout_optimizer": True})
         
-        print(f"✅ GPU 0 (RTX A5500) configurada - 24GB VRAM disponível")
+        # Mostrar GPU em uso
+        gpu_name = tf.config.experimental.get_device_details(gpus[0])['device_name']
+        print(f"✅ GPU configurada: {gpu_name}")
+        print(f"📊 GPUs disponíveis: {len(gpus)}")
+        
+        # Mostrar variável de ambiente se definida
+        if 'CUDA_VISIBLE_DEVICES' in os.environ:
+            print(f"🎯 CUDA_VISIBLE_DEVICES: {os.environ['CUDA_VISIBLE_DEVICES']}")
+        else:
+            print("💡 Use 'export CUDA_VISIBLE_DEVICES=X' para escolher GPU específica")
+            
     except RuntimeError as e:
-        print(f"Erro na configuração: {e}")
+        print(f"Erro na configuração da GPU: {e}")
 else:
-    print("❌ GPU não detectada")
-    exit(1)
+    print("❌ Nenhuma GPU detectada - executando em CPU")
+    print("💡 Certifique-se que:")
+    print("  - NVIDIA drivers estão instalados")
+    print("  - CUDA está configurado")
+    print("  - TensorFlow-GPU está instalado")
 
 # Mixed Precision para 2x velocidade
 from tensorflow.keras.mixed_precision import experimental as mixed_precision
@@ -61,9 +73,10 @@ initial_learning_rate = 1e-3  # LR inicial moderado
 print(f"📋 CONFIGURAÇÃO OTIMIZADA:")
 print(f"  🖼️  Resolução: {input_dim_x}x{input_dim_y}")
 print(f"  🔢 Filtros base: {n_filters}")
-print(f"  📦 Batch size: {batch_size} (aproveitando 24GB)")
+print(f"  📦 Batch size: {batch_size}")
 print(f"  🔄 Epochs máx: {epochs}")
 print(f"  📈 LR inicial: {initial_learning_rate}")
+print(f"  🎯 GPU: Controlada por CUDA_VISIBLE_DEVICES")
 
 # ========== FUNÇÕES DE LOSS OTIMIZADAS ==========
 
