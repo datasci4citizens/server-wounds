@@ -17,7 +17,7 @@ from utils.io.data import DataGen
 print("🔧 Configurando GPU 0 (RTX A5500)...")
 
 # Forçar uso da GPU 0 especificamente
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+os.environ['CUDA_VISIBLE_DEVICES'] = '3'
 os.environ['TF_GPU_ALLOCATOR'] = 'cuda_malloc_async'
 
 # Configurar GPU
