@@ -1,6 +1,8 @@
 # Ignorar virtualenv e arquivos grandes
 wound_seg_env/**
 Foot_Ulcer_Segmentation_Challenge/**
+Foot_Ulcer_Segmentation_Challenge_256/**
+Foot_Ulcer_Segmentation_Challenge_384/**
 Medetec_foot_ulcer_224/**
 wound_dataset/**
 training_history/**
