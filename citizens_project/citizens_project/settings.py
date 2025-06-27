@@ -30,6 +30,7 @@ MEDIA_URL = '/media/'
 SECRET_KEY =  os.environ["SERVER_WOUNDS_SECRET_KEY"]
 GOOGLE_OAUTH2_CLIENT_ID = os.environ["GOOGLE_CLIENT_ID"]
 GOOGLE_OAUTH2_CLIENT_SECRET = os.environ["GOOGLE_CLIENT_SECRET"]
+DISABLE_AUTH = "true" == os.environ.get("SERVER_WOUNDS_DISABLE_AUTH", "false")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -52,17 +53,18 @@ INSTALLED_APPS = [
     'corsheaders',  # Adicione esta linha
     'django_dbml'
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
+
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+       'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
-
-       # 'rest_framework.permissions.IsAuthenticated',
-
-        # Comentar para permitir acesso público
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated'
+    ] if not DISABLE_AUTH else [
+        'rest_framework.permissions.AllowAny'
     ]
 }
 SPECTACULAR_SETTINGS = {
@@ -176,7 +178,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Seu frontend
     "http://127.0.0.1:5173",
-    "https://server.wounds.staging.paas.ic.unicamp.br"
+    "https://server.wounds.staging.paas.ic.unicamp.br",
+    "https://localhost",
 ]
 
 # Para desenvolvimento, você pode permitir todas as origens (não recomendado para produção)
@@ -209,4 +212,33 @@ SPECTACULAR_SETTINGS = {
         'drf_spectacular.hooks.postprocess_schema_enums',
         'app_cicatrizando.schema.custom_postprocessing_hook'
     ],
+}
+
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "[{asctime}] {levelname} {name}: {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "app_cicatrizando": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "": {
+            "handlers": ["console"],
+            "level": "WARNING",
+        },
+    },
 }
