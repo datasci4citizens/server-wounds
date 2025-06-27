@@ -1,6 +1,6 @@
 # Dependências principais do projeto
 tensorflow>=2.10.0,<2.15.0  # Core ML framework
-keras>=2.10.0  # High-level API  
+keras>=2.10.0  # High-level API
 numpy>=1.21.0,<1.25.0  # Numerical computing
 scipy>=1.9.0  # Scientific computing
 scikit-learn>=1.1.0  # ML utilities

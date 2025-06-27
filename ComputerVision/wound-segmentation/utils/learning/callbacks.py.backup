@@ -7,7 +7,7 @@
 # ------------------------------------------------------------ #
 
 import numpy as np
-from tensorflow.keras.callbacks import LearningRateScheduler
+from keras.callbacks import LearningRateScheduler
 
 # reduce learning rate on each epoch
 def learningRateSchedule(initialLr=1e-4, decayFactor=0.99, stepSize=1):

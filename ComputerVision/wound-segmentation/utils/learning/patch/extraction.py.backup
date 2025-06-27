@@ -8,7 +8,7 @@
 import sys
 from random import randint
 import numpy as np
-from tensorflow.keras.utils import to_categorical
+from keras.utils import to_categorical
 
 # ----- Patch Extraction -----
 # -- Single Patch

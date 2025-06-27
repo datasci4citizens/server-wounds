@@ -1,9 +1,9 @@
 import cv2
 import os
-from tensorflow.keras.models import load_model
-from tensorflow.keras.utils import CustomObjectScope
+from keras.models import load_model
+from keras.utils.generic_utils import CustomObjectScope
 from tensorflow.keras.losses import binary_crossentropy
-import tensorflow.keras.backend as K
+import keras.backend as K
 
 from models.unets import Unet2D
 from models.deeplab import Deeplabv3, relu6, BilinearUpsampling, DepthwiseConv2D

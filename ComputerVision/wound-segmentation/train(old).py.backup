@@ -1,7 +1,7 @@
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.callbacks import EarlyStopping
-from tensorflow.keras.models import load_model
-from tensorflow.keras.utils import CustomObjectScope
+from keras.callbacks import EarlyStopping
+from keras.models import load_model
+from keras.utils.generic_utils import CustomObjectScope
 
 from models.unets import Unet2D
 from models.deeplab import Deeplabv3, relu6, DepthwiseConv2D, BilinearUpsampling

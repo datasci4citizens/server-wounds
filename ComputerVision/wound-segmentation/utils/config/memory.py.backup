@@ -8,7 +8,7 @@
 
 def get_model_memory_usage(batch_size, model):
     import numpy as np
-    from tensorflow.keras import backend as K
+    from keras import backend as K
 
     shapes_mem_count = 0
     for l in model.layers:

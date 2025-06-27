@@ -205,13 +205,25 @@ def save_rgb_results(np_array, outpath, test_label_filenames_list):
         cv2.imwrite(outpath + filename, np_array[i] * 255.)
         i += 1
 
+def convert_float32_to_float(obj):
+    """Converte float32 para float para serialização JSON"""
+    if isinstance(obj, np.float32):
+        return float(obj)
+    elif isinstance(obj, dict):
+        return {key: convert_float32_to_float(value) for key, value in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_float32_to_float(item) for item in obj]
+    else:
+        return obj
+
 
 def save_history(model, model_name, training_history, dataset, n_filters, epoch, learning_rate, loss,
                  color_space, path=None, temp_name=None):
     save_weight_filename = temp_name if temp_name else str(datetime.datetime.now())
     model.save('{}{}.hdf5'.format(path, save_weight_filename))
     with open('{}{}.json'.format(path, save_weight_filename), 'w') as f:
-        json.dump(training_history.history, f, indent=2)
+        converted_history = convert_float32_to_float(training_history.history)
+        json.dump(converted_history, f, indent=2)
 
     json_list = ['{}{}.json'.format(path, save_weight_filename)]
     for json_filename in json_list:

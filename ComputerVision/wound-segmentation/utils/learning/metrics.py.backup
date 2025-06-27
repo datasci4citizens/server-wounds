@@ -5,7 +5,7 @@
 # Metrics for evaluation
 #
 # ------------------------------------------------------------ #
-from tensorflow.keras import backend as K
+from keras import backend as K
 
 
 # dice coefficient

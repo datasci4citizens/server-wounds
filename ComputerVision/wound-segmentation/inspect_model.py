@@ -1,0 +1,166 @@
+import h5py
+import json
+from tensorflow.keras.models import load_model
+from tensorflow.keras.utils import CustomObjectScope
+from tensorflow.keras.losses import binary_crossentropy
+import tensorflow.keras.backend as K
+
+def inspect_hdf5_model(model_path):
+    """
+    Inspeciona o conteúdo de um arquivo .hdf5 para ver o que está salvo
+    """
+    print("="*60)
+    print(f"🔍 INSPECIONANDO MODELO: {model_path}")
+    print("="*60)
+    
+    try:
+        # Abrir arquivo HDF5 diretamente
+        with h5py.File(model_path, 'r') as f:
+            print("📁 ESTRUTURA DO ARQUIVO HDF5:")
+            
+            def print_structure(name, obj):
+                print(f"  {name}")
+            
+            f.visititems(print_structure)
+            
+            # Verificar se tem configuração do modelo
+            if 'model_config' in f.attrs:
+                print("\n📐 CONFIGURAÇÃO DO MODELO:")
+                config = json.loads(f.attrs['model_config'].decode('utf-8'))
+                print(f"  Classe: {config.get('class_name', 'N/A')}")
+                print(f"  Backend: {config.get('config', {}).get('name', 'N/A')}")
+            
+            # Verificar otimizador
+            if 'optimizer_weights' in f:
+                print("\n🔧 OTIMIZADOR: Presente")
+            else:
+                print("\n🔧 OTIMIZADOR: Ausente")
+                
+            # Verificar training config
+            if 'training_config' in f.attrs:
+                print("\n⚙️ CONFIGURAÇÃO DE TREINO:")
+                training_config = json.loads(f.attrs['training_config'].decode('utf-8'))
+                print(f"  Loss: {training_config.get('loss', 'N/A')}")
+                print(f"  Métricas: {training_config.get('metrics', 'N/A')}")
+                print(f"  Otimizador: {training_config.get('optimizer_config', {}).get('class_name', 'N/A')}")
+    
+    except Exception as e:
+        print(f"❌ Erro lendo HDF5: {e}")
+    
+    print("\n" + "="*60)
+    print("🧪 TESTANDO CARREGAMENTO DO MODELO")
+    print("="*60)
+    
+    # Teste 1: Carregar sem custom_objects
+    print("1️⃣ Tentando carregar SEM custom_objects...")
+    try:
+        model_simple = load_model(model_path, compile=False)
+        print("✅ SUCESSO! Modelo carregado sem dependências customizadas")
+        print(f"   Input shape: {model_simple.input_shape}")
+        print(f"   Output shape: {model_simple.output_shape}")
+        print(f"   Parâmetros: {model_simple.count_params():,}")
+        simple_works = True
+    except Exception as e:
+        print(f"❌ FALHOU: {e}")
+        simple_works = False
+    
+    # Teste 2: Carregar com custom_objects
+    print("\n2️⃣ Tentando carregar COM custom_objects...")
+    try:
+        # Importar as funções necessárias
+        from utils.learning.metrics import dice_coef, precision, recall
+        from utils.learning.losses import dice_coef_loss
+        
+        def combined_loss(y_true, y_pred):
+            bce = binary_crossentropy(y_true, y_pred)
+            dice = dice_coef_loss(y_true, y_pred)
+            return 0.5 * bce + 0.5 * dice
+        
+        model_custom = load_model(model_path, custom_objects={
+            'recall': recall,
+            'precision': precision,
+            'dice_coef': dice_coef,
+            'dice_coef_loss': dice_coef_loss,
+            'combined_loss': combined_loss
+        })
+        print("✅ SUCESSO! Modelo carregado com custom_objects")
+        custom_works = True
+    except Exception as e:
+        print(f"❌ FALHOU: {e}")
+        custom_works = False
+    
+    # Recomendações
+    print("\n" + "="*60)
+    print("💡 RECOMENDAÇÕES")
+    print("="*60)
+    
+    if simple_works:
+        print("🎉 SEU MODELO É INDEPENDENTE!")
+        print("   ✅ Você pode usar apenas:")
+        print("     model = load_model('modelo.hdf5', compile=False)")
+        print("   ✅ Não precisa das bibliotecas customizadas para PREDIÇÃO")
+        print("   ⚠️  Só precisa das custom_objects se quiser TREINAR mais")
+    elif custom_works:
+        print("🔧 SEU MODELO PRECISA DAS FUNÇÕES CUSTOMIZADAS")
+        print("   ❌ Deve usar custom_objects para carregar")
+        print("   💡 Alternativa: Salvar modelo independente")
+    else:
+        print("❌ PROBLEMA NO MODELO")
+        print("   💡 Verifique se o arquivo não está corrompido")
+        print("   💡 Verifique se as dependências estão corretas")
+
+def create_independent_model(model_path, output_path):
+    """
+    Cria uma versão independente do modelo (apenas para predição)
+    """
+    print(f"\n🔄 Criando modelo independente...")
+    
+    try:
+        # Carregar com custom_objects
+        from utils.learning.metrics import dice_coef, precision, recall
+        from utils.learning.losses import dice_coef_loss
+        
+        def combined_loss(y_true, y_pred):
+            bce = binary_crossentropy(y_true, y_pred)
+            dice = dice_coef_loss(y_true, y_pred)
+            return 0.5 * bce + 0.5 * dice
+        
+        model = load_model(model_path, custom_objects={
+            'recall': recall,
+            'precision': precision,
+            'dice_coef': dice_coef,
+            'dice_coef_loss': dice_coef_loss,
+            'combined_loss': combined_loss
+        })
+        
+        # Salvar apenas a arquitetura e pesos (sem compilação)
+        model.save(output_path, include_optimizer=False, save_traces=False)
+        print(f"✅ Modelo independente salvo em: {output_path}")
+        
+        # Testar se o novo modelo funciona independentemente
+        test_model = load_model(output_path, compile=False)
+        print("✅ Modelo independente testado com sucesso!")
+        
+        return True
+        
+    except Exception as e:
+        print(f"❌ Erro criando modelo independente: {e}")
+        return False
+
+if __name__ == "__main__":
+    import sys
+    
+    if len(sys.argv) < 2:
+        print("Uso: python inspect_model.py <modelo.hdf5> [criar_independente]")
+        sys.exit(1)
+    
+    model_path = "training_history/2025-06-12 22:36:45.332568.hdf5"
+    create_independent = len(sys.argv) > 2 and sys.argv[2].lower() == 'true'
+    
+    # Inspecionar modelo
+    inspect_hdf5_model(model_path)
+    
+    # Criar versão independente se solicitado
+    if create_independent:
+        output_path = model_path.replace('.hdf5', '_independent.hdf5')
+        create_independent_model(model_path, output_path)
