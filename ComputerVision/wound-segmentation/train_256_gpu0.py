@@ -24,7 +24,7 @@ os.environ['TF_GPU_ALLOCATOR'] = 'cuda_malloc_async'
 gpus = tf.config.experimental.list_physical_devices('GPU')
 if gpus:
     try:
-        gpu = gpus[0]
+        gpu = gpus[3]
         tf.config.experimental.set_device_policy('warn_on_error')
         tf.config.experimental.set_memory_growth(gpu, True)
         
