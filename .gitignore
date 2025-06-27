@@ -9,8 +9,9 @@ tmp
 !.env*.model
 !docker/.env
 !old/.env.minio
-ComputerVision/wound-segmentation/data/Foot Ulcer Segmentation Challenge/
-ComputerVision/wound-segmentation/data/Foot Ulcer Segmentation Challenge/
+ComputerVision/wound-segmentation/data/Foot_Ulcer_Segmentation_Challenge_256/
+ComputerVision/wound-segmentation/data/Foot_Ulcer_Segmentation_Challenge_256/
+ComputerVision/wound-segmentation/data/Foot_Ulcer_Segmentation_Challenge_384/
 ComputerVision/wound-segmentation/data/Medetec_foot_ulcer_224/
 ComputerVision/wound-segmentation/training_history/
 # Ignorar virtualenv e arquivos grandes
