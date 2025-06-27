@@ -36,3 +36,47 @@ class TextoRecebidoViewSet(viewsets.ModelViewSet):
     )
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
+    
+@extend_schema(
+    description="API para registrar informações da tela de atenção imediata de feridas.",
+    request=AtencaoImediataRegistroSerializer,
+    responses={200: AtencaoImediataRegistroSerializer, 400: {"description": "Erro de validação"}},
+    tags=['Atenção Imediata - Ferida'] # Agrupa na documentação
+)
+class AtencaoImediataRegistroViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para listar, criar, recuperar, atualizar e deletar registros de Atenção Imediata.
+    """
+    queryset = AtencaoImediataRegistro.objects.all()
+    serializer_class = AtencaoImediataRegistroSerializer
+
+    @extend_schema(
+        summary="Lista todos os registros de atenção imediata",
+        description="Retorna uma lista de todos os registros de atenção imediata."
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+    
+    @extend_schema(
+        summary="Cria um novo registro de atenção imediata",
+        examples=[
+            OpenApiExample(
+                'Exemplo de Criação de Registro',
+                value={
+                    'patient_id': 1,
+                    'wound_id': 101,
+                    'aumento_tamanho': True,
+                    'vermelha_inchada': False,
+                    'saindo_pus_secrecao': True,
+                    'doendo_mais': True,
+                    'pele_quente': False,
+                    'com_febre_mal': True,
+                    'tempo_mudanca': '2-3_DIAS'
+                },
+                request_only=True,
+                media_type='application/json'
+            )
+        ]
+    )
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
