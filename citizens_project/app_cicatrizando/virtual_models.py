@@ -281,8 +281,8 @@ class VirtualPatient(VirtualModel):
     weight                = VirtualField(source=("row_weight", "value_as_number"), null=True)
     height                = VirtualField(source=("row_height", "value_as_number"), null=True)
     accept_tcl            = VirtualField(source=("row_nonclinicalinfos", "accept_tcl"))
-    smoke_frequency       = VirtualField(source=("row_smoke_frequency", "value_as_concept_id"), choicemap=map_smoke_frequency)
-    drink_frequency       = VirtualField(source=("row_drink_frequency", "value_as_concept_id"), choicemap=map_drink_frequency)
+    smoke_frequency       = VirtualField(source=("row_smoke_frequency", "value_as_concept_id"), choicemap=map_smoke_frequency, null=True)
+    drink_frequency       = VirtualField(source=("row_drink_frequency", "value_as_concept_id"), choicemap=map_drink_frequency, null=True)
     user_id               = VirtualField(source=("row_person", "person_user_id"), null=True)
     updated_at            = VirtualField(source=("row_height", "measurement_date"))
     main_row = "row_person"
@@ -298,7 +298,7 @@ class VirtualPatient(VirtualModel):
         person_user_id                = FieldBind("user_id")
     )
     row_nonclinicalinfos = TableBindings.PatientNonClinicalInfos(
-        person_id    = FieldBind("patient_id"),
+        person_id    = FieldBind("patient_id", key=True),
         name         = FieldBind("name"),
         phone_number = FieldBind("phone_number"),
         accept_tcl   = FieldBind("accept_tcl"),
@@ -454,8 +454,8 @@ class VirtualTrackingRecords(VirtualModel):
     wound_edges              = VirtualField(source=("row_wound_edges", "value_as_concept_id"),   choicemap=map_wound_edges, null=True)
     skin_around              = VirtualField(source=("row_skin_around", "value_as_concept_id"),   choicemap=map_skin_around, null=True)
     had_a_fever              = VirtualField(source=("row_had_a_fever", "value_as_concept_id"),   choicemap=map_had_a_fever)
-    pain_level               = VirtualField(source=("row_pain_level", "value_as_concept_id"), null=True)
-    dressing_changes_per_day = VirtualField(source=("row_dressing_changes_per_day", "value_as_concept_id"), null=True)
+    pain_level               = VirtualField(source=("row_pain_level", "value_as_number"), null=True)
+    dressing_changes_per_day = VirtualField(source=("row_dressing_changes_per_day", "value_as_number"), null=True)
     image_id                 = VirtualField(source=("row_image", "image_id"), null=True)
     guidelines_to_patient    = VirtualField(source=("row_guidelines_note", "note_text"))
     extra_notes              = VirtualField(source=("row_extra_notes", "note_text"))
@@ -488,8 +488,8 @@ class VirtualTrackingRecords(VirtualModel):
     row_wound_edges    = _tr_measurement_value_cid("wound_edges", CID_WOUND_EDGE_DESCRIPTION)
     row_skin_around    = _tr_measurement_value_cid("skin_around", CID_WOUND_SKIN_AROUND)
     row_had_a_fever    = _tr_measurement_value_cid("had_a_fever", CID_FEVER)
-    row_pain_level     = _tr_measurement_value_cid("pain_level", CID_PAIN_SEVERITY)
-    row_dressing_changes_per_day= _tr_measurement_value_cid("dressing_changes_per_day", CID_WOUND_CARE_DRESSING_CHANGE)
+    row_pain_level     = _tr_measurement_value_number("pain_level", CID_PAIN_SEVERITY, CID_NULL)
+    row_dressing_changes_per_day= _tr_measurement_value_number("dressing_changes_per_day", CID_WOUND_CARE_DRESSING_CHANGE, CID_NULL)
     
     row_image = TableBindings.TrackingRecordImage(
         image_id           = FieldBind("image_id"),
