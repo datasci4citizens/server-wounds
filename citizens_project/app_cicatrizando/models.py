@@ -42,3 +42,15 @@ class TrackingRecordImage(models.Model):
     tracking_record_image_id = models.AutoField(primary_key=True)
     image = models.ForeignKey(Image, null=True, on_delete=models.DO_NOTHING)
     tracking_record = models.ForeignKey(ProcedureOccurrence, on_delete=models.DO_NOTHING) 
+
+class TextoRecebido(models.Model):
+    conteudo = models.TextField(max_length=2000)
+    data_recebimento = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Texto de {self.data_recebimento.strftime('%Y-%m-%d %H:%M')}"
+
+    class Meta:
+        verbose_name = "Texto Recebido"
+        verbose_name_plural = "Textos Recebidos"
+        ordering = ['-data_recebimento']
