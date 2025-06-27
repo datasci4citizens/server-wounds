@@ -18,10 +18,10 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
 from django.db import transaction
 
-from .wound_pixel_counter import count_pixels_simple
+#from .wound_pixel_counter import count_pixels_simple
 from .predict_single_image import predict_image_class, predict_multi_label
 from PIL import Image as PILImage
-from .identifica_ref import get_reference_area
+#from .identifica_ref import get_reference_area
 
 from rest_framework.exceptions import APIException
 
