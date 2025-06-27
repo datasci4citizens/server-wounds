@@ -1,6 +1,6 @@
 from rest_framework import viewsets
-from .models import TextoRecebido
-from .serializers import TextoRecebidoSerializer
+from .models import TextoRecebido, AtencaoImediataRegistro
+from .serializers import TextoRecebidoSerializer, AtencaoImediataRegistroSerializer
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 
 @extend_schema(
