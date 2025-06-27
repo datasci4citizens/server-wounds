@@ -305,7 +305,9 @@ class VirtualTrackingRecordsViewSet(viewsets.ModelViewSet):
         serializer = VirtualTrackingRecordsSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data_to_create = serializer.validated_data
-
+        wound = VirtualWound.get(wound_id=int(data_to_create["wound_id"]))
+        data_to_create["specialist_id"] = wound["specialist_id"]
+        data_to_create["patient_id"] = wound["patient_id"]
         self.has_permission(request, data_to_create)
 
         data_to_create["track_date"] = datetime.date.today()
@@ -324,12 +326,13 @@ class VirtualTrackingRecordsViewSet(viewsets.ModelViewSet):
 
 
     def list(self, request: Request, *args, **kwargs):
-        instances = list(self.queryset.all())
+        instances = self.queryset.all()
         auth = UserAuth(request.user)
         specialist_id = self.request.query_params.get('specialist_id')
         patient_id = self.request.query_params.get('patient_id')
-        if specialist_id in [None, ""] and patient_id in [None, ""]:
-            return Response({"detail": "Eh nescessario o query param specialist_id ou patient_id"}, status=status.HTTP_400_BAD_REQUEST)
+        wound_id = self.request.query_params.get('wound_id')
+        if specialist_id in [None, ""] and patient_id in [None, ""] and wound_id in [None, ""]:
+            return Response({"detail": "Eh nescessario o query param specialist_id, patient_id ou wound_id"}, status=status.HTTP_400_BAD_REQUEST)
         
         if specialist_id not in [None, ""]:
             auth.if_specialist_id_is(specialist_id)
@@ -337,6 +340,9 @@ class VirtualTrackingRecordsViewSet(viewsets.ModelViewSet):
         if patient_id not in [None, ""]:
             auth.if_patient_id_is(patient_id)
             instances = instances.filter(patient_id=int(patient_id))
+        if wound_id not in [None, ""]:
+            instances = instances.filter(wound_id=int(wound_id))
+        instances = list(instances)
         for instance in instances:
             if instance.get("image_url", None) != None:
                 instance["image_url"] = request.build_absolute_uri("../" +"media/"+ instance.get("image_url"))
