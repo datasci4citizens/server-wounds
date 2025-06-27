@@ -43,12 +43,22 @@ class TrackingRecordImage(models.Model):
     image = models.ForeignKey(Image, null=True, on_delete=models.DO_NOTHING)
     tracking_record = models.ForeignKey(ProcedureOccurrence, on_delete=models.DO_NOTHING) 
 
+from django.db import models
+# from .virtual_models import VirtualPatient # You might import this for type hinting, but not for ForeignKey
+
 class TextoRecebido(models.Model):
+    # Foreign key to associate with a patient's ID
+    # We use IntegerField because patient_id from VirtualPatient looks like an integer.
+    # If it's a string, use CharField.
+    patient_id = models.IntegerField(
+        help_text="ID do paciente associado a este texto."
+    )
+    
     conteudo = models.TextField(max_length=2000)
     data_recebimento = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Texto de {self.data_recebimento.strftime('%Y-%m-%d %H:%M')}"
+        return f"Texto de {self.data_recebimento.strftime('%Y-%m-%d %H:%M')} (Paciente: {self.patient_id})"
 
     class Meta:
         verbose_name = "Texto Recebido"
