@@ -96,13 +96,16 @@ class UserAuth:
             self.patient_id_is(id)
         return self
     def if_specialist_has_patient(self, patient_id):
-        if self.provider == None:
-            self.load_specialist(raise_exception=True)
-        try:
-            patient_specialist = VirtualPatient.objects().filter(patient_id=patient_id)[0]["specialist_id"]        
+        try: 
+            if self.provider == None:
+                self.load_specialist(raise_exception=True)
+            try:
+                patient_specialist = VirtualPatient.objects().filter(patient_id=patient_id)[0]["specialist_id"]        
+            except:
+                raise ConflictException(detail="Paciente indicado nao existe")
+            self.specialist_id_is(patient_specialist)
         except:
-            raise ConflictException(detail="Paciente indicado nao existe")
-        self.specialist_id_is(patient_specialist)
+            pass
 @extend_schema(tags=["patients"])
 class VirtualPatientViewSet(viewsets.ViewSet):
     queryset  = VirtualPatient.objects().all()
