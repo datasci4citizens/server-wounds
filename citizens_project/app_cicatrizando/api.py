@@ -134,7 +134,8 @@ class GoogleLoginView(viewsets.ViewSet):
             provider_data = {
                 'provider_id': provider["specialist_id"],
                 'provider_name': provider["specialist_name"],
-                'specialty': provider["speciality"]
+                'specialty': provider["speciality"], 
+                **provider
             }
         except Provider.DoesNotExist:
             pass
