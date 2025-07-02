@@ -10,3 +10,5 @@ tmp
 !docker/.env
 !old/.env.minio
 citizens_project/app_cicatrizando/data/CONCEPT.csv
+
+
