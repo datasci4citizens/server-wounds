@@ -4,7 +4,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.conf import settings # Importa as configurações do Django
 
-# Assumindo que seu modelo Concept está aqui:
+# Assumindo que seu modelo Concept está aqui:#
 from app_cicatrizando.omop.omop_models import Concept
 
 class Command(BaseCommand):

@@ -34,7 +34,7 @@ class Command(BaseCommand):
             # Add other necessary vocabularies based on your full CONCEPT.csv if needed
         ]
 
-        # 3. Core Metadata Concepts (that Domain, Vocabulary, ConceptClass FKs point to)
+        # 3. Core Metadata Concepts (that Do#main, Vocabulary, ConceptClass FKs point to)
         # (concept_id, concept_name, domain_id, vocabulary_id, concept_class_id, standard_concept, concept_code)
         # Note: The domain_id, vocabulary_id, concept_class_id here must exist AFTER their respective tables are populated.
         # But for 'Metadata' concepts, their own FKs often point to 'Metadata', 'OMOP Domain', 'Domain' etc.
