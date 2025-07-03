@@ -154,8 +154,16 @@ class GoogleLoginView(viewsets.ViewSet):
         
         # Determine role and profile completion status
         is_provider = provider_id is not None
-        role = "specialist" if is_provider else "user"
-        profile_completion_required = created or not is_provider
+        is_patient = patient_data is not None
+        
+        if is_provider:
+            role = "specialist"
+        elif is_patient:
+            role = "patient"
+        else:
+            role = "user"
+            
+        profile_completion_required = created or (not is_provider and not is_patient)
 
         # Generate JWT token
         response = {
@@ -168,17 +176,4 @@ class GoogleLoginView(viewsets.ViewSet):
             "profile_completion_required": profile_completion_required
         }
 
-        return Response(response, status=200)
-
-    @action(detail=True, url_path="dummy", methods=["POST"])
-    def dummy(self, request, pk , *args, **kwargs):
-        logger.debug("Dummy login")
-        user = User.objects.get(id=pk)
-        token = RefreshToken.for_user(user)
-        
-        # Generate JWT token
-        response = {
-            "access": str(token.access_token),
-            "refresh": str(token),
-        }
         return Response(response, status=200)
