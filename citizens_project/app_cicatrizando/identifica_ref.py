@@ -1,62 +1,113 @@
 import cv2
 import numpy as np
 from PIL import Image
-import os
+import io
 
-def get_reference_area(image_input):
+def calculate_reference_area(pil_image):
     """
-    Accepts either a file path or a PIL.Image.Image and returns the area of the detected reference pattern in pixels.
-    Tries HoughCircles first, then fallback to contours.
+    Calculate the area (in pixels) of the reference pattern in a PIL Image.
+    
+    Args:
+        pil_image: PIL.Image.Image - Input image containing reference pattern
+    
+    Returns:
+        float: Area of the detected reference pattern in pixels, or None if not detected
     """
-    # Handle different input types
-    if isinstance(image_input, str):
-        img = cv2.imread(image_input)
-        if img is None:
-            raise ValueError(f"Could not load image from {image_input}")
-    elif isinstance(image_input, Image.Image):
-        img = cv2.cvtColor(np.array(image_input.convert("RGB")), cv2.COLOR_RGB2BGR)
-    else:
-        raise TypeError("image_input must be a file path (str) or PIL.Image.Image")
+    # Convert PIL Image to OpenCV format
+    cv_image = pil_to_cv2(pil_image)
+    
+    # Detect the reference pattern
+    result = detect_reference_circle_cv2(cv_image)
+    
+    if result:
+        return result['area']
+    return None
 
-    original = img.copy()
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    blurred = cv2.GaussianBlur(gray, (9, 9), 2)
+def pil_to_cv2(pil_image):
+    """Convert PIL Image to OpenCV format"""
+    # Convert PIL Image to bytes
+    img_byte_arr = io.BytesIO()
+    pil_image.save(img_byte_arr, format='PNG')
+    img_byte_arr = img_byte_arr.getvalue()
+    
+    # Convert bytes to numpy array and then to OpenCV format
+    np_arr = np.frombuffer(img_byte_arr, np.uint8)
+    return cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
-    # Try HoughCircles first
-    circles = cv2.HoughCircles(
-        blurred,
-        cv2.HOUGH_GRADIENT,
-        dp=1,
-        minDist=100,
-        param1=50,
-        param2=30,
-        minRadius=30,
-        maxRadius=500
-    )
+def detect_reference_circle_cv2(cv_image):
+    """Detect reference circle in OpenCV format image"""
+    # Preprocessing
+    gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
+    processed = cv2.bilateralFilter(gray, 9, 75, 75)
+    
+    # Try contour detection first
+    result = detect_by_contours(processed)
+    if result:
+        return result
+    
+    # Fallback to Hough Circles if contour fails
+    return detect_by_hough(processed)
 
+def detect_by_contours(processed_img):
+    """Contour-based detection with area calculation"""
+    # Adaptive thresholding
+    thresh = cv2.adaptiveThreshold(processed_img, 255, 
+                                  cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                  cv2.THRESH_BINARY_INV, 11, 2)
+    
+    # Find contours
+    contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, 
+                                  cv2.CHAIN_APPROX_SIMPLE)
+    
+    best_circle = None
+    best_score = 0
+    
+    for cnt in contours:
+        area = cv2.contourArea(cnt)
+        if area < 500:  # Minimum area threshold
+            continue
+            
+        perimeter = cv2.arcLength(cnt, True)
+        circularity = 4 * np.pi * area / (perimeter**2) if perimeter > 0 else 0
+        
+        (x,y), radius = cv2.minEnclosingCircle(cnt)
+        compactness = area / (np.pi * radius**2) if radius > 0 else 0
+        
+        # Score combines multiple factors
+        score = (circularity * 0.6 + compactness * 0.4) * min(1, radius/50)
+        
+        if score > best_score and circularity > 0.7:
+            best_score = score
+            best_circle = {
+                'center': (int(x), int(y)),
+                'radius': int(radius),
+                'area': np.pi * radius**2,  # Area in pixels
+                'circularity': circularity,
+                'score': score
+            }
+    
+    return best_circle
+
+def detect_by_hough(processed_img):
+    """Hough Circle detection with area calculation"""
+    # Edge detection
+    edges = cv2.Canny(processed_img, 50, 150)
+    
+    # Hough Circle detection
+    circles = cv2.HoughCircles(edges, cv2.HOUGH_GRADIENT, dp=1.2, 
+                              minDist=100,
+                              param1=50, param2=30,
+                              minRadius=20, maxRadius=300)
+    
     if circles is not None:
-        circles = np.round(circles[0, :]).astype("int")
-        best_circle = max(circles, key=lambda x: x[2])  # largest radius
-        x, y, radius = best_circle
-        return np.pi * (radius ** 2)
+        circles = np.uint16(np.around(circles[0]))
+        # Select circle with strongest response
+        x, y, r = circles[0]
+        return {
+            'center': (x, y),
+            'radius': r,
+            'area': np.pi * r**2,  # Area in pixels
+            'score': 0.8  # Default confidence
+        }
+    return None
 
-    # Fallback: Try contour detection
-    _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    best_area = 0
-    for contour in contours:
-        area = cv2.contourArea(contour)
-        if area > 1000:
-            perimeter = cv2.arcLength(contour, True)
-            if perimeter > 0:
-                circularity = 4 * np.pi * area / (perimeter ** 2)
-                if 0.6 < circularity < 1.4 and area > best_area:
-                    best_area = area
-
-    return best_area if best_area > 0 else None
-
-#if __name__ == "__main__":
-#    image = Image.open("ferida.png")
-#    area = get_reference_area(image)
-#    print("Detected area in pixels:", area)

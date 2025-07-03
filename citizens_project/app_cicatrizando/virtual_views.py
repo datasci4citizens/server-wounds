@@ -21,7 +21,7 @@ from django.db import transaction
 #from .wound_pixel_counter import count_pixels_simple
 from .predict_single_image import predict_image_class, predict_multi_label
 from PIL import Image as PILImage
-#from .identifica_ref import get_reference_area
+from .identifica_ref import calculate_reference_area
 
 from rest_framework.exceptions import APIException
 
@@ -422,11 +422,14 @@ class TrackingRecordsImageViewSet(viewsets.ViewSet):
 
             tissue_prediction = predict_image_class(pil_image)
             multihead_predictions = predict_multi_label(pil_image)
-            #wound_pixels = count_pixels_simple(model_path="wound_segmentation_model2.hdf5",image_path=pil_image,threshold=0.5)
-            #reference_pixels = get_reference_area(pil_image)
-            #reference_diameter = 7
-            #reference_size = 3,14*(reference_diameter/2)^2
-            #wound_size = wound_pixels*reference_size/reference_pixels
+            reference_pixels = calculate_reference_area(pil_image)
+            if reference_pixels:
+                #wound_pixels = count_pixels_simple(model_path="wound_segmentation_model2.hdf5",image_path=pil_image,threshold=0.5)
+                #reference_diameter = 7
+                #reference_size = 3,14*(reference_diameter/2)^2
+                #wound_size = wound_pixels*reference_size/reference_pixels
+            else:
+                wound_size = "Erro no calculo da área"
 
         except TrackingRecordImage.DoesNotExist:
             return Response({"error": "Tracking record not found"}, status=status.HTTP_404_NOT_FOUND)
@@ -466,11 +469,14 @@ class WoundImageViewSet(viewsets.ViewSet):
 
             tissue_prediction = predict_image_class(pil_image)
             multihead_predictions = predict_multi_label(pil_image)
-            #wound_pixels = count_pixels_simple(model_path="wound_segmentation_model2.hdf5",image_path=pil_image,threshold=0.5)
-            #reference_pixels = get_reference_area(pil_image)
-            #reference_diameter = 7
-            #reference_size = 3,14*(reference_diameter/2)^2
-            #wound_size = wound_pixels*reference_size/reference_pixels
+            reference_pixels = calculate_reference_area(pil_image)
+            if reference_pixels:
+                #wound_pixels = count_pixels_simple(model_path="wound_segmentation_model2.hdf5",image_path=pil_image,threshold=0.5)
+                #reference_diameter = 7
+                #reference_size = 3,14*(reference_diameter/2)^2
+                #wound_size = wound_pixels*reference_size/reference_pixels
+            else:
+                wound_size = "Erro no calculo da área"
 
         except WoundImage.DoesNotExist:
             return Response({"error": "Tracking record not found"}, status=status.HTTP_404_NOT_FOUND)
