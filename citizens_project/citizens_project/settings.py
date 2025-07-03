@@ -34,7 +34,12 @@ DISABLE_AUTH = "true" == os.environ.get("SERVER_WOUNDS_DISABLE_AUTH", "false")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['server.wounds.staging.paas.ic.unicamp.br', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = [
+    'server.wounds.paas.ic.unicamp.br',
+    'server.wounds.staging.paas.ic.unicamp.br',
+    'localhost',
+    '127.0.0.1'
+]
 
 
 # Application definition
