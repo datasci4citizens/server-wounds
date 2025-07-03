@@ -4,7 +4,6 @@ from django.conf.urls.static import static
 
 from app_cicatrizando.api import GoogleLoginView, MeView, UserPatientBindView
 from . import virtual_urls
-from .omop.omop_views import router as omop_router
 
 # from django_scalar.views import scalar_viewer
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
@@ -22,7 +21,6 @@ router.register(r'auth/patient-bind', UserPatientBindView, basename='patient-bin
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('omop/', include(omop_router.urls)),
     path('', include(virtual_urls.router.urls)),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("docs/redoc", SpectacularRedocView.as_view(), name="redoc"),
