@@ -241,12 +241,12 @@ class ImageSerializer(serializers.ModelSerializer):
         return value
     class Meta:
         model = Image
-        fields = ['image']
+        fields = ['image', 'image_id']
 
 class VirtualTrackingRecordsSerializer(serializers.Serializer):
     tracking_id              = serializers.IntegerField(read_only=True)
-    patient_id               = serializers.IntegerField(required=True)
-    specialist_id            = serializers.IntegerField(required=True)
+    patient_id               = serializers.IntegerField(read_only=True)
+    specialist_id            = serializers.IntegerField(read_only=True)
     wound_id                 = serializers.IntegerField(required=True)
     track_date               = serializers.DateField(read_only=True)
     length                   = serializers.FloatField(min_value=0.0, allow_null=True, required=False)
@@ -259,9 +259,10 @@ class VirtualTrackingRecordsSerializer(serializers.Serializer):
     had_a_fever              = serializers.BooleanField(required=False)
     pain_level               = serializers.IntegerField(min_value=0, max_value=10, allow_null=True, required=False)
     dressing_changes_per_day = serializers.IntegerField(min_value=0, allow_null=True, required=False) 
-    guidelines_to_patient    = serializers.CharField(max_length=1000, allow_null=True, required=False)
-    extra_notes              = serializers.CharField(max_length=1000, allow_null=True, required=False)
+    guidelines_to_patient    = serializers.CharField(max_length=1000, allow_null=True, required=False, allow_blank=True)
+    extra_notes              = serializers.CharField(max_length=1000, allow_null=True, required=False, allow_blank=True)
     image_url                = serializers.URLField(read_only=True)
+    image_id                 = serializers.IntegerField()
     
     def _validate_concept_id_existence(self, value, field_name):
         if value:
