@@ -1,3 +1,8 @@
+#esse comando nao esta funcionando devido a problema de circularidade entre as tabelas
+#Domain, Vocabulary, ConceptClass e Concept.
+#olhar o comentario no arquivo add_comorbidity_icd10.py
+
+'''
 import pandas as pd
 import os
 from django.core.management.base import BaseCommand, CommandError
@@ -149,4 +154,4 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.ERROR(f"Error creating Domain '{domain_name}': domain_concept_id {domain_concept_id} not found in Concept table. Check Step 3."))
                 continue
 
- 
+ '''

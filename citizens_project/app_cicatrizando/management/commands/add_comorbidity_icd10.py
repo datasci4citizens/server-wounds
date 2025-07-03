@@ -1,3 +1,12 @@
+#esse arquivo contem a criacao de comando para adicionar todas as comorbidades do ICD10 no banco de dados
+#ele nao esta funcionando pois no padrao OMOP para inserir um conceito na tabela de conceitos ele 
+#ja precisa ter seu dominio registrado na tabela de dominios mas para inserir na tabela de dominio 
+#eh necessario que o conceito ja exista na tabela de conceitos
+#essas circularidade nao eh exclusiva desssas duas tabelas, no arquivo populate_metadata.py contem o comnando
+#que popula todas as outras tabelas necessarias para que um conceito exista. Entretanto nao conseguimos resolver 
+#esse problema de circularidade
+
+'''
 import pandas as pd
 import os
 from django.core.management.base import BaseCommand, CommandError
@@ -133,3 +142,4 @@ class Command(BaseCommand):
             raise CommandError(f"Erro de parsing no arquivo CSV: {e}. Verifique a formatação do CSV ou o delimitador. Pode haver um problema persistente na estrutura de alguma linha.")
         except Exception as e:
             raise CommandError(f"Ocorreu um erro inesperado: {e}")
+'''
