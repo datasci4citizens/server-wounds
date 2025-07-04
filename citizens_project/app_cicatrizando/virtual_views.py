@@ -31,12 +31,56 @@ class ImageViewSet(mixins.CreateModelMixin,
                    mixins.RetrieveModelMixin,
                    mixins.ListModelMixin,
                    viewsets.GenericViewSet):
-    # Define o queryset para todas as imagens.
     queryset = Image.objects.all()
-    # Define o serializer a ser usado para a serialização/deserialização de imagens.
     serializer_class = ImageSerializer
-    # Define os parsers de requisição, permitindo o upload de arquivos (multipart/form-data).
     parser_classes = [MultiPartParser]
+
+    def create(self, request, *args, **kwargs):
+        # Initialize the serializer with the request data
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Save the image
+        image_instance = serializer.save()
+        
+        # Get the uploaded image file
+        uploaded_image = request.FILES.get('image')
+        if uploaded_image is None:
+            return Response({"error": "No image file provided"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Open the image using PIL and convert to RGB
+            pil_image = PILImage.open(uploaded_image).convert("RGB")
+
+            # Perform predictions
+            tissue_prediction = predict_image_class(pil_image)
+            multihead_predictions = predict_multi_label(pil_image)
+            reference_pixels = calculate_reference_area(pil_image)
+            
+            if reference_pixels:
+                wound_pixels = count_wound_pixels_simple(pil_image, "wound_segmentation_model.onnx")
+                reference_diameter = 7
+                reference_size = 3.14 * (reference_diameter / 2) ** 2  # Fixed the exponentiation syntax
+                wound_size = wound_pixels * reference_size / reference_pixels
+            else:
+                wound_size = "Erro no calculo da área"
+
+            # Prepare the response data
+            response_data = {
+                "image_id": image_instance.id,
+                "image_url": request.build_absolute_uri(image_instance.image.url),
+                "predictions": {
+                    "tissue_type": tissue_prediction,
+                    "W_I_Fi": multihead_predictions,
+                    "wound_size_cm2": wound_size
+                }
+            }
+
+            return Response(response_data, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            # Handle any errors during processing
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @extend_schema(tags=["specialists"])
 class VirtualSpecialistViewSet(mixins.CreateModelMixin,
