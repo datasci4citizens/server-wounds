@@ -23,6 +23,9 @@ from .django_virtualmodels.models import (
 from .django_virtualmodels.serializers import VirtualModelSerializer
 from rest_framework.routers import DefaultRouter
 
+
+# mapeamentos de conceitos para o OMOP CDM com choicemap
+
 map_drink_frequency = ChoiceMap([
     ("0", omop_ids.CID_DRINK_NEVER),
     ("1", omop_ids.CID_DRINK_MONTHLY_OR_LESS),
@@ -200,6 +203,9 @@ map_wound_type = ChoiceMap([
 ])
 
 class TableBindings:
+    # This class defines bindings for various database tables.
+    # Each inner class links a Python object to a specific database table,
+    # facilitating interaction with the database (e.g., CRUD operations).
     class Observation(TableBinding):
         table = Observation
     class Measurement(TableBinding):
@@ -226,6 +232,9 @@ class TableBindings:
         table = WoundImage
 
 
+# ---
+# This list defines the explicit order in which database tables should be created.
+# The order is crucial to respect foreign key dependencies and prevent creation errors.
 TableCreationOrder = [
     Provider,
     Person,
@@ -236,7 +245,6 @@ TableCreationOrder = [
     Note,
     FactRelationship
 ]
-
 
 
 map_gender = ChoiceMap([
@@ -270,26 +278,40 @@ map_had_a_fever = ChoiceMap([
 ])
 
 class VirtualPatient(VirtualModel):
+    # Define os campos virtuais do paciente e seus mapeamentos para as tabelas OMOP.
+    # 'patient_id' é a chave primária, vindo da tabela 'Person'.
     patient_id = VirtualField(source=("row_person","person_id"), key=True)
+    # 'name' e 'bind_code' vêm de informações não-clínicas.
     name                  = VirtualField(source=("row_nonclinicalinfos", "name"))
     bind_code             = VirtualField(source=("row_nonclinicalinfos", "bind_code"))
+    # 'gender' e 'birthday' são mapeados para a tabela 'Person'. 'gender' usa um choicemap.
     gender                = VirtualField(source=("row_person", "gender_concept_id"), choicemap=map_gender)
     birthday              = VirtualField(source=("row_person", "birth_datetime"))
+    # 'specialist_id' e 'hospital_registration' são campos da tabela 'Person', com 'hospital_registration' sendo opcional.
     specialist_id         = VirtualField(source=("row_person", "provider_id"))
     hospital_registration = VirtualField(source=("row_person", "person_care_site_registration"), null=True)
+    # 'phone_number' é um campo opcional de informações não-clínicas.
     phone_number          = VirtualField(source=("row_nonclinicalinfos", "phone_number"), null=True)
+    # 'weight' e 'height' são medidas, permitindo valores nulos.
     weight                = VirtualField(source=("row_weight", "value_as_number"), null=True)
     height                = VirtualField(source=("row_height", "value_as_number"), null=True)
+    # 'accept_tcl' (Termos e Condições) é um campo de informações não-clínicas.
     accept_tcl            = VirtualField(source=("row_nonclinicalinfos", "accept_tcl"))
+    # 'smoke_frequency' e 'drink_frequency' são observações, usando choicemaps e permitindo nulos.
     smoke_frequency       = VirtualField(source=("row_smoke_frequency", "value_as_concept_id"), choicemap=map_smoke_frequency, null=True)
     drink_frequency       = VirtualField(source=("row_drink_frequency", "value_as_concept_id"), choicemap=map_drink_frequency, null=True)
+    # 'user_id' é uma ligação opcional ao usuário do sistema.
     user_id               = VirtualField(source=("row_person", "person_user_id"), null=True)
+    # 'updated_at' é mapeado para a data da medição de altura, servindo como uma data de última atualização.
     updated_at            = VirtualField(source=("row_height", "measurement_date"))
+    # Define 'row_person' como a tabela principal para o VirtualPatient.
     main_row = "row_person"
+
+    # Mapeamento detalhado dos campos virtuais para as colunas da tabela OMOP 'Person'.
     row_person = TableBindings.Person(
         person_id                     = FieldBind("patient_id", key = True),
         birth_datetime                = FieldBind("birthday"),
-        year_of_birth                 = FieldBind(CID_NULL, const=True),
+        year_of_birth                 = FieldBind(CID_NULL, const=True), # Campos constantes que não são mapeados dinamicamente.
         race_concept_id               = FieldBind(CID_NULL, const=True),
         ethnicity_concept_id          = FieldBind(CID_NULL, const=True),
         gender_concept_id             = FieldBind("gender"),
@@ -297,6 +319,7 @@ class VirtualPatient(VirtualModel):
         person_care_site_registration = FieldBind("hospital_registration"),
         person_user_id                = FieldBind("user_id")
     )
+    # Mapeamento para a tabela de informações não-clínicas do paciente.
     row_nonclinicalinfos = TableBindings.PatientNonClinicalInfos(
         person_id    = FieldBind("patient_id", key=True),
         name         = FieldBind("name"),
@@ -305,6 +328,7 @@ class VirtualPatient(VirtualModel):
         bind_code    = FieldBind("bind_code")
     )
     
+    # Mapeamento para a tabela de medidas (Measurement) para altura. Inclui conceitos constantes para tipo e unidade.
     row_height = TableBindings.Measurement( 
         person_id              = FieldBind("patient_id", key = True),
         value_as_number        = FieldBind("height"),
@@ -314,6 +338,7 @@ class VirtualPatient(VirtualModel):
         measurement_type_concept_id = FieldBind(CID_NULL, const=True),
     )
     
+    # Mapeamento para a tabela de medidas (Measurement) para peso.
     row_weight = TableBindings.Measurement(
         person_id              = FieldBind("patient_id", key = True),
         value_as_number        = FieldBind("weight"),
@@ -323,6 +348,7 @@ class VirtualPatient(VirtualModel):
         measurement_type_concept_id = FieldBind(CID_NULL, const=True),
     )
 
+    # Mapeamento para a tabela de observações (Observation) para frequência de fumo.
     row_smoke_frequency = TableBindings.Observation(
         person_id                   = FieldBind("patient_id", key = True),
         observation_concept_id      = FieldBind(CID_SMOKE_FREQUENCY, const=True, key = True),
@@ -331,6 +357,7 @@ class VirtualPatient(VirtualModel):
         observation_type_concept_id = FieldBind(CID_NULL, const=True),
     )
 
+    # Mapeamento para a tabela de observações (Observation) para frequência de bebida.
     row_drink_frequency = TableBindings.Observation(
         person_id                   = FieldBind("patient_id", key = True),
         observation_concept_id      = FieldBind(CID_DRINK_FREQUENCY, const=True, key = True),
@@ -338,23 +365,34 @@ class VirtualPatient(VirtualModel):
         observation_date            = FieldBind("updated_at"),
         observation_type_concept_id = FieldBind(CID_NULL, const=True),
     )
+    # Método de classe para obter as comorbidades de um paciente específico.
     @classmethod
     def get_comorbidities(cls, patient_id : int):
+        # Filtra as observações relacionadas ao paciente e ao conceito de comorbidade.
         queryset = Observation.objects.all().filter(person_id=patient_id, observation_concept_id=omop_ids.CID_COMORBIDITY)
         comorbidities = []
+        # Converte os IDs de conceito OMOP de comorbidades para seus valores virtuais legíveis.
         for c in queryset:
             comorbidities.append(map_comorbidities.db_to_virtual(c.value_as_concept_id))
             
         return comorbidities
+
 class VirtualSpecialist(VirtualModel):
+    # Define os campos virtuais para um especialista e seus mapeamentos.
+    # 'specialist_id' é a chave primária, mapeada para 'provider_id'.
     specialist_id   = VirtualField(source=("row_provider", "provider_id"), key=True)
+    # 'specialist_name' e 'user_id' são campos do provedor.
     specialist_name = VirtualField(source=("row_provider", "provider_name"))
     user_id         = VirtualField(source=("row_provider", "provider_user_id")), 
+    # 'birthday' e 'speciality' são campos opcionais do provedor.
     birthday        = VirtualField(source=("row_provider", "provider_birthday"), null=True)
     speciality      = VirtualField(source=("row_provider", "specialty_string"), null=True)
+    # 'city' e 'state' são campos opcionais da localização.
     city            = VirtualField(source=("row_location", "city"), null=True)
     state           = VirtualField(source=("row_location", "state"), null=True)
+    # Define 'row_provider' como a tabela principal para o VirtualSpecialist.
     main_row = "row_provider"
+    # Mapeamento detalhado para a tabela OMOP 'Provider'.
     row_provider = TableBindings.Provider(
         provider_id       = FieldBind("specialist_id", key = True),
         provider_name     = FieldBind("specialist_name"),
@@ -363,6 +401,7 @@ class VirtualSpecialist(VirtualModel):
         specialty_string  = FieldBind("speciality")
     )
 
+    # Mapeamento para a tabela OMOP 'Location', associada ao especialista.
     row_location =  TableBindings.Location(
         location_id = FieldBind("specialist_id", key=True),
         city        = FieldBind("city"),  
@@ -370,17 +409,26 @@ class VirtualSpecialist(VirtualModel):
     )
 
 class VirtualWound(VirtualModel):
+    # Define os campos virtuais para uma ferida e seus mapeamentos.
+    # 'wound_id' é a chave primária, mapeada para 'condition_occurrence_id'.
     wound_id      = VirtualField(source=("row_condition", "condition_occurrence_id"), key=True)
+    # 'region' e 'wound_type' são mapeados para conceitos OMOP usando choicemaps.
     region        = VirtualField(source=("row_region", "value_as_concept_id"), choicemap=map_wound_location)
     wound_type    = VirtualField(source=("row_condition", "condition_concept_id"), choicemap=map_wound_type) 
+    # 'start_date', 'end_date' (opcional) e 'is_active' são campos da condição.
     start_date    = VirtualField(source=("row_condition", "condition_start_date"))
     end_date      = VirtualField(source=("row_condition", "condition_end_date"), null=True)
     is_active     = VirtualField(source=("row_condition", "condition_status_concept_id"), choicemap=map_is_active)
+    # 'image_id' é opcional e mapeado para 'WoundImage'.
     image_id      = VirtualField(source=("row_image", "image_id"), null=True)
+    # 'patient_id' e 'specialist_id' são campos da condição.
     patient_id    = VirtualField(source=("row_condition", "person_id"))
     specialist_id = VirtualField(source=("row_condition", "provider_id"))
+    # 'updated_at' é mapeado para a data da observação da região.
     updated_at    = VirtualField(source=("row_region", "observation_date"))
+    # Define 'row_condition' como a tabela principal para a VirtualWound.
     main_row = "row_condition"
+    # Mapeamento detalhado para a tabela OMOP 'ConditionOccurrence'.
     row_condition = TableBindings.ConditionOccurrence(
         condition_occurrence_id = FieldBind("wound_id", key=True),
         person_id                   = FieldBind("patient_id"),
@@ -392,6 +440,7 @@ class VirtualWound(VirtualModel):
         condition_type_concept_id   = FieldBind(CID_NULL, const=True),
     )
     
+    # Mapeamento para a tabela OMOP 'Observation' para a região da ferida.
     row_region = TableBindings.Observation(
         person_id                   = FieldBind("patient_id", key=True),
         observation_concept_id      = FieldBind(CID_WOUND_LOCATION, const=True, key=True),
@@ -402,6 +451,7 @@ class VirtualWound(VirtualModel):
         observation_type_concept_id = FieldBind(CID_NULL, const=True),
     )
     
+    # Mapeamento para a tabela 'WoundImage' que associa a imagem à ferida.
     row_image = TableBindings.WoundImage(
         image_id = FieldBind("image_id"),
         wound_id = FieldBind("wound_id", key=True),
@@ -419,6 +469,7 @@ class VirtualWound(VirtualModel):
     # )
 
 
+# Função auxiliar para criar um mapeamento para a tabela OMOP 'Measurement'.
 def _tr_measurement(**kwargs):
     return TableBindings.Measurement(
         person_id = FieldBind("patient_id", key=True),
@@ -428,12 +479,14 @@ def _tr_measurement(**kwargs):
         measurement_type_concept_id = FieldBind(CID_NULL, const=True),
         **kwargs
     )
+# Função auxiliar para criar um mapeamento de Measurement onde o valor é um Concept ID.
 def _tr_measurement_value_cid(virtual: str, concept: int):
     return _tr_measurement(
         value_as_concept_id = FieldBind(virtual),   
         measurement_concept_id = FieldBind(concept, const = True, key=True)
     )    
 
+# Função auxiliar para criar um mapeamento de Measurement onde o valor é um número.
 def _tr_measurement_value_number(virtual: str, concept: int, cid_unit : int):
     return _tr_measurement(
         value_as_number = FieldBind(virtual),   
@@ -441,11 +494,17 @@ def _tr_measurement_value_number(virtual: str, concept: int, cid_unit : int):
         unit_concept_id = FieldBind(cid_unit, const = True)
     )    
 class VirtualTrackingRecords(VirtualModel):
+    # Define os campos virtuais para um registro de acompanhamento e seus mapeamentos.
+    # 'tracking_id' é a chave primária, mapeada para 'procedure_occurrence_id'.
     tracking_id              = VirtualField(source=("row_procedure", "procedure_occurrence_id"), key=True)
+    # 'patient_id' e 'specialist_id' vêm da tabela de procedimento.
     patient_id               = VirtualField(source=("row_procedure", "person_id"))
     specialist_id            = VirtualField(source=("row_procedure", "provider_id"))
+    # 'track_date' é a data do procedimento.
     track_date               = VirtualField(source=("row_procedure", "procedure_date"))
+    # 'wound_id' é obtido através de uma relação de fato.
     wound_id                 = VirtualField(source=("row_fact_relation", "fact_id_1"))
+    # Medidas como comprimento, largura, exsudato, tipo de tecido, etc., são mapeadas para observações/medidas.
     length                   = VirtualField(source=("row_length", "value_as_number"), null=True)
     width                    = VirtualField(source=("row_width", "value_as_number"), null=True)
     exudate_amount           = VirtualField(source=("row_exudate_amount", "value_as_concept_id"),choicemap=map_exudate_amount, null=True)
@@ -456,30 +515,35 @@ class VirtualTrackingRecords(VirtualModel):
     had_a_fever              = VirtualField(source=("row_had_a_fever", "value_as_concept_id"),   choicemap=map_had_a_fever)
     pain_level               = VirtualField(source=("row_pain_level", "value_as_number"), null=True)
     dressing_changes_per_day = VirtualField(source=("row_dressing_changes_per_day", "value_as_number"), null=True)
+    # 'image_id' é opcional.
     image_id                 = VirtualField(source=("row_image", "image_id"), null=True)
+    # Orientações e notas extras são mapeadas para a tabela 'Note'.
     guidelines_to_patient    = VirtualField(source=("row_guidelines_note", "note_text"))
     extra_notes              = VirtualField(source=("row_extra_notes", "note_text"))
 
+    # Define 'row_procedure' como a tabela principal para o VirtualTrackingRecords.
     main_row = "row_procedure"
     
+    # Mapeamento para a tabela OMOP 'ProcedureOccurrence' que representa o registro de acompanhamento.
     row_procedure = TableBindings.ProcedureOccurrence(
         procedure_occurrence_id = FieldBind("tracking_id", key=True),
         person_id = FieldBind("patient_id"),
         provider_id = FieldBind("specialist_id"),
-        procedure_concept_id = FieldBind(CID_WOUND_PHOTOGRAPHY, const=True),
+        procedure_concept_id = FieldBind(CID_WOUND_PHOTOGRAPHY, const=True), # Indica que é uma fotografia da ferida.
         procedure_date = FieldBind("track_date"),
         procedure_type_concept_id = FieldBind(CID_NULL, const=True),
     )
     
+    # Mapeamento para a tabela OMOP 'FactRelationship' que liga o registro de acompanhamento à ferida.
     row_fact_relation = TableBindings.FactRelationship(
-        domain_concept_id_1_id = FieldBind(CID_PK_CONDITION_OCCURRENCE, const=True),
-        fact_id_1 = FieldBind("wound_id"),
-        relationship_concept_id = FieldBind(CID_CONDITION_RELEVANT_TO, const=True, key=True),
-        domain_concept_id_2_id = FieldBind(CID_PK_PROCEDURE_OCCURRENCE, const=True),
-        fact_id_2 = FieldBind("tracking_id", key=True),
+        domain_concept_id_1_id = FieldBind(CID_PK_CONDITION_OCCURRENCE, const=True), # Domínio do fato 1 é Condição.
+        fact_id_1 = FieldBind("wound_id"), # ID do fato 1 é o ID da ferida.
+        relationship_concept_id = FieldBind(CID_CONDITION_RELEVANT_TO, const=True, key=True), # Tipo de relacionamento.
+        domain_concept_id_2_id = FieldBind(CID_PK_PROCEDURE_OCCURRENCE, const=True), # Domínio do fato 2 é Procedimento.
+        fact_id_2 = FieldBind("tracking_id", key=True), # ID do fato 2 é o ID do acompanhamento.
     )
     
-    # Measurements
+    # Mapeamentos para as diversas medições, usando as funções auxiliares.
     row_length         = _tr_measurement_value_number("length", CID_WOUND_LENGTH, CID_CENTIMETER)
     row_width          = _tr_measurement_value_number("width", CID_WOUND_WIDTH, CID_CENTIMETER)
     row_exudate_amount = _tr_measurement_value_cid("exudate_amount", CID_EXUDATE_AMOUNT)
@@ -491,6 +555,7 @@ class VirtualTrackingRecords(VirtualModel):
     row_pain_level     = _tr_measurement_value_number("pain_level", CID_PAIN_SEVERITY, CID_NULL)
     row_dressing_changes_per_day= _tr_measurement_value_number("dressing_changes_per_day", CID_WOUND_CARE_DRESSING_CHANGE, CID_NULL)
     
+    # Mapeamento para a tabela 'TrackingRecordImage' que associa a imagem ao registro de acompanhamento.
     row_image = TableBindings.TrackingRecordImage(
         image_id           = FieldBind("image_id"),
         tracking_record_id = FieldBind("tracking_id", key=True),
@@ -509,10 +574,11 @@ class VirtualTrackingRecords(VirtualModel):
     #     note_type_concept_id = FieldBind(CID_NULL, const=True),
     # )
     
+    # Mapeamento para a tabela OMOP 'Note' para diretrizes ao paciente.
     row_guidelines_note = TableBindings.Note(
         person_id = FieldBind("patient_id"),
         note_date = FieldBind("track_date"),
-        note_class_concept_id = FieldBind(CID_WOUND_MANAGEMENT_NOTE, const=True, key = True),
+        note_class_concept_id = FieldBind(CID_WOUND_MANAGEMENT_NOTE, const=True, key = True), # Tipo de nota: gerenciamento de ferida.
         encoding_concept_id = FieldBind(CID_UTF8, const=True),
         language_concept_id = FieldBind(CID_PORTUGUESE, const=True),
         note_text = FieldBind("guidelines_to_patient"),
@@ -521,10 +587,11 @@ class VirtualTrackingRecords(VirtualModel):
         note_type_concept_id = FieldBind(CID_NULL, const=True),
     )
 
+    # Mapeamento para a tabela OMOP 'Note' para notas extras.
     row_extra_notes = TableBindings.Note(
         person_id = FieldBind("patient_id"),
         note_date = FieldBind("track_date"),
-        note_class_concept_id = FieldBind(CID_GENERIC_NOTE, const=True, key = True),
+        note_class_concept_id = FieldBind(CID_GENERIC_NOTE, const=True, key = True), # Tipo de nota: genérica.
         encoding_concept_id = FieldBind(CID_UTF8, const=True),
         language_concept_id = FieldBind(CID_PORTUGUESE, const=True),
         note_text = FieldBind("extra_notes"),
@@ -534,20 +601,26 @@ class VirtualTrackingRecords(VirtualModel):
     )
 
 class VirtualComorbidity(VirtualModel):
+    # Define os campos virtuais para uma comorbidade e seus mapeamentos.
+    # 'comorbidity_id' é a chave primária, mapeada para 'observation_id'.
     comorbidity_id = VirtualField(source=("row_observation", "observation_id"), key=True)
+    # 'patient_id' e 'specialist_id' são campos da observação.
     patient_id     = VirtualField(source=("row_observation", "person_id"))
     specialist_id  = VirtualField(source=("row_observation", "provider_id"))
+    # 'comorbidity_type' é o tipo da comorbidade como um Concept ID.
     comorbidity_type = VirtualField(source=("row_observation", "value_as_concept_id"))
-    # A data é gerada automaticamente quando a comorbidade é criada
+    # A data é gerada automaticamente quando a comorbidade é criada (definido no FieldBind).
 
+    # Define 'row_observation' como a tabela principal para a VirtualComorbidity.
     main_row = "row_observation"
     
+    # Mapeamento detalhado para a tabela OMOP 'Observation' para comorbidades.
     row_observation = TableBindings.Observation(
         observation_id = FieldBind("comorbidity_id", key=True),
         person_id = FieldBind("patient_id", key=True),
         provider_id = FieldBind("specialist_id", key=True),
-        observation_concept_id = FieldBind(CID_COMORBIDITY, const=True),
+        observation_concept_id = FieldBind(CID_COMORBIDITY, const=True), # Indica que esta observação é uma comorbidade.
         value_as_concept_id = FieldBind("comorbidity_type", key=True),
-        observation_date = FieldBind(datetime.datetime.now(), const=True),
+        observation_date = FieldBind(datetime.datetime.now(), const=True), # A data da observação é definida como o momento atual.
         observation_type_concept_id = FieldBind(CID_NULL, const=True),
     )

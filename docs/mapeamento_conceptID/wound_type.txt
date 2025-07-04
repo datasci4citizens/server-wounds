@@ -1,3 +1,5 @@
+# esse arquivo era apenas uma esquema inicial do mapeamento para omop
+
 sao todos conceitos standart da classe disorder menos os especificados
 
 Wound-type{
