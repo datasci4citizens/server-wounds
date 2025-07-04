@@ -58,10 +58,13 @@ INSTALLED_APPS = [
     'corsheaders',  # Adicione esta linha
     'django_dbml'
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
+
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+       'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated'
@@ -181,6 +184,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Seu frontend
     "http://127.0.0.1:5173",
     "https://server.wounds.staging.paas.ic.unicamp.br",
+    "https://server.wounds.paas.ic.unicamp.br",
     "https://localhost",
 ]
 

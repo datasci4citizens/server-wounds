@@ -1,3 +1,11 @@
+"""
+Este comando de gerenciamento do Django é responsável por popular o banco de dados
+com conceitos predefinidos de comorbidades, utilizando o modelo OMOP 'Concept'.
+
+Ele garante a idempotência ao usar 'get_or_create' para adicionar apenas novos conceitos
+e executa a operação dentro de uma transação atômica para manter a integridade dos dados.
+"""
+
 from django.core.management.base import BaseCommand
 from app_cicatrizando.omop.omop_models import Concept
 from app_cicatrizando.omop.omop_ids import (

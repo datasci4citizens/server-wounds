@@ -1,3 +1,14 @@
+"""
+Este módulo fornece funções utilitárias para autenticar usuários com o Google OAuth2.
+
+Ele suporta dois fluxos de autenticação principais:
+1. **Autenticação baseada na web**: Troca um código de autorização por um token de acesso para recuperar dados do usuário.
+2. **Autenticação baseada em dispositivos móveis**: Verifica um token de ID do Google diretamente para extrair informações do usuário.
+
+Ele se integra às configurações do Django para credenciais do cliente da API do Google e gerencia relatórios de erros
+por meio da `APIException` do Django REST Framework.
+"""
+
 from typing import Any, Dict
 
 import requests

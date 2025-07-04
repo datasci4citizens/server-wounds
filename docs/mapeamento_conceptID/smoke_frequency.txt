@@ -1,3 +1,5 @@
+# esse arquivo era apenas uma esquema inicial do mapeamento para omop
+
 Smoke Frequency{
 
     0: nunca --> never: 1704063 

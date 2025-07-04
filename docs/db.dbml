@@ -1,3 +1,26 @@
+# Este arquivo contém duas seções principais:
+
+# 1. Definição da Entidade Virtual 'VirtualWound':
+#    Descreve uma entidade "Ferida Virtual" que consolida dados de múltiplas tabelas
+#    do OMOP Common Data Model (CDM), como CONDITION_OCCURRENCE, OBSERVATION e NOTE.
+#    Cada 'VirtualField' mapeia um campo da entidade virtual para um campo específico
+#    nas tabelas OMOP subjacentes, utilizando 'bind' para especificar as ligações
+#    e as condições de filtragem (ex: '===' para Concept IDs fixos) necessárias
+#    para construir a visão unificada da ferida.
+
+# 2. Definição do Esquema do Banco de Dados (ORM/DB Schema):
+#    Apresenta o esquema das tabelas do banco de dados da aplicação 'Cicatrizando',
+#    junto com tabelas do Django admin e autenticação. Muitas das tabelas
+#    'app_cicatrizando' (ex: Person, ConditionOccurrence, Measurement, Observation)
+#    são implementações diretas das tabelas do OMOP CDM, detalhando suas colunas,
+#    tipos de dados, índices e relacionamentos de chave estrangeira ('ref').
+
+# Em suma, este arquivo define tanto uma camada de abstração lógica para dados
+# complexos (VirtualWound) quanto a estrutura física do banco de dados subjacente,
+# que adere fortemente ao padrão OMOP CDM para armazenamento de dados de saúde.
+
+
+
 virtual VirtualWound:
     wound_id      = VirtualField(source=("row_condition", "condition_occurrence_id"))
     patient_id    = VirtualField(source=("row_condition", "person_id"))
