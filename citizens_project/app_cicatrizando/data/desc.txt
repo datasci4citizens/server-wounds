@@ -1,0 +1,1 @@
+esse arquivo .csv contem todo o vocabulario icd10 

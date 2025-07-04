@@ -1,3 +1,9 @@
+# Este arquivo detalha o mapeamento de tabelas e campos de um sistema de origem
+# para o OMOP Common Data Model (CDM). Ele descreve como entidades como especialistas,
+# pacientes, comorbidades, feridas e seus registros de acompanhamento
+# são transformadas para se conformarem às tabelas padronizadas do OMOP (PERSON, PROVIDER,
+# CONDITION_OCCURRENCE, CONDITION_ERA, MEASUREMENT, OBSERVATION, NOTE, etc.).
+
 
 Explicação
 ---

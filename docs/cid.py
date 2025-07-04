@@ -1,3 +1,5 @@
+# Este arquivo define Concept IDs (CIDs) e mapeamentos para o modelo de dados OMOP Common Data Model (CDM).
+
 CID_WOUND = 4168335
 CID_WOUND_MORPH = 4029919
 CID_WOUND_TYPE = 43055265 *
