@@ -69,7 +69,7 @@ class ImageViewSet(mixins.CreateModelMixin,
 
             # Prepare the response data
             response_data = {
-                "image_id": image_instance.id,
+                "image_id": image_instance.image_id,
                 "image_url": request.build_absolute_uri(image_instance.image.url),
                 "predictions": {
                     "tissue_type": tissue_prediction,
