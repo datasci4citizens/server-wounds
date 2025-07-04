@@ -1,3 +1,14 @@
+"""
+Este arquivo define um gancho de pós-processamento personalizado para um gerador de documentação de API (por exemplo, OpenAPI/Swagger).
+
+Ele organiza os endpoints da API em grupos lógicos de tags com base em seus caminhos de URL.
+Especificamente, ele identifica os principais segmentos de caminho (por exemplo, 'virtual', 'omop')
+e agrupa tags de API relacionadas a eles, melhorando a legibilidade e a navegação
+da documentação de API gerada.
+"""
+
+
+
 import re
 
 def _tokenize_path(path):

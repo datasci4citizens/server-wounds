@@ -1,3 +1,13 @@
+'''
+Este arquivo define os modelos de dados não-OMOP que complementam o esquema de banco de dados
+ para a aplicação. Enquanto os modelos virtuais lidam com a abstração dos dados OMOP,
+ estes modelos (PatientNonClinicalInfos, Image, WoundImage, TrackingRecordImage) 
+ gerenciam informações adicionais que não se encaixam diretamente no padrão OMOP
+ou são específicas da aplicação, como detalhes de contato do paciente, 
+códigos de vínculo e o armazenamento de imagens.
+
+'''
+
 from django.db import models
 from django.utils import timezone
 import uuid

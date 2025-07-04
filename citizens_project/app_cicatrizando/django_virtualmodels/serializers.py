@@ -1,3 +1,14 @@
+"""
+Este módulo define um serializer personalizado para o Django REST Framework (DRF)
+e sua metaclasse, projetados para interagir com 'VirtualModels'.
+
+A metaclasse 'VirtualSerializerMetaclass' constrói dinamicamente os campos do serializer
+com base no descritor de campos do 'VirtualModel' associado.
+O 'VirtualModelSerializer' delega as operações de criação e atualização (CRUD)
+diretamente para os métodos estáticos definidos no 'VirtualModel',
+garantindo transações atômicas para a integridade dos dados.
+"""
+
 import traceback
 from rest_framework import serializers
 from rest_framework.utils.field_mapping import ClassLookupDict
