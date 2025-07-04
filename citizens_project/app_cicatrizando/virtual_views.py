@@ -18,6 +18,8 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
 from django.db import transaction
 
+from use_onnx_segmentation_model import count_wound_pixels_simple #chama o modelo .onnx
+#from wound_segmentation_model_use import WoundSegmentationModel
 #from .wound_pixel_counter import count_pixels_simple
 from .predict_single_image import predict_image_class, predict_multi_label
 from PIL import Image as PILImage
@@ -422,12 +424,13 @@ class TrackingRecordsImageViewSet(viewsets.ViewSet):
 
             tissue_prediction = predict_image_class(pil_image)
             multihead_predictions = predict_multi_label(pil_image)
+            reference_pixels = get_reference_area(pil_image)
             reference_pixels = calculate_reference_area(pil_image)
             if reference_pixels:
-                #wound_pixels = count_pixels_simple(model_path="wound_segmentation_model2.hdf5",image_path=pil_image,threshold=0.5)
-                #reference_diameter = 7
-                #reference_size = 3,14*(reference_diameter/2)^2
-                #wound_size = wound_pixels*reference_size/reference_pixels
+                wound_pixels = count_wound_pixels_simple(pil_image, "wound_segmentation_model.onnx")
+                reference_diameter = 7
+                reference_size = 3,14*(reference_diameter/2)^2
+                wound_size = wound_pixels*reference_size/reference_pixels
             else:
                 wound_size = "Erro no calculo da área"
 
@@ -438,7 +441,7 @@ class TrackingRecordsImageViewSet(viewsets.ViewSet):
                 "predictions": {
                     "tissue_type": tissue_prediction,
                     "W_I_Fi": multihead_predictions,
-                    #"Wound Size(cm^2)": wound_size
+                    "Wound Size(cm^2)": wound_size
                 }
             }, status=status.HTTP_200_OK)
 
@@ -469,12 +472,13 @@ class WoundImageViewSet(viewsets.ViewSet):
 
             tissue_prediction = predict_image_class(pil_image)
             multihead_predictions = predict_multi_label(pil_image)
+            reference_pixels = get_reference_area(pil_image)
             reference_pixels = calculate_reference_area(pil_image)
             if reference_pixels:
-                #wound_pixels = count_pixels_simple(model_path="wound_segmentation_model2.hdf5",image_path=pil_image,threshold=0.5)
-                #reference_diameter = 7
-                #reference_size = 3,14*(reference_diameter/2)^2
-                #wound_size = wound_pixels*reference_size/reference_pixels
+                wound_pixels = count_wound_pixels_simple(pil_image, "wound_segmentation_model.onnx")
+                reference_diameter = 7
+                reference_size = 3,14*(reference_diameter/2)^2
+                wound_size = wound_pixels*reference_size/reference_pixels
             else:
                 wound_size = "Erro no calculo da área"
 
@@ -485,7 +489,7 @@ class WoundImageViewSet(viewsets.ViewSet):
                 "predictions": {
                     "tissue_type": tissue_prediction,
                     "W_I_Fi": multihead_predictions,
-                    #"Wound Size(cm^2)": wound_size
+                    "Wound Size(cm^2)": wound_size
                 }
             }, status=status.HTTP_200_OK)
 
