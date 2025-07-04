@@ -1,16 +1,9 @@
-"""
-Interface simples para usar o modelo ONNX de segmentação de feridas.
-Requer apenas: onnxruntime, opencv-python, numpy
-
-Instalação:
-pip install onnxruntime opencv-python numpy
-"""
-
 import onnxruntime as ort
 import cv2
 import numpy as np
 import os
 from typing import Union, Tuple
+from PIL import Image
 
 
 class WoundSegmentationONNX:
@@ -37,18 +30,32 @@ class WoundSegmentationONNX:
         print(f"✅ Modelo ONNX carregado: {model_path}")
         print(f"🔧 Executando em: {self.session.get_providers()[0]}")
     
-    def preprocess_image(self, image: np.ndarray) -> Tuple[np.ndarray, Tuple[int, int]]:
+    def preprocess_image(self, image_input: Union[str, Image.Image]) -> Tuple[np.ndarray, Tuple[int, int]]:
         """
         Prepara a imagem para o modelo.
         
         Args:
-            image: Imagem em formato numpy (BGR do OpenCV)
+            image_input: Pode ser um caminho de arquivo (str) ou um objeto PIL.Image.Image
             
         Returns:
             Tupla (imagem_processada, tamanho_original)
         """
-        # Guardar tamanho original
-        original_height, original_width = image.shape[:2]
+        # Se for um caminho de arquivo
+        if isinstance(image_input, str):
+            # Ler imagem com OpenCV
+            image = cv2.imread(image_input)
+            if image is None:
+                raise ValueError(f"Erro ao ler imagem: {image_input}")
+            original_height, original_width = image.shape[:2]
+        # Se for um objeto PIL Image
+        elif isinstance(image_input, Image.Image):
+            # Converter PIL Image para array numpy no formato BGR (que o OpenCV espera)
+            image = np.array(image_input)
+            # Convert RGB to BGR
+            image = image[:, :, ::-1].copy()
+            original_height, original_width = image.shape[:2]
+        else:
+            raise ValueError("Tipo de entrada inválido. Deve ser um caminho de arquivo ou objeto PIL.Image.Image")
         
         # 1. Redimensionar para 256x256
         image_resized = cv2.resize(image, (256, 256), interpolation=cv2.INTER_LINEAR)
@@ -67,23 +74,18 @@ class WoundSegmentationONNX:
         
         return image_batch, (original_height, original_width)
     
-    def count_wound_pixels(self, image_path: str) -> int:
+    def count_wound_pixels(self, image_input: Union[str, Image.Image]) -> int:
         """
         Conta pixels de ferida em uma imagem.
         
         Args:
-            image_path: Caminho para a imagem
+            image_input: Pode ser um caminho de arquivo (str) ou um objeto PIL.Image.Image
             
         Returns:
             Número de pixels de ferida no tamanho original da imagem
         """
-        # Ler imagem
-        image = cv2.imread(image_path)
-        if image is None:
-            raise ValueError(f"Erro ao ler imagem: {image_path}")
-        
         # Preprocessar
-        processed_image, (orig_h, orig_w) = self.preprocess_image(image)
+        processed_image, (orig_h, orig_w) = self.preprocess_image(image_input)
         
         # Fazer predição
         outputs = self.session.run([self.output_name], {self.input_name: processed_image})
@@ -104,24 +106,19 @@ class WoundSegmentationONNX:
         
         return pixels_original
     
-    def segment_image(self, image_path: str, output_mask_path: str = None) -> dict:
+    def segment_image(self, image_input: Union[str, Image.Image], output_mask_path: str = None) -> dict:
         """
         Segmenta uma imagem e opcionalmente salva a máscara.
         
         Args:
-            image_path: Caminho para a imagem
+            image_input: Pode ser um caminho de arquivo (str) ou um objeto PIL.Image.Image
             output_mask_path: Caminho para salvar a máscara (opcional)
             
         Returns:
             Dicionário com informações da segmentação
         """
-        # Ler imagem
-        image = cv2.imread(image_path)
-        if image is None:
-            raise ValueError(f"Erro ao ler imagem: {image_path}")
-        
         # Preprocessar
-        processed_image, (orig_h, orig_w) = self.preprocess_image(image)
+        processed_image, (orig_h, orig_w) = self.preprocess_image(image_input)
         
         # Fazer predição
         outputs = self.session.run([self.output_name], {self.input_name: processed_image})
@@ -160,48 +157,16 @@ class WoundSegmentationONNX:
 
 
 # Função simples para uso direto
-def count_wound_pixels_simple(image_path: str, model_path: str = "model_wound_segmentation.onnx") -> int:
+def count_wound_pixels_simple(image_input: Union[str, Image.Image], model_path: str = "model_wound_segmentation.onnx") -> int:
     """
     Função simples que conta pixels de ferida em uma imagem.
     
     Args:
-        image_path: Caminho da imagem
+        image_input: Pode ser um caminho de arquivo (str) ou um objeto PIL.Image.Image
         model_path: Caminho do modelo ONNX
         
     Returns:
         Número de pixels de ferida
     """
     model = WoundSegmentationONNX(model_path)
-    return model.count_wound_pixels(image_path)
-
-
-# ========== EXEMPLO DE USO ==========
-if __name__ == "__main__":
-    # Método 1: Usar a classe
-    print("=== Método 1: Usando a classe ===")
-    segmentator = WoundSegmentationONNX("model_wound_segmentation.onnx")
-    
-    # Contar pixels apenas
-    pixel_count = segmentator.count_wound_pixels("exemplo_ferida.jpg")
-    print(f"Pixels de ferida: {pixel_count:,}")
-    
-    # Segmentação completa com mais informações
-    result = segmentator.segment_image("exemplo_ferida.jpg", "mascara_saida.png")
-    print(f"Pixels: {result['pixel_count']:,}")
-    print(f"Porcentagem: {result['percentage']:.2f}%")
-    print(f"Tamanho da imagem: {result['image_size']}")
-    
-    # Método 2: Usar função simples
-    print("\n=== Método 2: Função simples ===")
-    pixels = count_wound_pixels_simple("exemplo_ferida.jpg")
-    print(f"Pixels de ferida: {pixels:,}")
-    
-    # Processar múltiplas imagens
-    print("\n=== Processamento em lote ===")
-    images = ["img1.jpg", "img2.jpg", "img3.jpg"]
-    for img in images:
-        try:
-            pixels = segmentator.count_wound_pixels(img)
-            print(f"{img}: {pixels:,} pixels")
-        except Exception as e:
-            print(f"{img}: Erro - {e}")
+    return model.count_wound_pixels(image_input)
