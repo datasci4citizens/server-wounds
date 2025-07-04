@@ -19,8 +19,6 @@ from rest_framework.parsers import MultiPartParser
 from django.db import transaction
 
 from use_onnx_segmentation_model import count_wound_pixels_simple #chama o modelo .onnx
-#from wound_segmentation_model_use import WoundSegmentationModel
-#from .wound_pixel_counter import count_pixels_simple
 from .predict_single_image import predict_image_class, predict_multi_label
 from PIL import Image as PILImage
 from .identifica_ref import calculate_reference_area
@@ -424,7 +422,6 @@ class TrackingRecordsImageViewSet(viewsets.ViewSet):
 
             tissue_prediction = predict_image_class(pil_image)
             multihead_predictions = predict_multi_label(pil_image)
-            reference_pixels = get_reference_area(pil_image)
             reference_pixels = calculate_reference_area(pil_image)
             if reference_pixels:
                 wound_pixels = count_wound_pixels_simple(pil_image, "wound_segmentation_model.onnx")
@@ -472,7 +469,6 @@ class WoundImageViewSet(viewsets.ViewSet):
 
             tissue_prediction = predict_image_class(pil_image)
             multihead_predictions = predict_multi_label(pil_image)
-            reference_pixels = get_reference_area(pil_image)
             reference_pixels = calculate_reference_area(pil_image)
             if reference_pixels:
                 wound_pixels = count_wound_pixels_simple(pil_image, "wound_segmentation_model.onnx")
