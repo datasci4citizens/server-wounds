@@ -18,7 +18,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
 from django.db import transaction
 
-from use_onnx_segmentation_model import count_wound_pixels_simple #chama o modelo .onnx
+from .use_onnx_segmentation_model import count_wound_pixels_simple #chama o modelo .onnx
 from .predict_single_image import predict_image_class, predict_multi_label
 from PIL import Image as PILImage
 from .identifica_ref import calculate_reference_area
