@@ -22,7 +22,7 @@ from .use_onnx_segmentation_model import count_wound_pixels_simple #chama o mode
 from .predict_single_image import predict_image_class, predict_multi_label
 from PIL import Image as PILImage
 from .identifica_ref import calculate_reference_area
-
+import os
 from rest_framework.exceptions import APIException
 
 
@@ -58,7 +58,9 @@ class ImageViewSet(mixins.CreateModelMixin,
             reference_pixels = calculate_reference_area(pil_image)
             
             if reference_pixels:
-                wound_pixels = count_wound_pixels_simple(pil_image, "wound_segmentation_model.onnx")
+                current_dir = os.path.dirname(os.path.abspath(__file__))
+                model_path = os.path.join(current_dir, "wound_segmentation_model.onnx")
+                wound_pixels = count_wound_pixels_simple(pil_image, model_path)
                 reference_diameter = 7
                 reference_size = 3.14 * (reference_diameter / 2) ** 2  # Fixed the exponentiation syntax
                 wound_size = wound_pixels * reference_size / reference_pixels
@@ -72,7 +74,7 @@ class ImageViewSet(mixins.CreateModelMixin,
 
             # Prepare the response data
             response_data = {
-                "image_id": image_instance.id,
+                "image_id": image_instance.image_id,
                 "image_url": request.build_absolute_uri(image_instance.image.url),
                 "predictions": {
                     "tissue_type": tissue_prediction,
