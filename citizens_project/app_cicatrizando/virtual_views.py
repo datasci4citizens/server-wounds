@@ -65,6 +65,11 @@ class ImageViewSet(mixins.CreateModelMixin,
             else:
                 wound_size = "Erro no calculo da área"
 
+            image_instance.tissue_type = tissue_prediction
+            image_instance.w_i_fi = multihead_predictions
+            image_instance.wound_size_cm2 = wound_size
+            image_instance.save()
+
             # Prepare the response data
             response_data = {
                 "image_id": image_instance.id,

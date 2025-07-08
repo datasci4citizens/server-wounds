@@ -314,7 +314,7 @@ class ImageSerializer(serializers.ModelSerializer):
         # Define o modelo associado a este serializer.
         model = Image
         # Define os campos a serem incluídos na serialização/deserialização.
-        fields = ['image', 'image_id']
+        fields = ['image', 'image_id', 'tissue_type', 'w_i_fi', 'wound_size_cm2']
 
 class VirtualTrackingRecordsSerializer(serializers.Serializer):
     # Campo somente leitura para o ID do registro de acompanhamento.

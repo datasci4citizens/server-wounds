@@ -13,6 +13,7 @@ from django.utils import timezone
 import uuid
 import os
 from django.contrib.auth import get_user_model
+from django.contrib.postgres.fields import JSONField
 from .omop.omop_models import Person, Provider, ConditionOccurrence, ProcedureOccurrence
 
 User = get_user_model()
@@ -41,17 +42,26 @@ class Image(models.Model):
     image = models.ImageField(upload_to=get_file_path)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    tissue_type = models.CharField(max_length=100, null=True, blank=True)  # For tissue_type prediction
+    w_i_fi = models.JSONField(null=True, blank=True)  # For W_I_Fi, which is likely a dict/list
+    wound_size_cm2 = models.FloatField(null=True, blank=True)  # For wound size (float)
     
 
 class WoundImage(models.Model):
     wound_image_id = models.AutoField(primary_key=True)
     image = models.ForeignKey(Image, null=True, on_delete=models.DO_NOTHING)
     wound = models.ForeignKey(ConditionOccurrence, on_delete=models.DO_NOTHING)
+    tissue_type = models.CharField(max_length=100, null=True, blank=True)  # For tissue_type prediction
+    w_i_fi = models.JSONField(null=True, blank=True)  # For W_I_Fi, which is likely a dict/list
+    wound_size_cm2 = models.FloatField(null=True, blank=True)  # For wound size (float)
 
 class TrackingRecordImage(models.Model):
     tracking_record_image_id = models.AutoField(primary_key=True)
     image = models.ForeignKey(Image, null=True, on_delete=models.DO_NOTHING)
-    tracking_record = models.ForeignKey(ProcedureOccurrence, on_delete=models.DO_NOTHING) 
+    tracking_record = models.ForeignKey(ProcedureOccurrence, on_delete=models.DO_NOTHING)
+    tissue_type = models.CharField(max_length=100, null=True, blank=True)  # For tissue_type prediction
+    w_i_fi = models.JSONField(null=True, blank=True)  # For W_I_Fi, which is likely a dict/list
+    wound_size_cm2 = models.FloatField(null=True, blank=True)  # For wound size (float) 
 
 from django.db import models
 # from .virtual_models import VirtualPatient # You might import this for type hinting, but not for ForeignKey
