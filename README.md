@@ -15,7 +15,7 @@ This project implements the server application for the Wounds App, a Django-base
 
 ## Setup and Installation
 
-### Option 1: Using Docker (Recommended)
+### First Step: Starting Docker
 
 The project includes a complete Docker setup for easy deployment:
 
@@ -26,20 +26,21 @@ cd server-wounds
 
 # Create required directories if they don't exist
 mkdir -p tmp/midia
+mkdir wounds-db
+mkdir wounds-impexp
+
+#Remember to create a 'docker-compose' file based on the model that is available
 
 # Start all services (database, migrations, and web server)
+cd docker/dbms
 docker compose up
 ```
 
 The server will be available at http://localhost:8000
 
-### Option 2: Local Development
-
-For local development without Docker:
+### Second Step: Initializing the server
 
 ```bash
-# Clone the repository
-git clone <repository-url>
 cd server-wounds
 
 # Create and activate virtual environment
@@ -50,7 +51,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 
 # Set up environment variables
-# Create .env.google and docker/.env files with necessary variables
+# Change the root .env file with your credentials
 
 # Run migrations
 python citizens_project/manage.py migrate
@@ -76,14 +77,21 @@ SERVER_WOUNDS_DB_PORT=5432
 SERVER_WOUNDS_SECRET_KEY="your_secure_secret_key"
 ```
 
-### 2. Google API Credentials (`./.env.google`)
+### 2. Local Development Environment File (`./.env`)
 
-This file contains Google OAuth2 credentials for authentication. Create a `.env.google` file in the project root with:
+For local development, create a `.env` file:
 
 ```properties
-GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your_google_client_secret
+SERVER_WOUNDS_DATABASE=POSTGRES
+SERVER_WOUNDS_DB_USER=postgres
+SERVER_WOUNDS_DB_PASSWORD=postgres
+SERVER_WOUNDS_DB_HOST=localhost
+SERVER_WOUNDS_DB_PORT=5432
+SERVER_WOUNDS_SECRET_KEY=<"YOUR SECRET KEY">
+GOOGLE_CLIENT_ID=<"GOOGLE_CLIENT_ID">
+GOOGLE_CLIENT_SECRET=<"GOOGLE_CLIENT_SECRET">
 ```
+This file contains Google OAuth2 credentials for authentication.
 
 To obtain these credentials:
 1. Go to the [Google Cloud Console](https://console.cloud.google.com/)
@@ -91,37 +99,19 @@ To obtain these credentials:
 3. Navigate to "APIs & Services" > "Credentials"
 4. Create an OAuth 2.0 Client ID
 5. Add your application's redirect URIs
-6. Copy the Client ID and Client Secret to your `.env.google` file
-
-### 3. Local Development Environment File (`./.env`)
-
-For local development without Docker, create a `.env` file with modified database connection settings:
-
-```properties
-SERVER_WOUNDS_DATABASE="POSTGRES"
-SERVER_WOUNDS_DB_USER="api"
-SERVER_WOUNDS_DB_PASSWORD="api"
-SERVER_WOUNDS_DB_HOST="localhost"
-SERVER_WOUNDS_DB_PORT=5432
-SERVER_WOUNDS_SECRET_KEY="your_secure_secret_key"
-```
 
 ## API Documentation
 
 The API documentation is available at:
-- Swagger UI: `/api/schema/swagger-ui/`
-- ReDoc: `/api/schema/redoc/`
+- Swagger UI: `/api/docs/swagger/`
+- ReDoc: `/api/docs/redoc/`
+- Schema: `/api/schema/`
 
 ## Creating an Admin User
 
 To access the Django admin interface, you need to create a superuser:
 
-### Using Docker
-
 ```bash
-# Access the server container shell
-docker compose exec server sh
-
 # Create a superuser
 python ./citizens_project/manage.py createsuperuser
 ```
@@ -132,16 +122,6 @@ Follow the prompts to:
 - Insert Password
 
 Once created, you can access the admin interface at http://localhost:8000/admin
-
-### Local Development
-
-```bash
-# Make sure your virtual environment is activated
-source .venv/bin/activate
-
-# Create a superuser
-python citizens_project/manage.py createsuperuser
-```
 
 ## Technology Stack
 
