@@ -1,5 +1,10 @@
-# Ignorar ambientes e lixo
-venv/
+# diz ao docker compose quais arquivos ignorar durante a construção do container.
+# manter no mesmo diretorio que o campo "web > build > context" no docker/dockercompose.yml
+
+
+
+# ambientes e lixo
+.venv/
 __pycache__/
 *.pyc
 *.pyo
@@ -7,7 +12,10 @@ __pycache__/
 *.log
 *.sqlite3
 *.db
-tmp
+.env.model
+old
+
+
 # Git
 .git/
 .gitignore
@@ -26,3 +34,7 @@ htmlcov/
 
 # Docker
 docker-compose.yml
+docker-compose-model.yml
+
+# Documentação
+docs/

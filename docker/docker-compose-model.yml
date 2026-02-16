@@ -1,0 +1,50 @@
+services:
+  
+  db:
+    container_name: wounds
+    image: postgres:latest
+    volumes:
+      - wound-data:/var/lib/postgresql/data
+    restart: on-failure:3
+    shm_size: 128mb
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: wounds
+    ports:
+      - "5432:5432"
+
+  web: # servidor
+    container_name: django-server
+    build:
+      context: ..
+      dockerfile: docker/dockerfile
+    command: sh -c "python citizens_project/manage.py migrate && python citizens_project/manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ..:/code
+    ports:
+      - "8000:8000"
+    environment:
+      DEBUG: "True"
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/wounds
+      SERVER_WOUNDS_DB_HOST: db
+      SERVER_WOUNDS_DB_PORT: "5432"
+      SERVER_WOUNDS_DB_USER: postgres
+      SERVER_WOUNDS_DB_PASSWORD: postgres
+      SERVER_WOUNDS_DB_NAME: wounds
+      ALLOWED_HOSTS: localhost,127.0.0.1,web
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: on-failure:3
+
+
+#mapeamento externo
+volumes:
+  wound-data:
+    driver: "local"
+    driver_opts:
+      type: "none"
+      device: "changeme" #diretorio para exportar o banco de dados
+      o: "bind"
+
