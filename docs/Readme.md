@@ -75,8 +75,6 @@ cd docker
 docker compose up -d
 ```
 
-### 3. Suba o servidor
-
 O servidor estará disponível em http://localhost:8000
 
 ## Endpoints principais
