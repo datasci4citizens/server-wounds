@@ -63,7 +63,9 @@ docker compose up --build  # usuarios linux podem precisar de SUDO
 ```bash
 #linux
 source .venv/bin/activate
+```
 
+```sh
 #windows
 ./.venv/scripts/activate
 ```
@@ -95,9 +97,9 @@ Depois acesse http://localhost:8000/admin
 
 ## Stack
 
-* **Backend**: [Django 6.0.2](https://www.djangoproject.com/)
-* **API**: [Django REST Framework 3.16.1](https://www.django-rest-framework.org/)
+* **Backend**: [Django](https://www.djangoproject.com/)
+* **API**: [Django REST Framework](https://www.django-rest-framework.org/)
 * **Database**: [PostgreSQL](https://www.postgresql.org/)
-* **Auth**: [JWT](djangorestframework_simplejwt)
+* **Auth**: [JWT](https://django-rest-framework-simplejwt.readthedocs.io/en/latest/)
 * **Docs**: [drf-spectacular](https://drf-spectacular.readthedocs.io/en/latest/)
 * **Containerização**: [Docker](https://www.docker.com/)

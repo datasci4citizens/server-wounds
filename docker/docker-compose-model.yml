@@ -1,6 +1,6 @@
 services:
   
-  db:
+  db:  # banco de dados
     container_name: wounds
     image: postgres:latest
     volumes:
