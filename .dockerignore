@@ -35,6 +35,7 @@ htmlcov/
 # Docker
 docker-compose.yml
 docker-compose-model.yml
+.dockerignore
 
 # Documentação
 docs/

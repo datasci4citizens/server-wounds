@@ -17,8 +17,6 @@
 
 ```bash
 
-# é possivel que seja necessario usar python3 ao invés de python
-
 python -m venv .venv
 ```
 
@@ -89,8 +87,13 @@ Os endpoints estão sob [/api/](../citizens_project/app_cicatrizando/urls.py):
 ## Criar usuário admin
 
 ```bash
+# local
+
 cd citizens_project
 python manage.py createsuperuser
+
+#docker
+docker exec -it django-server python citizens_project/manage.py createsuperuser
 ```
 
 Depois acesse http://localhost:8000/admin
