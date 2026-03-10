@@ -83,7 +83,7 @@ WSGI_APPLICATION = 'citizens_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'wounds',
+        'NAME': os.environ.get('SERVER_WOUNDS_DB_NAME') or os.environ.get('SERVER_WOUNDS_DATABASE', 'wounds'),
         'USER': os.environ.get('SERVER_WOUNDS_DB_USER', 'postgres'),
         'PASSWORD': os.environ.get('SERVER_WOUNDS_DB_PASSWORD', 'postgres'),
         'HOST': os.environ.get('SERVER_WOUNDS_DB_HOST', 'localhost'),

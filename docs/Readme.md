@@ -12,69 +12,30 @@
 * [.env.model](../.env.model) - Modelo de variáveis de ambiente
 
 ## Setup
-
-### 1. Crie o ambiente virtual
-
-```bash
-
-python -m venv .venv
-```
-
-### 2. ative o ambiente virtual
-
-```bash
-#linux
-source .venv/bin/activate
-
-#windows
-./.venv/scripts/activate
-```
-
-### 3. baixe as dependencias
-
-```bash
-pip install -r requirements.txt
-```
-
-### 4. docker compose e .env
+### 1. docker compose e .env
 
 Copie o modelo em [docker/docker-compose-model.yml](../docker/docker-compose-model.yml) como docker-compose.yml, editando os campos necessarios.
 
 Copie o modelo em [env.model](../.env.model) como .env, editando os campos necessarios.
 
 
-### 5. rode o docker e as migrações
-
+### 2. Construa o Docker
 
 ```bash
 
-cd docker
-docker compose up --build  # usuarios linux podem precisar de SUDO
+docker compose -f docker/docker-compose.yml --env-file ./.env up --build # usuarios linux podem precisar de SUDO
 ``` 
 
 ## Execução
 
 
-### 1. ative o ambiente virtual
-
-
-```bash
-#linux
-source .venv/bin/activate
-```
-
-```sh
-#windows
-./.venv/scripts/activate
-```
-
-### 2. Inicie o Docker
+### 1. Inicie o Banco de dados e Servidor via python 
 
 ```bash
-cd docker
-docker compose up -d
-```
+# no diretorio root
 
+python quickstart.py
+```
 O servidor estará disponível em http://localhost:8000
 
 ## Endpoints principais
@@ -86,17 +47,11 @@ Os endpoints estão sob [/api/](../citizens_project/app_cicatrizando/urls.py):
 
 ## Criar usuário admin
 
-```bash
-# local
+### Modifique os valores no .env:
 
-cd citizens_project
-python manage.py createsuperuser
-
-#docker
-docker exec -it django-server python citizens_project/manage.py createsuperuser
-```
-
-Depois acesse http://localhost:8000/admin
+- DJANGO_SUPERUSER_USERNAME
+- DJANGO_SUPERUSER_EMAIL
+- DJANGO_SUPERUSER_PASSWORD
 
 ## Stack
 

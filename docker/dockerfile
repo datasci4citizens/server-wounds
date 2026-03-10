@@ -4,6 +4,8 @@ WORKDIR /code
 
 COPY ./requirements.txt /code/requirements.txt
 
-RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
-COPY .. /code/
+COPY . /code/
+
+ENTRYPOINT ["bash", "/code/docker/entrypoint.sh"]
