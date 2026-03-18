@@ -14,10 +14,10 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv(dotenv_path=BASE_DIR.parent / '.env', override=True)
 
 
 # Quick-start development settings - unsuitable for production
@@ -27,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("SERVER_WOUNDS_SECRET_KEY", "django-insecure-changeme")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", default=False)
 
 ALLOWED_HOSTS = []
 
@@ -83,9 +83,9 @@ WSGI_APPLICATION = 'citizens_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('SERVER_WOUNDS_DB_NAME') or os.environ.get('SERVER_WOUNDS_DATABASE', 'wounds'),
-        'USER': os.environ.get('SERVER_WOUNDS_DB_USER', 'postgres'),
-        'PASSWORD': os.environ.get('SERVER_WOUNDS_DB_PASSWORD', 'postgres'),
+        'NAME': os.environ.get('SERVER_WOUNDS_DB_NAME') or os.environ.get('SERVER_WOUNDS_DATABASE', 'Cicatrizando'),
+        'USER': os.environ.get('SERVER_WOUNDS_DB_USER', 'wounds_dev'),
+        'PASSWORD': os.environ.get('SERVER_WOUNDS_DB_PASSWORD', 'wounds'),
         'HOST': os.environ.get('SERVER_WOUNDS_DB_HOST', 'localhost'),
         'PORT': os.environ.get('SERVER_WOUNDS_DB_PORT', '5432'),
     }
@@ -155,7 +155,7 @@ LOGGING = {
         },
     },
     'loggers': {
-        'app_saude': {
+        'app_cicatrizando': {
             'handlers': ['console'],
             'level': 'DEBUG',
         },

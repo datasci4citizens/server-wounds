@@ -1,14 +1,22 @@
 from rest_framework import serializers
-from .models import TextoRecebido, AtencaoImediataRegistro
+from .models import WoundsUser
 
 
-class TextoRecebidoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TextoRecebido
-        fields = '__all__'
+class AuthSerializer(serializers.Serializer):
+    code = serializers.CharField(required=False, allow_null=False, allow_blank=False)
+    token = serializers.CharField(required=False, allow_null=False, allow_blank=False)
+    role = serializers.ChoiceField(
+        choices=[WoundsUser.Provider, WoundsUser.Patient],
+        required=False,
+        default=WoundsUser.Patient,
+    )
 
 
-class AtencaoImediataRegistroSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AtencaoImediataRegistro
-        fields = '__all__'
+class AuthTokenResponseSerializer(serializers.Serializer):
+    access = serializers.CharField()
+    refresh = serializers.CharField()
+    role = serializers.CharField()
+    is_new_user = serializers.BooleanField()
+    patient_data = serializers.DictField(allow_null=True)
+    provider_data = serializers.DictField(allow_null=True)
+    profile_completion_required = serializers.BooleanField()

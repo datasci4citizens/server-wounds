@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework import routers
-from .api import GoogleLoginView, MeView
+from .views import GoogleLoginView, MeView
 from drf_spectacular.views import SpectacularSwaggerView
 
 router = routers.DefaultRouter()

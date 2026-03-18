@@ -17,7 +17,7 @@ from rest_framework.exceptions import APIException
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 import logging
-logger = logging.getLogger("app_saude")
+logger = logging.getLogger("app_cicatrizando")
 
 GOOGLE_ID_TOKEN_INFO_URL = "https://www.googleapis.com/oauth2/v3/tokeninfo"
 GOOGLE_ACCESS_TOKEN_OBTAIN_URL = "https://accounts.google.com/o/oauth2/token"
