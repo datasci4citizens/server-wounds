@@ -7,10 +7,13 @@ User = get_user_model()
 
 class WoundsUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="wounds_user")
-    name = models.CharField(max_length=255)
     
-    created_at = models.DateTimeField(auto_now_add=True)
+    name = models.CharField(max_length=255)
+    birth_date = models.DateField()
+    email = models.EmailField()
+    
 
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     
@@ -32,7 +35,6 @@ class Provider(models.Model):
         db_column="id",
         related_name="provider",
     )
-
 
 
 

@@ -5,6 +5,7 @@ from .models import WoundsUser
 class AuthSerializer(serializers.Serializer):
     code = serializers.CharField(required=False, allow_null=False, allow_blank=False)
     token = serializers.CharField(required=False, allow_null=False, allow_blank=False)
+    birth_date = serializers.DateField(required=False)
     role = serializers.ChoiceField(
         choices=[WoundsUser.Provider, WoundsUser.Patient],
         required=False,
