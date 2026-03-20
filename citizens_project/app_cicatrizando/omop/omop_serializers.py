@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .omop_models import (
+from .omop_modelsnotusedyet import (
     CareSite, Concept,
     ConceptClass, ConceptSynonym,
     ConditionOccurrence, Domain,

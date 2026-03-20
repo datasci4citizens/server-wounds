@@ -36,6 +36,7 @@ htmlcov/
 docker-compose.yml
 docker-compose-model.yml
 .dockerignore
+quickstart.py
 
 # Documentação
 docs/

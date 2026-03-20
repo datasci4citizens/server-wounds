@@ -1,8 +1,10 @@
 #!/bin/bash
 
-python citizens_project/manage.py makemigrations > /dev/nul
+set -e
 
-python citizens_project/manage.py migrate  > /dev/nul
+python citizens_project/manage.py makemigrations > /dev/null
+
+python citizens_project/manage.py migrate > /dev/null
 
 
 # Criação automática do superusuário, caso as informações no .env tenham sido definidas

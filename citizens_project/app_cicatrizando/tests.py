@@ -15,44 +15,39 @@ Observação:
 
 from unittest.mock import patch
 from datetime import date
-
 from django.contrib.auth import get_user_model
 from rest_framework.test import APITestCase
-from app_cicatrizando.models import Provider, WoundsUser
+from app_cicatrizando.models import Provider, Patient, WoundsUser
 
 
 class AuthenticationFlowTests(APITestCase):
-	@patch("app_cicatrizando.views.google_get_user_data")
-	def test_google_login_creates_patient_profile_and_me_works(self, mock_google_get_user_data):
-		mock_google_get_user_data.return_value = {
-			"email": "teste.auth@example.com",
-			"given_name": "Teste",
-			"family_name": "Auth",
-			"sub": "google-sub-123",
+	@patch("app_cicatrizando.views.firebase_get_user_data")
+	def test_firebase_login_creates_patient_and_me_works(self, mock_firebase_get_user_data):
+		mock_firebase_get_user_data.return_value = {
+			"email": "firebase.patient@example.com",
+			"given_name": "Firebase",
+			"family_name": "Patient",
+			"sub": "firebase-sub-patient-001",
 		}
 
 		login_response = self.client.post(
-			"/auth/login/google/",
+			"/auth/login/firebase/",
 			{
-				"token": "google-id-token-fake",
-				"role": WoundsUser.Patient,
-				"birth_date": "1995-05-20",
+				"firebase_token": "firebase-id-token-patient",
 			},
 			format="json",
 		)
 
 		self.assertEqual(login_response.status_code, 200)
-		self.assertIn("access", login_response.data)
-		self.assertIn("refresh", login_response.data)
+		self.assertEqual(login_response.data["full_name"], "Firebase Patient")
+		self.assertEqual(login_response.data["email"], "firebase.patient@example.com")
 		self.assertEqual(login_response.data["role"], "patient")
 		self.assertIsNotNone(login_response.data["patient_data"])
 		self.assertIsNone(login_response.data["provider_data"])
+		self.assertTrue(login_response.data["profile_completion_required"])
 
-		user = get_user_model().objects.get(email="teste.auth@example.com")
+		user = get_user_model().objects.get(email="firebase.patient@example.com")
 		wounds_user = WoundsUser.objects.get(user=user)
-		self.assertEqual(wounds_user.name, "Teste Auth")
-		self.assertEqual(wounds_user.email, "teste.auth@example.com")
-		self.assertEqual(wounds_user.birth_date.isoformat(), "1995-05-20")
 		self.assertEqual(wounds_user.role, WoundsUser.Patient)
 
 		access_token = login_response.data["access"]
@@ -62,77 +57,151 @@ class AuthenticationFlowTests(APITestCase):
 		)
 		self.assertEqual(me_response.status_code, 200)
 		self.assertTrue(me_response.data["authenticated"])
-		self.assertEqual(me_response.data["email"], "teste.auth@example.com")
+		self.assertEqual(me_response.data["email"], "firebase.patient@example.com")
 
-	@patch("app_cicatrizando.views.google_get_user_data")
-	def test_google_login_creates_provider_when_role_is_pr(self, mock_google_get_user_data):
-		mock_google_get_user_data.return_value = {
-			"email": "teste.provider@example.com",
-			"given_name": "Provider",
-			"family_name": "Test",
-			"sub": "google-sub-provider-123",
+	@patch("app_cicatrizando.views.firebase_get_user_data")
+	def test_role_selection_sets_provider_and_requires_profile_completion(self, mock_firebase_get_user_data):
+		mock_firebase_get_user_data.return_value = {
+			"email": "firebase.provider@example.com",
+			"given_name": "Firebase",
+			"family_name": "Provider",
+			"sub": "firebase-sub-provider-001",
 		}
 
 		login_response = self.client.post(
-			"/auth/login/google/",
+			"/auth/login/firebase/",
 			{
-				"token": "google-id-token-provider",
-				"role": WoundsUser.Provider,
-				"birth_date": "1988-12-01",
+				"firebase_token": "firebase-id-token-provider",
 			},
 			format="json",
 		)
 
 		self.assertEqual(login_response.status_code, 200)
-		self.assertEqual(login_response.data["role"], "provider")
-		self.assertIsNotNone(login_response.data["provider_data"])
-		self.assertIsNone(login_response.data["patient_data"])
+		access_token = login_response.data["access"]
+		role_response = self.client.post(
+			"/auth/login/role/",
+			{"role": WoundsUser.Provider},
+			format="json",
+			HTTP_AUTHORIZATION=f"Bearer {access_token}",
+		)
 
-		user = get_user_model().objects.get(email="teste.provider@example.com")
+		self.assertEqual(role_response.status_code, 200)
+		self.assertEqual(role_response.data["role"], "provider")
+		self.assertTrue(role_response.data["profile_completion_required"])
+
+		user = get_user_model().objects.get(email="firebase.provider@example.com")
 		wounds_user = WoundsUser.objects.get(user=user)
-		provider = Provider.objects.get(wounds_user=wounds_user)
+		self.assertFalse(Provider.objects.filter(wounds_user=user).exists())
+		self.assertEqual(wounds_user.role, WoundsUser.Provider)
 
-		self.assertEqual(provider.pk, wounds_user.pk)
-		self.assertEqual(login_response.data["provider_data"]["provider_id"], provider.pk)
-		self.assertEqual(login_response.data["provider_data"]["provider_name"], wounds_user.name)
-
-	@patch("app_cicatrizando.views.google_get_user_data")
-	def test_google_login_updates_existing_wounds_user_fields(self, mock_google_get_user_data):
+	def test_provider_profile_updates_wounds_user_optional_data(self):
 		user = get_user_model().objects.create_user(
-			username="existente@example.com",
-			email="existente@example.com",
+			username="complete.provider@example.com",
+			email="complete.provider@example.com",
 		)
 		wounds_user = WoundsUser.objects.create(
 			user=user,
-			name="Nome Antigo",
-			email="antigo@example.com",
-			birth_date=date(2000, 1, 1),
+			birth_date=date(1990, 1, 1),
+			state="",
+			city="",
 			role=WoundsUser.Patient,
 		)
 
-		mock_google_get_user_data.return_value = {
-			"email": "existente@example.com",
-			"given_name": "Nome",
-			"family_name": "Novo",
-			"sub": "google-sub-existing",
-		}
+		self.client.force_authenticate(user=user)
+		role_response = self.client.post(
+			"/auth/login/role/",
+			{"role": WoundsUser.Provider},
+			format="json",
+		)
+		self.assertEqual(role_response.status_code, 200)
 
-		login_response = self.client.post(
-			"/auth/login/google/",
+		response = self.client.post(
+			"/auth/login/provider/",
 			{
-				"token": "google-id-token-existing",
-				"role": WoundsUser.Provider,
-				"birth_date": "1999-02-03",
+				"wounds_user": {
+					"state": "SP",
+					"city": "São Paulo",
+				},
+				"provider": {
+					"professional_id": 12345,
+					"contact_email": "provider.extra@example.com",
+					"contact_number": "11999999999",
+				},
 			},
 			format="json",
 		)
 
-		self.assertEqual(login_response.status_code, 200)
-		self.assertEqual(login_response.data["role"], "provider")
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(response.data["role"], "provider")
+		self.assertIsNotNone(response.data["provider"])
+		self.assertIsNone(response.data["patient"])
 
 		wounds_user.refresh_from_db()
-		self.assertEqual(wounds_user.name, "Nome Novo")
-		self.assertEqual(wounds_user.email, "existente@example.com")
-		self.assertEqual(wounds_user.birth_date.isoformat(), "1999-02-03")
 		self.assertEqual(wounds_user.role, WoundsUser.Provider)
-		self.assertTrue(Provider.objects.filter(wounds_user=wounds_user).exists())
+		self.assertEqual(wounds_user.state, "SP")
+		self.assertEqual(wounds_user.city, "São Paulo")
+
+		provider = Provider.objects.get(wounds_user=user)
+		self.assertEqual(provider.Professional_ID, 12345)
+		self.assertEqual(provider.contact_email, "provider.extra@example.com")
+		self.assertEqual(provider.contact_number, "11999999999")
+
+	def test_patient_profile_updates_patient_and_rejects_wrong_role(self):
+		user = get_user_model().objects.create_user(
+			username="complete.patient@example.com",
+			email="complete.patient@example.com",
+		)
+		wounds_user = WoundsUser.objects.create(
+			user=user,
+			birth_date=date(1992, 2, 2),
+			state="",
+			city="",
+			role=WoundsUser.Provider,
+		)
+
+		self.client.force_authenticate(user=user)
+
+		invalid_response = self.client.post(
+			"/auth/login/patient/",
+			{
+				"patient": {"contact_email": "x@example.com"},
+			},
+			format="json",
+		)
+		self.assertEqual(invalid_response.status_code, 400)
+
+		role_response = self.client.post(
+			"/auth/login/role/",
+			{"role": WoundsUser.Patient},
+			format="json",
+		)
+		self.assertEqual(role_response.status_code, 200)
+
+		response = self.client.post(
+			"/auth/login/patient/",
+			{
+				"wounds_user": {
+					"state": "RJ",
+					"city": "Rio de Janeiro",
+				},
+				"patient": {
+					"contact_email": "patient.extra@example.com",
+					"contact_number": "21988888888",
+				},
+			},
+			format="json",
+		)
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(response.data["role"], "patient")
+		self.assertIsNone(response.data["provider"])
+		self.assertIsNotNone(response.data["patient"])
+
+		wounds_user.refresh_from_db()
+		self.assertEqual(wounds_user.role, WoundsUser.Patient)
+		self.assertEqual(wounds_user.state, "RJ")
+		self.assertEqual(wounds_user.city, "Rio de Janeiro")
+
+		patient = Patient.objects.get(WoundsUser=user)
+		self.assertEqual(patient.contact_email, "patient.extra@example.com")
+		self.assertEqual(patient.contact_numer, "21988888888")
