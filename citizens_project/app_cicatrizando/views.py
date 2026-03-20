@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 from drf_spectacular.utils import extend_schema
 from django.contrib.auth import get_user_model
+from datetime import date
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -10,6 +11,7 @@ from .serializers import AuthSerializer, AuthTokenResponseSerializer
 import logging
 
 logger = logging.getLogger("app_cicatrizando")
+DEFAULT_BIRTH_DATE = date(1900, 1, 1)
 
 User = get_user_model()
 
@@ -22,12 +24,15 @@ class MeView(viewsets.ViewSet):
         if user.is_anonymous:
             return Response({"message": "Não autenticado", "authenticated": False})
 
+        wounds_user_name = None
+        if hasattr(user, "wounds_user"):
+            wounds_user_name = user.wounds_user.name
+
         return Response({
             "id": user.id,
             "username": user.username,
             "email": user.email,
-            "first_name": user.first_name,
-            "last_name": user.last_name,
+            "name": wounds_user_name,
             "authenticated": True
         })
 
@@ -49,16 +54,27 @@ class GoogleLoginView(viewsets.ViewSet):
         logger.debug(f"User data from Google: {user_data}")
 
         user_email = user_data.get("email")
-        first_name = user_data.get("given_name", "")
-        last_name = user_data.get("family_name", "")
-        full_name = f"{first_name} {last_name}".strip() or user_email
+        full_name = user_data.get("name") or f"{user_data.get('given_name', '')} {user_data.get('family_name', '')}".strip() or user_email
+        birth_date = validated_data.get("birth_date")
+        if birth_date is None:
+            birth_date = DEFAULT_BIRTH_DATE
+
         user, created = User.objects.get_or_create(username=user_email, email=user_email)
+        user_update_fields = []
+        if user.email != user_email:
+            user.email = user_email
+            user_update_fields.append("email")
+        if user_update_fields:
+            user.save(update_fields=user_update_fields)
+
         selected_role = validated_data.get("role", WoundsUser.Patient)
 
         wounds_user, wounds_user_created = WoundsUser.objects.get_or_create(
             user=user,
             defaults={
                 "name": full_name,
+                "email": user_email,
+                "birth_date": birth_date,
                 "role": selected_role,
             },
         )
@@ -74,6 +90,12 @@ class GoogleLoginView(viewsets.ViewSet):
             if full_name and (wounds_user.name != full_name):
                 wounds_user.name = full_name
                 update_fields.append("name")
+            if wounds_user.email != user_email:
+                wounds_user.email = user_email
+                update_fields.append("email")
+            if wounds_user.birth_date != birth_date:
+                wounds_user.birth_date = birth_date
+                update_fields.append("birth_date")
                 
             if update_fields:
                 wounds_user.save(update_fields=update_fields)
