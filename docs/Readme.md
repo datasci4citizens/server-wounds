@@ -76,10 +76,21 @@ The server will be available at http://localhost:8000
 
 ## Main Endpoints
 
-The endpoints are available under [/api/](../citizens_project/app_cicatrizando/urls.py):
+The API routes are defined in:
 
-- `POST /api/auth/login/firebase/`
-- `GET /api/auth/me/`
+- [citizens_project/citizens_project/urls.py](../citizens_project/citizens_project/urls.py)
+- [citizens_project/app_cicatrizando/urls.py](../citizens_project/app_cicatrizando/urls.py)
+
+Available endpoints:
+
+- `POST /auth/login/firebase/` — Authenticate with Firebase and receive JWT tokens.
+
+- `POST /auth/login/role/` — Select user role (`provider` or `patient`).
+
+- `POST /auth/login/provider/` — Complete provider profile data.
+- `POST /auth/login/patient/` — Complete patient profile data.
+- `GET /auth/me/` — Validate token and return current authenticated user info.
+- `GET /docs/` — Open interactive API documentation (Swagger UI).
 
 ## Create an Admin User
 
