@@ -18,31 +18,68 @@ Copy the template from [docker/docker-compose-model.yml](../docker/docker-compos
 Copy the template from [env.model](../.env.model) to .env and edit the required fields.
 
 
+
 ### 2. Build Docker
 
 ```bash
 
+# from root directory
 docker compose -f docker/docker-compose.yml --env-file ./.env up --build # Linux users may need sudo
-``` 
+```
+
+---
+
+### It's recommended the use of a Venv (Virtual Environment) for debugging and testing outside of a docker:
+
+### creating a venv:
+from root directory
+```bash
+python -m venv .venv
+```
+
+starting up a venv
+```bash
+# linux
+source ./.venv/bin/activate
+
+#windows
+./.venv/scripts/activate.ps1
+```
+
+once the venv is active for the first time:
+```bash
+pip install --upgrade pip && pip install -r requirements.txt
+```
+
+to leave venv:
+```bash
+deactivate
+```
 
 ## Running the Application
 
 
-### 1. Start the database and server with Python
+### 1. Start the database and server with the python script
 
 ```bash
 # from the root directory
 
 python quickstart.py
 ```
+
+Read the quickstart scripts documentation at [quickstart.py](../quickstart.py) for additional options
+
 The server will be available at http://localhost:8000
+
+
+
 
 ## Main Endpoints
 
 The endpoints are available under [/api/](../citizens_project/app_cicatrizando/urls.py):
 
-* `POST /api/auth/login/google/`
-* `GET /api/auth/me/`
+- `POST /api/auth/login/firebase/`
+- `GET /api/auth/me/`
 
 ## Create an Admin User
 

@@ -23,43 +23,28 @@ logger = logging.getLogger("app_cicatrizando")
 User = get_user_model()
 
 
-def _has_field(model_cls, field_name):
-	return any(field.name == field_name for field in model_cls._meta.fields)
-
-
-def _relation_value(model_cls, relation_field_name, user, wounds_user):
-	relation_field = model_cls._meta.get_field(relation_field_name)
-	related_model = relation_field.remote_field.model
-	if related_model == User:
-		return user
-	return wounds_user
-
-
 def _get_or_create_wounds_user(user, selected_role):
-	defaults = {}
-	if _has_field(WoundsUser, "role"):
-		defaults["role"] = selected_role
-	if _has_field(WoundsUser, "birth_date"):
-		defaults["birth_date"] = date(1900, 1, 1)
-
+	defaults = {
+		"role": selected_role,
+		"birth_date": date(1900, 1, 1),
+	}
 	return WoundsUser.objects.get_or_create(user=user, defaults=defaults)
 
 
 def _serialize_wounds_user(wounds_user):
-	data = {"id": wounds_user.pk}
-	for field_name in ["role", "birth_date", "state", "city"]:
-		if _has_field(WoundsUser, field_name):
-			value = getattr(wounds_user, field_name)
-			if hasattr(value, "isoformat"):
-				value = value.isoformat()
-			data[field_name] = value
-	return data
+	return {
+		"id": wounds_user.pk,
+		"role": wounds_user.role,
+		"birth_date": wounds_user.birth_date.isoformat() if wounds_user.birth_date else None,
+		"state": wounds_user.state,
+		"city": wounds_user.city,
+	}
 
 
 def _apply_wounds_user_optional_updates(wounds_user, wounds_user_payload):
 	updated_fields = []
 	for field_name in ["birth_date", "state", "city"]:
-		if field_name in wounds_user_payload and _has_field(WoundsUser, field_name):
+		if field_name in wounds_user_payload:
 			new_value = wounds_user_payload[field_name]
 			if getattr(wounds_user, field_name) != new_value:
 				setattr(wounds_user, field_name, new_value)
@@ -90,35 +75,22 @@ def _build_auth_response(validated_data, user_data):
 			wounds_user.role = selected_role
 			update_fields.append("role")
 
-		if _has_field(WoundsUser, "name") and full_name and (wounds_user.name != full_name):
-			wounds_user.name = full_name
-			update_fields.append("name")
-		if _has_field(WoundsUser, "email") and (wounds_user.email != user_email):
-			wounds_user.email = user_email
-			update_fields.append("email")
-
 		if update_fields:
 			wounds_user.save(update_fields=update_fields)
 
 	patient_data = None
 	provider_data = None
 	display_name = full_name
-	if _has_field(WoundsUser, "name") and getattr(wounds_user, "name", None):
-		display_name = wounds_user.name
 
 	if wounds_user.role == WoundsUser.Provider:
-		relation_field_name = "wounds_user" if _has_field(Provider, "wounds_user") else "WoundsUser"
-		relation_value = _relation_value(Provider, relation_field_name, user, wounds_user)
-		provider = Provider.objects.filter(**{relation_field_name: relation_value}).first()
+		provider = Provider.objects.filter(wounds_user=user).first()
 		if provider:
 			provider_data = {
 				"provider_id": provider.pk,
 				"provider_name": display_name,
 			}
 	else:
-		relation_field_name = "WoundsUser" if _has_field(Patient, "WoundsUser") else "wounds_user"
-		relation_value = _relation_value(Patient, relation_field_name, user, wounds_user)
-		patient = Patient.objects.filter(**{relation_field_name: relation_value}).first()
+		patient = Patient.objects.filter(WoundsUser=user).first()
 		patient_data = {
 			"patient_id": wounds_user.pk,
 			"patient_name": display_name,
@@ -156,15 +128,11 @@ class MeView(viewsets.ViewSet):
 		if user.is_anonymous:
 			return Response({"message": "Não autenticado", "authenticated": False})
 
-		wounds_user_name = None
-		if hasattr(user, "wounds_user") and _has_field(WoundsUser, "name"):
-			wounds_user_name = user.wounds_user.name
-
 		return Response({
 			"id": user.id,
 			"username": user.username,
 			"email": user.email,
-			"name": wounds_user_name,
+			"name": None,
 			"authenticated": True,
 		})
 
@@ -205,13 +173,9 @@ class RoleSelectionView(viewsets.ViewSet):
 
 		profile_completion_required = True
 		if selected_role == WoundsUser.Provider:
-			relation_field_name = "wounds_user" if _has_field(Provider, "wounds_user") else "WoundsUser"
-			relation_value = _relation_value(Provider, relation_field_name, request.user, wounds_user)
-			profile_completion_required = Provider.objects.filter(**{relation_field_name: relation_value}).first() is None
+			profile_completion_required = Provider.objects.filter(wounds_user=request.user).first() is None
 		else:
-			relation_field_name = "WoundsUser" if _has_field(Patient, "WoundsUser") else "wounds_user"
-			relation_value = _relation_value(Patient, relation_field_name, request.user, wounds_user)
-			profile_completion_required = Patient.objects.filter(**{relation_field_name: relation_value}).first() is None
+			profile_completion_required = Patient.objects.filter(WoundsUser=request.user).first() is None
 
 		return Response(
 			{
@@ -242,18 +206,15 @@ class ProviderProfileView(viewsets.ViewSet):
 
 		_apply_wounds_user_optional_updates(wounds_user, wounds_user_payload)
 
-		relation_field_name = "wounds_user" if _has_field(Provider, "wounds_user") else "WoundsUser"
-		relation_value = _relation_value(Provider, relation_field_name, request.user, wounds_user)
-		provider = Provider.objects.filter(**{relation_field_name: relation_value}).first()
+		provider = Provider.objects.filter(wounds_user=request.user).first()
 		if provider is None:
 			professional_id = provider_payload.get("professional_id")
-			provider_create_data = {relation_field_name: relation_value}
-			if _has_field(Provider, "Professional_ID"):
-				provider_create_data["Professional_ID"] = professional_id
-			if _has_field(Provider, "contact_email"):
-				provider_create_data["contact_email"] = provider_payload.get("contact_email", "")
-			if _has_field(Provider, "contact_number"):
-				provider_create_data["contact_number"] = provider_payload.get("contact_number", "")
+			provider_create_data = {
+				"wounds_user": request.user,
+				"Professional_ID": professional_id,
+				"contact_email": provider_payload.get("contact_email", ""),
+				"contact_number": provider_payload.get("contact_number", ""),
+			}
 			provider = Provider.objects.create(**provider_create_data)
 
 		provider_update_fields = []
@@ -263,7 +224,7 @@ class ProviderProfileView(viewsets.ViewSet):
 			"contact_number": "contact_number",
 		}
 		for payload_key, model_field in provider_field_map.items():
-			if payload_key in provider_payload and _has_field(Provider, model_field):
+			if payload_key in provider_payload:
 				new_value = provider_payload[payload_key]
 				if getattr(provider, model_field) != new_value:
 					setattr(provider, model_field, new_value)
@@ -311,17 +272,15 @@ class PatientProfileView(viewsets.ViewSet):
 
 		_apply_wounds_user_optional_updates(wounds_user, wounds_user_payload)
 
-		relation_field_name = "WoundsUser" if _has_field(Patient, "WoundsUser") else "wounds_user"
-		relation_value = _relation_value(Patient, relation_field_name, request.user, wounds_user)
-		patient, _ = Patient.objects.get_or_create(**{relation_field_name: relation_value})
+		patient, _ = Patient.objects.get_or_create(WoundsUser=request.user)
 
 		patient_update_fields = []
 		patient_field_map = {
 			"contact_email": "contact_email",
-			"contact_number": "contact_numer",
+			"contact_number": "contact_number",
 		}
 		for payload_key, model_field in patient_field_map.items():
-			if payload_key in patient_payload and _has_field(Patient, model_field):
+			if payload_key in patient_payload:
 				new_value = patient_payload[payload_key]
 				if getattr(patient, model_field) != new_value:
 					setattr(patient, model_field, new_value)
@@ -333,7 +292,7 @@ class PatientProfileView(viewsets.ViewSet):
 		patient_data = {
 			"id": patient.pk,
 			"contact_email": getattr(patient, "contact_email", None),
-			"contact_number": getattr(patient, "contact_numer", None),
+			"contact_number": getattr(patient, "contact_number", None),
 		}
 
 		return Response(

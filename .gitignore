@@ -3,4 +3,3 @@ __pycache__
 .venv
 docker/docker-compose.yml
 .idea/
-migrations/*

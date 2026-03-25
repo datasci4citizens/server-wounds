@@ -11,8 +11,8 @@ class WoundsUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="wounds_user")
     
     birth_date = models.DateField(blank=True)
-    state = models.CharField(blank=True)
-    city = models.CharField(blank=True)
+    state = models.CharField(max_length=30, blank=True)
+    city = models.CharField(max_length=30, blank=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -29,11 +29,11 @@ class WoundsUser(models.Model):
 class Provider(models.Model):
     wounds_user = models.OneToOneField(User, on_delete=models.CASCADE)
 
-    Professional_ID = models.PositiveIntegerField()
+    Professional_ID = models.CharField(max_length=20)
     contact_email = models.EmailField(blank=True)
-    contact_number = models.CharField(blank=True, max_length=11,) 
+    contact_number = models.CharField(blank=True, max_length=11) 
 
 class Patient(models.Model):
     WoundsUser = models.OneToOneField(User, on_delete=models.CASCADE)
     contact_email = models.EmailField(blank=True)
-    contact_numer = models.CharField(blank=True)
+    contact_number = models.CharField(blank=True, max_length=11)

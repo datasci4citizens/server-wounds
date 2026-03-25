@@ -1,26 +1,111 @@
 """
-Como rodar os testes deste app:
+How to run this app test suite:
 
-1) Rodar todos os testes do Django (dentro do container web):
-	docker compose --env-file .env -f docker/docker-compose.yml exec -T web \
-	python citizens_project/manage.py test
+1) Run all tests via quickstart:
+	python quickstart.py test
 
-2) Rodar uma classe específica de testes:
-	docker compose --env-file .env -f docker/docker-compose.yml exec -T web \
-	python citizens_project/manage.py test app_cicatrizando.tests.[Classname]
+2) Run a specific test class:
+	python quickstart.py test [Classname]
 
-Observação:
-- Execute os comandos a partir da pasta server-wounds/.
+3) Run a specific test method:
+	python quickstart.py test [Classname].[method_name]
+
+Note:
+- Run these commands from the server-wounds/ directory.
+- for more information on commands, check server-wounds/quickstart.py docstring 
 """
 
 from unittest.mock import patch
 from datetime import date
 from django.contrib.auth import get_user_model
 from rest_framework.test import APITestCase
+from rest_framework.exceptions import APIException
 from app_cicatrizando.models import Provider, Patient, WoundsUser
 
 
-class AuthenticationFlowTests(APITestCase):
+class BaseAuthenticationFlowTests(APITestCase):
+	firebase_login_url = "/auth/login/firebase/"
+	role_selection_url = "/auth/login/role/"
+	provider_profile_url = "/auth/login/provider/"
+	patient_profile_url = "/auth/login/patient/"
+	me_url = "/auth/me/"
+
+	def _create_user_with_wounds_profile(self, *, email, role, birth_date):
+		user = get_user_model().objects.create_user(username=email, email=email)
+		wounds_user = WoundsUser.objects.create(
+			user=user,
+			birth_date=birth_date,
+			state="",
+			city="",
+			role=role,
+		)
+		return user, wounds_user
+
+	def _auth_headers(self, access_token):
+		return {"HTTP_AUTHORIZATION": f"Bearer {access_token}"}
+
+
+class AuthenticationErrorTests(BaseAuthenticationFlowTests):
+	def test_me_requires_authentication(self):
+		response = self.client.get(self.me_url)
+
+		self.assertEqual(response.status_code, 401)
+
+	def test_role_selection_requires_authentication(self):
+		response = self.client.post(
+			self.role_selection_url,
+			{"role": WoundsUser.Provider},
+			format="json",
+		)
+
+		self.assertEqual(response.status_code, 401)
+
+	def test_firebase_login_requires_firebase_token(self):
+		response = self.client.post(
+			self.firebase_login_url,
+			{},
+			format="json",
+		)
+
+		self.assertEqual(response.status_code, 400)
+		self.assertIn("firebase_token", response.data)
+
+	@patch("app_cicatrizando.views.firebase_get_user_data")
+	def test_firebase_login_fails_when_email_is_missing(self, mock_firebase_get_user_data):
+		mock_firebase_get_user_data.side_effect = APIException("Firebase token does not contain email")
+
+		response = self.client.post(
+			self.firebase_login_url,
+			{"firebase_token": "token-without-email"},
+			format="json",
+		)
+
+		self.assertEqual(response.status_code, 500)
+
+	def test_provider_profile_requires_professional_id(self):
+		user, _ = self._create_user_with_wounds_profile(
+			email="provider.missing.id@example.com",
+			role=WoundsUser.Provider,
+			birth_date=date(1991, 1, 1),
+		)
+
+		self.client.force_authenticate(user=user)
+		response = self.client.post(
+			self.provider_profile_url,
+			{
+				"provider": {
+					"contact_email": "provider.extra@example.com",
+					"contact_number": "11999999999",
+				},
+			},
+			format="json",
+		)
+
+		self.assertEqual(response.status_code, 400)
+		self.assertFalse(Provider.objects.filter(wounds_user=user).exists())
+
+
+class AuthenticationFlowTests(BaseAuthenticationFlowTests):
 	@patch("app_cicatrizando.views.firebase_get_user_data")
 	def test_firebase_login_creates_patient_and_me_works(self, mock_firebase_get_user_data):
 		mock_firebase_get_user_data.return_value = {
@@ -31,7 +116,7 @@ class AuthenticationFlowTests(APITestCase):
 		}
 
 		login_response = self.client.post(
-			"/auth/login/firebase/",
+			self.firebase_login_url,
 			{
 				"firebase_token": "firebase-id-token-patient",
 			},
@@ -52,8 +137,8 @@ class AuthenticationFlowTests(APITestCase):
 
 		access_token = login_response.data["access"]
 		me_response = self.client.get(
-			"/auth/me/",
-			HTTP_AUTHORIZATION=f"Bearer {access_token}",
+			self.me_url,
+			**self._auth_headers(access_token),
 		)
 		self.assertEqual(me_response.status_code, 200)
 		self.assertTrue(me_response.data["authenticated"])
@@ -69,7 +154,7 @@ class AuthenticationFlowTests(APITestCase):
 		}
 
 		login_response = self.client.post(
-			"/auth/login/firebase/",
+			self.firebase_login_url,
 			{
 				"firebase_token": "firebase-id-token-provider",
 			},
@@ -79,10 +164,10 @@ class AuthenticationFlowTests(APITestCase):
 		self.assertEqual(login_response.status_code, 200)
 		access_token = login_response.data["access"]
 		role_response = self.client.post(
-			"/auth/login/role/",
+			self.role_selection_url,
 			{"role": WoundsUser.Provider},
 			format="json",
-			HTTP_AUTHORIZATION=f"Bearer {access_token}",
+			**self._auth_headers(access_token),
 		)
 
 		self.assertEqual(role_response.status_code, 200)
@@ -95,35 +180,29 @@ class AuthenticationFlowTests(APITestCase):
 		self.assertEqual(wounds_user.role, WoundsUser.Provider)
 
 	def test_provider_profile_updates_wounds_user_optional_data(self):
-		user = get_user_model().objects.create_user(
-			username="complete.provider@example.com",
+		user, wounds_user = self._create_user_with_wounds_profile(
 			email="complete.provider@example.com",
-		)
-		wounds_user = WoundsUser.objects.create(
-			user=user,
-			birth_date=date(1990, 1, 1),
-			state="",
-			city="",
 			role=WoundsUser.Patient,
+			birth_date=date(1990, 1, 1),
 		)
 
 		self.client.force_authenticate(user=user)
 		role_response = self.client.post(
-			"/auth/login/role/",
+			self.role_selection_url,
 			{"role": WoundsUser.Provider},
 			format="json",
 		)
 		self.assertEqual(role_response.status_code, 200)
 
 		response = self.client.post(
-			"/auth/login/provider/",
+			self.provider_profile_url,
 			{
 				"wounds_user": {
 					"state": "SP",
 					"city": "São Paulo",
 				},
 				"provider": {
-					"professional_id": 12345,
+					"professional_id": "12345",
 					"contact_email": "provider.extra@example.com",
 					"contact_number": "11999999999",
 				},
@@ -142,27 +221,21 @@ class AuthenticationFlowTests(APITestCase):
 		self.assertEqual(wounds_user.city, "São Paulo")
 
 		provider = Provider.objects.get(wounds_user=user)
-		self.assertEqual(provider.Professional_ID, 12345)
+		self.assertEqual(provider.Professional_ID, "12345")
 		self.assertEqual(provider.contact_email, "provider.extra@example.com")
 		self.assertEqual(provider.contact_number, "11999999999")
 
 	def test_patient_profile_updates_patient_and_rejects_wrong_role(self):
-		user = get_user_model().objects.create_user(
-			username="complete.patient@example.com",
+		user, wounds_user = self._create_user_with_wounds_profile(
 			email="complete.patient@example.com",
-		)
-		wounds_user = WoundsUser.objects.create(
-			user=user,
-			birth_date=date(1992, 2, 2),
-			state="",
-			city="",
 			role=WoundsUser.Provider,
+			birth_date=date(1992, 2, 2),
 		)
 
 		self.client.force_authenticate(user=user)
 
 		invalid_response = self.client.post(
-			"/auth/login/patient/",
+			self.patient_profile_url,
 			{
 				"patient": {"contact_email": "x@example.com"},
 			},
@@ -171,14 +244,14 @@ class AuthenticationFlowTests(APITestCase):
 		self.assertEqual(invalid_response.status_code, 400)
 
 		role_response = self.client.post(
-			"/auth/login/role/",
+			self.role_selection_url,
 			{"role": WoundsUser.Patient},
 			format="json",
 		)
 		self.assertEqual(role_response.status_code, 200)
 
 		response = self.client.post(
-			"/auth/login/patient/",
+			self.patient_profile_url,
 			{
 				"wounds_user": {
 					"state": "RJ",
@@ -204,4 +277,4 @@ class AuthenticationFlowTests(APITestCase):
 
 		patient = Patient.objects.get(WoundsUser=user)
 		self.assertEqual(patient.contact_email, "patient.extra@example.com")
-		self.assertEqual(patient.contact_numer, "21988888888")
+		self.assertEqual(patient.contact_number, "21988888888")
