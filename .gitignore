@@ -1,5 +1,4 @@
 __pycache__
 .env
 .venv
-docker/docker-compose.yml
 .idea/

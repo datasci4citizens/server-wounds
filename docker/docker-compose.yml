@@ -59,6 +59,6 @@ volumes:
     driver: "local"
     driver_opts:
       type: "none"
-      device: "changeme" # directory used to persist database files
+      device: ${EXTERNAL_MAPPING_PATH}
       o: "bind"
 

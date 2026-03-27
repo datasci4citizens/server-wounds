@@ -11,13 +11,9 @@
 * [.env.model](../.env.model) - Environment variables template
 
 ## Setup
-### 1. Docker Compose and .env
-
-Copy the template from [docker/docker-compose-model.yml](../docker/docker-compose-model.yml) to docker-compose.yml and edit the required fields.
+### 1. .env
 
 Copy the template from [env.model](../.env.model) to .env and edit the required fields.
-
-
 
 ### 2. Build Docker
 
