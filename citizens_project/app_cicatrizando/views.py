@@ -5,10 +5,10 @@ from datetime import date
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from .firebase import firebase_get_user_data
+from .google import google_get_user_data
 from .models import WoundsUser, Provider, Patient
 from .serializers import (
-	FirebaseAuthSerializer,
+	GoogleAuthSerializer,
 	AuthTokenResponseSerializer,
 	RoleSelectionSerializer,
 	RoleSelectionResponseSerializer,
@@ -137,19 +137,19 @@ class MeView(viewsets.ViewSet):
 		})
 
 
-class FirebaseLoginView(viewsets.ViewSet):
-	serializer_class = FirebaseAuthSerializer
+class GoogleLoginView(viewsets.ViewSet):
+	serializer_class = GoogleAuthSerializer
 	permission_classes = [AllowAny]
 
-	@extend_schema(request=FirebaseAuthSerializer, responses={200: AuthTokenResponseSerializer})
+	@extend_schema(request=GoogleAuthSerializer, responses={200: AuthTokenResponseSerializer})
 	def create(self, request, *args, **kwargs):
-		logger.debug("Firebase login request")
+		logger.debug("Google login request")
 		auth_serializer = self.serializer_class(data=request.data)
 		auth_serializer.is_valid(raise_exception=True)
 		validated_data = auth_serializer.validated_data
 
-		user_data = firebase_get_user_data(validated_data["firebase_token"])
-		logger.debug(f"User data from Firebase: {user_data}")
+		user_data = google_get_user_data(validated_data["auth_code"])
+		logger.debug(f"User data from Google: {user_data}")
 
 		response = _build_auth_response(validated_data=validated_data, user_data=user_data)
 		return Response(response, status=200)
