@@ -126,7 +126,7 @@ class MeView(viewsets.ViewSet):
 	def list(self, request):
 		user = request.user
 		if user.is_anonymous:
-			return Response({"message": "Não autenticado", "authenticated": False})
+			return Response({"message": "Not authenticated", "authenticated": False})
 
 		return Response({
 			"id": user.id,
@@ -179,7 +179,7 @@ class RoleSelectionView(viewsets.ViewSet):
 
 		return Response(
 			{
-				"message": "Role selecionado com sucesso",
+				"message": "Role selected successfully",
 				"role": "provider" if selected_role == WoundsUser.Provider else "patient",
 				"profile_completion_required": profile_completion_required,
 			},
@@ -202,7 +202,7 @@ class ProviderProfileView(viewsets.ViewSet):
 
 		wounds_user, _ = _get_or_create_wounds_user(user=request.user, selected_role=WoundsUser.Provider)
 		if wounds_user.role != WoundsUser.Provider:
-			return Response({"detail": "User role must be Pr to complete provider profile."}, status=400)
+			return Response({"detail": "User role must be Provider to complete provider profile."}, status=400)
 
 		_apply_wounds_user_optional_updates(wounds_user, wounds_user_payload)
 
@@ -242,7 +242,7 @@ class ProviderProfileView(viewsets.ViewSet):
 
 		return Response(
 			{
-				"message": "Perfil provider atualizado com sucesso",
+				"message": "Provider profile updated successfully",
 				"role": "provider",
 				"wounds_user": _serialize_wounds_user(wounds_user),
 				"provider": provider_data,
@@ -268,7 +268,7 @@ class PatientProfileView(viewsets.ViewSet):
 		selected_role = WoundsUser.Patient
 		wounds_user, _ = _get_or_create_wounds_user(user=request.user, selected_role=selected_role)
 		if wounds_user.role != WoundsUser.Patient:
-			return Response({"detail": "User role must be Pa to complete patient profile."}, status=400)
+			return Response({"detail": "User role must be Patient to complete patient profile."}, status=400)
 
 		_apply_wounds_user_optional_updates(wounds_user, wounds_user_payload)
 
@@ -297,7 +297,7 @@ class PatientProfileView(viewsets.ViewSet):
 
 		return Response(
 			{
-				"message": "Perfil patient atualizado com sucesso",
+				"message": "Patient profile updated successfully",
 				"role": "patient",
 				"wounds_user": _serialize_wounds_user(wounds_user),
 				"provider": None,

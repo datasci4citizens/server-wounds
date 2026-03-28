@@ -1,11 +1,11 @@
 """
-Este modulo fornece funcoes utilitarias para autenticar usuarios com o Google OAuth2.
+This module provides utility functions for authenticating users with Google OAuth2.
 
-Ele suporta autenticacao baseada na web usando o auth-code do @react-oauth/google:
-- Troca um codigo de autorizacao por um token de acesso para recuperar dados do usuario.
+It supports web-based authentication using the auth-code from @react-oauth/google:
+- Exchanges an authorization code for an access token to retrieve user data.
 
-Ele se integra as configuracoes do Django para credenciais do cliente da API do Google e gerencia
-relatorios de erros por meio da `APIException` do Django REST Framework.
+It integrates with Django settings for Google API client credentials and manages
+error reporting via Django REST Framework's `APIException`.
 """
 
 from typing import Any, Dict
@@ -23,10 +23,10 @@ GOOGLE_USER_INFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
 def google_get_access_token(code: str) -> str:
     """
-    Troca o authorization code por um access token.
+    Exchanges the authorization code for an access token.
     
-    O @react-oauth/google usa 'postmessage' como redirect_uri quando o codigo
-    e obtido via popup ou fluxo implicit.
+    @react-oauth/google uses 'postmessage' as redirect_uri when the code
+    is obtained via popup or implicit flow.
     
     Ref: https://github.com/MomenSherif/react-oauth/issues/252
     """
@@ -50,7 +50,7 @@ def google_get_access_token(code: str) -> str:
 
 def google_get_user_info(access_token: str) -> Dict[str, Any]:
     """
-    Obtem informacoes do usuario usando o access token.
+    Retrieves user information using the access token.
     
     Ref: https://developers.google.com/identity/protocols/oauth2/web-server#callinganapi
     """
@@ -69,17 +69,17 @@ def google_get_user_info(access_token: str) -> Dict[str, Any]:
 
 def google_get_user_data(auth_code: str) -> Dict[str, Any]:
     """
-    Funcao principal para autenticar usuario via auth-code do @react-oauth/google.
+    Main function to authenticate user via auth-code from @react-oauth/google.
     
-    1. Troca o auth-code por um access token
-    2. Usa o access token para obter informacoes do usuario
-    3. Retorna os dados do usuario em formato padronizado
+    1. Exchanges the auth-code for an access token
+    2. Uses the access token to retrieve user information
+    3. Returns user data in a standardized format
     
     Args:
-        auth_code: O codigo de autorizacao retornado pelo @react-oauth/google
+        auth_code: The authorization code returned by @react-oauth/google
         
     Returns:
-        Dict com email, name, given_name, family_name e sub (Google user ID)
+        Dict with email, name, given_name, family_name and sub (Google user ID)
     """
     logger.info("Exchanging auth code for access token")
     access_token = google_get_access_token(code=auth_code)
