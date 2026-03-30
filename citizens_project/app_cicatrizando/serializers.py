@@ -2,8 +2,8 @@ from rest_framework import serializers
 from .models import WoundsUser
 
 
-class FirebaseAuthSerializer(serializers.Serializer):
-	firebase_token = serializers.CharField(required=True, allow_blank=False, allow_null=False)
+class GoogleAuthSerializer(serializers.Serializer):
+	auth_code = serializers.CharField(required=True, allow_blank=False, allow_null=False)
 
 
 class RoleSelectionSerializer(serializers.Serializer):

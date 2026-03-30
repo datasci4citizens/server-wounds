@@ -79,8 +79,7 @@ The API routes are defined in:
 
 Available endpoints:
 
-- `POST /auth/login/firebase/` — Authenticate with Firebase and receive JWT tokens.
-
+- `POST /auth/login/google/` — Authenticate with Google OAuth2 and receive JWT tokens.
 - `POST /auth/login/role/` — Select user role (`provider` or `patient`).
 
 - `POST /auth/login/provider/` — Complete provider profile data.

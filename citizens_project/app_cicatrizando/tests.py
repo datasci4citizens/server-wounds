@@ -24,7 +24,7 @@ from app_cicatrizando.models import Provider, Patient, WoundsUser
 
 
 class BaseAuthenticationFlowTests(APITestCase):
-	firebase_login_url = "/auth/login/firebase/"
+	google_login_url = "/auth/login/google/"
 	role_selection_url = "/auth/login/role/"
 	provider_profile_url = "/auth/login/provider/"
 	patient_profile_url = "/auth/login/patient/"
@@ -60,23 +60,23 @@ class AuthenticationErrorTests(BaseAuthenticationFlowTests):
 
 		self.assertEqual(response.status_code, 401)
 
-	def test_firebase_login_requires_firebase_token(self):
+	def test_google_login_requires_auth_code(self):
 		response = self.client.post(
-			self.firebase_login_url,
+			self.google_login_url,
 			{},
 			format="json",
 		)
 
 		self.assertEqual(response.status_code, 400)
-		self.assertIn("firebase_token", response.data)
+		self.assertIn("auth_code", response.data)
 
-	@patch("app_cicatrizando.views.firebase_get_user_data")
-	def test_firebase_login_fails_when_email_is_missing(self, mock_firebase_get_user_data):
-		mock_firebase_get_user_data.side_effect = APIException("Firebase token does not contain email")
+	@patch("app_cicatrizando.views.google_get_user_data")
+	def test_google_login_fails_when_email_is_missing(self, mock_google_get_user_data):
+		mock_google_get_user_data.side_effect = APIException("Google account does not have an email address")
 
 		response = self.client.post(
-			self.firebase_login_url,
-			{"firebase_token": "token-without-email"},
+			self.google_login_url,
+			{"auth_code": "code-without-email"},
 			format="json",
 		)
 
@@ -106,32 +106,32 @@ class AuthenticationErrorTests(BaseAuthenticationFlowTests):
 
 
 class AuthenticationFlowTests(BaseAuthenticationFlowTests):
-	@patch("app_cicatrizando.views.firebase_get_user_data")
-	def test_firebase_login_creates_patient_and_me_works(self, mock_firebase_get_user_data):
-		mock_firebase_get_user_data.return_value = {
-			"email": "firebase.patient@example.com",
-			"given_name": "Firebase",
+	@patch("app_cicatrizando.views.google_get_user_data")
+	def test_google_login_creates_patient_and_me_works(self, mock_google_get_user_data):
+		mock_google_get_user_data.return_value = {
+			"email": "google.patient@example.com",
+			"given_name": "Google",
 			"family_name": "Patient",
-			"sub": "firebase-sub-patient-001",
+			"sub": "google-sub-patient-001",
 		}
 
 		login_response = self.client.post(
-			self.firebase_login_url,
+			self.google_login_url,
 			{
-				"firebase_token": "firebase-id-token-patient",
+				"auth_code": "google-auth-code-patient",
 			},
 			format="json",
 		)
 
 		self.assertEqual(login_response.status_code, 200)
-		self.assertEqual(login_response.data["full_name"], "Firebase Patient")
-		self.assertEqual(login_response.data["email"], "firebase.patient@example.com")
+		self.assertEqual(login_response.data["full_name"], "Google Patient")
+		self.assertEqual(login_response.data["email"], "google.patient@example.com")
 		self.assertEqual(login_response.data["role"], "patient")
 		self.assertIsNotNone(login_response.data["patient_data"])
 		self.assertIsNone(login_response.data["provider_data"])
 		self.assertTrue(login_response.data["profile_completion_required"])
 
-		user = get_user_model().objects.get(email="firebase.patient@example.com")
+		user = get_user_model().objects.get(email="google.patient@example.com")
 		wounds_user = WoundsUser.objects.get(user=user)
 		self.assertEqual(wounds_user.role, WoundsUser.Patient)
 
@@ -142,21 +142,21 @@ class AuthenticationFlowTests(BaseAuthenticationFlowTests):
 		)
 		self.assertEqual(me_response.status_code, 200)
 		self.assertTrue(me_response.data["authenticated"])
-		self.assertEqual(me_response.data["email"], "firebase.patient@example.com")
+		self.assertEqual(me_response.data["email"], "google.patient@example.com")
 
-	@patch("app_cicatrizando.views.firebase_get_user_data")
-	def test_role_selection_sets_provider_and_requires_profile_completion(self, mock_firebase_get_user_data):
-		mock_firebase_get_user_data.return_value = {
-			"email": "firebase.provider@example.com",
-			"given_name": "Firebase",
+	@patch("app_cicatrizando.views.google_get_user_data")
+	def test_role_selection_sets_provider_and_requires_profile_completion(self, mock_google_get_user_data):
+		mock_google_get_user_data.return_value = {
+			"email": "google.provider@example.com",
+			"given_name": "Google",
 			"family_name": "Provider",
-			"sub": "firebase-sub-provider-001",
+			"sub": "google-sub-provider-001",
 		}
 
 		login_response = self.client.post(
-			self.firebase_login_url,
+			self.google_login_url,
 			{
-				"firebase_token": "firebase-id-token-provider",
+				"auth_code": "google-auth-code-provider",
 			},
 			format="json",
 		)
@@ -174,7 +174,7 @@ class AuthenticationFlowTests(BaseAuthenticationFlowTests):
 		self.assertEqual(role_response.data["role"], "provider")
 		self.assertTrue(role_response.data["profile_completion_required"])
 
-		user = get_user_model().objects.get(email="firebase.provider@example.com")
+		user = get_user_model().objects.get(email="google.provider@example.com")
 		wounds_user = WoundsUser.objects.get(user=user)
 		self.assertFalse(Provider.objects.filter(wounds_user=user).exists())
 		self.assertEqual(wounds_user.role, WoundsUser.Provider)
