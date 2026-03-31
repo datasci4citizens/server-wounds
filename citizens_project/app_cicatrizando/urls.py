@@ -1,15 +1,13 @@
 from django.urls import path, include
 from rest_framework import routers
-from .views import GoogleLoginView, RoleSelectionView, ProviderProfileView, PatientProfileView, MeView
+from .views import GoogleLoginView, SpecialistRegistrationView, MeView
 from drf_spectacular.views import SpectacularSwaggerView
 
 router = routers.DefaultRouter()
 
 # Auth endpoints
-router.register(r'auth/login/google', GoogleLoginView, basename='google-login')
-router.register(r'auth/login/role', RoleSelectionView, basename='role-selection')
-router.register(r'auth/login/provider', ProviderProfileView, basename='provider-profile')
-router.register(r'auth/login/patient', PatientProfileView, basename='patient-profile')
+router.register(r'auth/google', GoogleLoginView, basename='google-login')
+router.register(r'auth/register/specialist', SpecialistRegistrationView, basename='specialist-registration')
 router.register(r'auth/me', MeView, basename='me')
 
 urlpatterns = [

@@ -1,10 +1,10 @@
 services:
-  
+
   db:  # database
     container_name: database_wounds
     image: postgres:latest
     volumes:
-      - wound-data:/var/lib/postgresql/
+      - wound-data:/var/lib/postgresql
     restart: on-failure:3
     shm_size: 128mb
     environment:
@@ -32,9 +32,12 @@ services:
 
     restart: on-failure:3
 
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+
     environment:
       DEBUG: ${DEBUG}
-
       SERVER_WOUNDS_DB_HOST: ${SERVER_WOUNDS_DB_HOST}
       SERVER_WOUNDS_DB_PORT: ${SERVER_WOUNDS_DB_PORT}
       SERVER_WOUNDS_DB_USER: ${SERVER_WOUNDS_DB_USER}
@@ -44,8 +47,10 @@ services:
       DJANGO_SUPERUSER_EMAIL: ${DJANGO_SUPERUSER_EMAIL}
       DJANGO_SUPERUSER_PASSWORD: ${DJANGO_SUPERUSER_PASSWORD}
       ALLOWED_HOSTS: localhost,127.0.0.1,web
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      SERVER_WOUNDS_SECRET_KEY: ${SERVER_WOUNDS_SECRET_KEY}
 
-    
     ports:
       - "8000:8000"
     
@@ -53,12 +58,5 @@ services:
       db:
         condition: service_healthy
 
-# external mapping
 volumes:
   wound-data:
-    driver: "local"
-    driver_opts:
-      type: "none"
-      device: ${EXTERNAL_MAPPING_PATH}
-      o: "bind"
-
