@@ -10,9 +10,10 @@ User = get_user_model()
 class WoundsUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="wounds_user")
     
-    birth_date = models.DateField(blank=True)
-    state = models.CharField(max_length=30, blank=True)
-    city = models.CharField(max_length=30, blank=True)
+    name = models.CharField(max_length=255, blank=True)
+    birth_date = models.DateField(blank=True, null=True)
+    state = models.CharField(max_length=2, blank=True)
+    city = models.CharField(max_length=100, blank=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -23,17 +24,19 @@ class WoundsUser(models.Model):
         (Patient, "Paciente"),
         (Provider, "Especialista"),
     ]
-    role = models.CharField(choices=roles, max_length=2, default=Patient)
+    role = models.CharField(choices=roles, max_length=2, blank=True)
     
 
 class Provider(models.Model):
-    wounds_user = models.OneToOneField(User, on_delete=models.CASCADE)
+    wounds_user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="provider")
 
-    Professional_ID = models.CharField(max_length=20)
+    professional_id = models.CharField(max_length=50)
     contact_email = models.EmailField(blank=True)
-    contact_number = models.CharField(blank=True, max_length=11) 
+    contact_phone = models.CharField(blank=True, max_length=20)
+
 
 class Patient(models.Model):
-    WoundsUser = models.OneToOneField(User, on_delete=models.CASCADE)
+    wounds_user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="patient")
+    
     contact_email = models.EmailField(blank=True)
-    contact_number = models.CharField(blank=True, max_length=11)
+    contact_phone = models.CharField(blank=True, max_length=20)
