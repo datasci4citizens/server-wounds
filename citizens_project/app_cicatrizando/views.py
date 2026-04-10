@@ -38,13 +38,12 @@ def _is_registration_complete(user):
     
     if wounds_user.role == WoundsUser.Provider:
         return Provider.objects.filter(wounds_user=user).exists()
-    
-    # For patients (currently inactive, but check exists)
-    from .models import Patient
-    return Patient.objects.filter(wounds_user=user).exists()
+    elif wounds_user.role == WoundsUser.Patient:
+        return Patient.objects.filter(wounds_user=user).exists()
 
 
-def _get_user_role_display(wounds_user):
+
+def _get_user_role_display(wounds_user:  WoundsUser) -> str: 
     """Convert role code to display string."""
     if not wounds_user or not wounds_user.role:
         return None
@@ -68,12 +67,12 @@ class GoogleLoginView(viewsets.ViewSet):
             201: GoogleAuthResponseSerializer,
         }
     )
+
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         validated_data = serializer.validated_data
 
-        # Exchange auth code for user data from Google
         user_data = google_get_user_data(validated_data["auth_code"])
         logger.debug(f"User data from Google: {user_data}")
 
@@ -81,21 +80,18 @@ class GoogleLoginView(viewsets.ViewSet):
         full_name = (
             user_data.get("name") or
             f"{user_data.get('given_name', '')} {user_data.get('family_name', '')}".strip() or
-            user_email
+            user_email.split('@')[0]
         )
 
-        # Get or create Django user
         user, user_created = User.objects.get_or_create(
             username=user_email,
             defaults={"email": user_email}
         )
 
-        # Ensure email is up to date
         if user.email != user_email:
             user.email = user_email
             user.save(update_fields=["email"])
 
-        # Get or create WoundsUser (without setting a default role)
         wounds_user, wounds_user_created = WoundsUser.objects.get_or_create(
             user=user,
             defaults={}
@@ -104,7 +100,6 @@ class GoogleLoginView(viewsets.ViewSet):
         is_new = user_created or wounds_user_created
         registration_complete = _is_registration_complete(user)
 
-        # Generate JWT tokens
         token = RefreshToken.for_user(user)
 
         response_data = {
@@ -132,7 +127,11 @@ class SpecialistRegistrationView(viewsets.ViewSet):
 
     @extend_schema(
         request=SpecialistRegistrationSerializer,
-        responses={201: SpecialistRegistrationResponseSerializer}
+        responses={
+            200: SpecialistRegistrationResponseSerializer,
+            201: SpecialistRegistrationResponseSerializer,
+        }
+        
     )
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
@@ -141,7 +140,6 @@ class SpecialistRegistrationView(viewsets.ViewSet):
 
         user = request.user
 
-        # Get or create WoundsUser and update with registration data
         wounds_user, _ = WoundsUser.objects.get_or_create(user=user)
         
         wounds_user.name = data["name"]
@@ -151,8 +149,7 @@ class SpecialistRegistrationView(viewsets.ViewSet):
         wounds_user.role = WoundsUser.Provider
         wounds_user.save()
 
-        # Create or update Provider record
-        provider, created = Provider.objects.update_or_create(
+        provider, _ = Provider.objects.update_or_create(
             wounds_user=user,
             defaults={
                 "professional_id": data["professional_id"],
@@ -179,8 +176,8 @@ class SpecialistRegistrationView(viewsets.ViewSet):
             },
         }
 
+    
         return Response(response_data, status=status.HTTP_201_CREATED)
-
 
 class MeView(viewsets.ViewSet):
     """
@@ -194,25 +191,11 @@ class MeView(viewsets.ViewSet):
     @extend_schema(responses={200: MeResponseSerializer})
     def list(self, request):
         user = request.user
-
-        # Base response for users without WoundsUser
-        try:
-            wounds_user = user.wounds_user
-        except WoundsUser.DoesNotExist:
-            return Response({
-                "id": user.id,
-                "email": user.email,
-                "name": None,
-                "birth_date": None,
-                "state": None,
-                "city": None,
-                "role": None,
-                "registration_complete": False,
-                "specialist": None,
-            })
-
-        # Get specialist data if applicable
+        
+        wounds_user = user.wounds_user
+        
         specialist_data = None
+        patient_data = None
         if wounds_user.role == WoundsUser.Provider:
             try:
                 provider = user.provider
@@ -224,6 +207,28 @@ class MeView(viewsets.ViewSet):
                 }
             except Provider.DoesNotExist:
                 pass
+        else:
+            try:
+                patient = user.patient
+                patient_data = {
+                    "id": patient.pk,
+                    "contact_phone": patient.contact_phone,
+                    "contact_email": patient.contact_email
+                }
+            except Patient.DoesNotExists:
+                pass
+
+        if patient_data:
+            response = {
+            "id": user.id,
+            "email": user.email,
+            "name": wounds_user.name or None,
+            "birth_date": wounds_user.birth_date.isoformat() if wounds_user.birth_date else None,
+            "state": wounds_user.state or None,
+            "city": wounds_user.city or None,
+            "role": _get_user_role_display(wounds_user),
+            "registration_complete": _is_registration_complete(user),
+            }
 
         return Response({
             "id": user.id,
