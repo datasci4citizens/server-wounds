@@ -3,14 +3,9 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-
-
-
-
 class WoundsUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="wounds_user")
     
-    name = models.CharField(max_length=255, blank=True)
     birth_date = models.DateField(blank=True, null=True)
     state = models.CharField(max_length=2, blank=True)
     city = models.CharField(max_length=100, blank=True)
@@ -28,15 +23,17 @@ class WoundsUser(models.Model):
     
 
 class Provider(models.Model):
-    wounds_user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="provider")
+    wounds_user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     professional_id = models.CharField(max_length=50)
     contact_email = models.EmailField(blank=True)
-    contact_phone = models.CharField(blank=True, max_length=20)
+
+    contact_phone = models.CharField(blank=True, max_length=15)
 
 
 class Patient(models.Model):
-    wounds_user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="patient")
+    wounds_user = models.OneToOneField(User, on_delete=models.CASCADE)
     
     contact_email = models.EmailField(blank=True)
-    contact_phone = models.CharField(blank=True, max_length=20)
+
+    contact_phone = models.CharField(blank=True, max_length=15)

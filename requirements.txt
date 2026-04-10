@@ -1,12 +1,13 @@
 Django==6.0.2
 djangorestframework==3.16.1
 djangorestframework-simplejwt==5.5.1
-psycopg[binary]>=3.1.0
+psycopg[binary]==3.3.3
 google-auth==2.39.0
 requests==2.32.3
 drf-spectacular==0.28.0
 python-dotenv==1.2.1
 django-cors-headers==4.3.1
+
 # Not used in the current version of the backend
 # Pillow==11.1.0
 # torch==2.10.0

@@ -60,3 +60,7 @@ services:
 
 volumes:
   wound-data:
+    driver_opts:
+      type: "none"
+      device: ${EXTERNAL_MAPPING_PATH}
+      o: "bind"
