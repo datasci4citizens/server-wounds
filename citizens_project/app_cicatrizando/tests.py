@@ -28,11 +28,16 @@ class BaseAuthenticationFlowTests(APITestCase):
 	specialist_registration_url = "/auth/register/specialist/"
 	me_url = "/auth/me/"
 
-	def _create_user_with_wounds_profile(self, *, email, role=None, name="", birth_date=None):
-		user = get_user_model().objects.create_user(username=email, email=email)
+	def _create_user_with_wounds_profile(self, *, email, role=None, full_name="", birth_date=None):
+		first_name, _, last_name = full_name.strip().partition(" ") if full_name else ("", "", "")
+		user = get_user_model().objects.create_user(
+			username=email,
+			email=email,
+			first_name=first_name,
+			last_name=last_name,
+		)
 		wounds_user = WoundsUser.objects.create(
 			user=user,
-			name=name,
 			birth_date=birth_date,
 			state="",
 			city="",
@@ -164,7 +169,7 @@ class AuthenticationFlowTests(BaseAuthenticationFlowTests):
 		# Create existing user with complete registration
 		user, wounds_user = self._create_user_with_wounds_profile(
 			email="existing.user@example.com",
-			name="Existing User",
+			full_name="Existing User",
 			role=WoundsUser.Provider,
 			birth_date=date(1990, 1, 1),
 		)
@@ -284,7 +289,8 @@ class AuthenticationFlowTests(BaseAuthenticationFlowTests):
 
 		# Verify WoundsUser was updated
 		wounds_user.refresh_from_db()
-		self.assertEqual(wounds_user.name, "Updated Name")
+		user.refresh_from_db()
+		self.assertEqual(user.get_full_name(), "Updated Name")
 		self.assertEqual(wounds_user.state, "RJ")
 		self.assertEqual(wounds_user.city, "Rio de Janeiro")
 		self.assertEqual(wounds_user.role, WoundsUser.Provider)
