@@ -5,7 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from .google import google_get_user_data
-from .models import WoundsUser, Provider, Patient
+from .models import WoundsUser, Provider
 from .serializers import (
     GoogleAuthSerializer,
     GoogleAuthResponseSerializer,
