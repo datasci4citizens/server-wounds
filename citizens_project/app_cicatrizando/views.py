@@ -5,7 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from .google import google_get_user_data
-from .models import WoundsUser, Provider
+from .models import WoundsUser, Provider, Patient
 from .serializers import (
     GoogleAuthSerializer,
     GoogleAuthResponseSerializer,
@@ -18,6 +18,22 @@ import logging
 logger = logging.getLogger("app_cicatrizando")
 
 User = get_user_model()
+
+
+def _split_full_name(full_name: str):
+    """Split full name into first_name and last_name for Django User."""
+    parts = (full_name or "").strip().split()
+    if not parts:
+        return "", ""
+    if len(parts) == 1:
+        return parts[0], ""
+    return parts[0], " ".join(parts[1:])
+
+
+def _user_display_name(user):
+    """Return canonical display name from Django User."""
+    full_name = user.get_full_name().strip()
+    return full_name or None
 
 
 def _is_registration_complete(user):
@@ -92,6 +108,17 @@ class GoogleLoginView(viewsets.ViewSet):
             user.email = user_email
             user.save(update_fields=["email"])
 
+        first_name, last_name = _split_full_name(full_name)
+        fields_to_update = []
+        if user.first_name != first_name:
+            user.first_name = first_name
+            fields_to_update.append("first_name")
+        if user.last_name != last_name:
+            user.last_name = last_name
+            fields_to_update.append("last_name")
+        if fields_to_update:
+            user.save(update_fields=fields_to_update)
+
         wounds_user, wounds_user_created = WoundsUser.objects.get_or_create(
             user=user,
             defaults={}
@@ -141,8 +168,11 @@ class SpecialistRegistrationView(viewsets.ViewSet):
         user = request.user
 
         wounds_user, _ = WoundsUser.objects.get_or_create(user=user)
+        first_name, last_name = _split_full_name(data["name"])
+        user.first_name = first_name
+        user.last_name = last_name
+        user.save(update_fields=["first_name", "last_name"])
         
-        wounds_user.name = data["name"]
         wounds_user.birth_date = data["birth_date"]
         wounds_user.state = data["state"]
         wounds_user.city = data["city"]
@@ -162,7 +192,7 @@ class SpecialistRegistrationView(viewsets.ViewSet):
             "message": "Specialist registered successfully",
             "user": {
                 "id": wounds_user.pk,
-                "name": wounds_user.name,
+                "name": _user_display_name(user),
                 "birth_date": wounds_user.birth_date.isoformat(),
                 "state": wounds_user.state,
                 "city": wounds_user.city,
@@ -215,14 +245,14 @@ class MeView(viewsets.ViewSet):
                     "contact_phone": patient.contact_phone,
                     "contact_email": patient.contact_email
                 }
-            except Patient.DoesNotExists:
+            except Patient.DoesNotExist:
                 pass
 
         if patient_data:
             response = {
             "id": user.id,
             "email": user.email,
-            "name": wounds_user.name or None,
+            "name": _user_display_name(user),
             "birth_date": wounds_user.birth_date.isoformat() if wounds_user.birth_date else None,
             "state": wounds_user.state or None,
             "city": wounds_user.city or None,
@@ -233,7 +263,7 @@ class MeView(viewsets.ViewSet):
         return Response({
             "id": user.id,
             "email": user.email,
-            "name": wounds_user.name or None,
+            "name": _user_display_name(user),
             "birth_date": wounds_user.birth_date.isoformat() if wounds_user.birth_date else None,
             "state": wounds_user.state or None,
             "city": wounds_user.city or None,
