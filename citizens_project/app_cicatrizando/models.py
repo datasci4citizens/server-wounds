@@ -21,19 +21,17 @@ class WoundsUser(models.Model):
     ]
     role = models.CharField(choices=roles, max_length=2, blank=True)
     
-
 class Provider(models.Model):
-    wounds_user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="provider")
+    wounds_user = models.OneToOneField(WoundsUser, on_delete=models.CASCADE, related_name="provider")
 
     professional_id = models.CharField(max_length=50)
     contact_email = models.EmailField(blank=True)
-
     contact_phone = models.CharField(blank=True, max_length=15)
-
 
 class Patient(models.Model):
-    wounds_user = models.OneToOneField(User, on_delete=models.CASCADE)
+    wounds_user = models.OneToOneField(WoundsUser, on_delete=models.CASCADE)
     
     contact_email = models.EmailField(blank=True)
+    contact_phone = models.CharField(blank=True, max_length=15) 
 
-    contact_phone = models.CharField(blank=True, max_length=15)
+    Specialist = models.ManyToManyField(Provider)

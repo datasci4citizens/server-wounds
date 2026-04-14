@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from .models import Provider
 
 
 # Valid Brazilian state codes
@@ -11,13 +12,13 @@ BRAZILIAN_STATES = [
 
 def validate_brazilian_state(value):
     """Validate that the state is a valid 2-letter Brazilian state code."""
-    if value and value.upper() not in BRAZILIAN_STATES:
+    value = value.upper()
+    if value not in BRAZILIAN_STATES:
         raise serializers.ValidationError(
             f"Invalid Brazilian state code. Must be one of: {', '.join(BRAZILIAN_STATES)}"
         )
-    return value.upper() if value else value
-
-
+    else: 
+        return value
 # =============================================================================
 # Request Serializers
 # =============================================================================
@@ -27,7 +28,7 @@ class GoogleAuthSerializer(serializers.Serializer):
     auth_code = serializers.CharField(required=True, allow_blank=False, allow_null=False)
 
 
-class SpecialistRegistrationSerializer(serializers.Serializer):
+class ProviderRegistrationSerializer(serializers.Serializer):
     """
     Request serializer for specialist registration.
     Flat structure for frontend simplicity.
@@ -47,6 +48,12 @@ class SpecialistRegistrationSerializer(serializers.Serializer):
         return validate_brazilian_state(value)
 
 
+class ProviderPatientListSerializer(serializers.Serializer):
+    """
+    Verifies if the Provider sent from the request exists in database
+    """
+    provider = serializers.PrimaryKeyRelatedField(queryset=Provider.objects.all())
+
 # =============================================================================
 # Response Serializers
 # =============================================================================
@@ -61,7 +68,7 @@ class GoogleAuthResponseSerializer(serializers.Serializer):
     role = serializers.CharField(allow_null=True)
 
 
-class SpecialistDataSerializer(serializers.Serializer):
+class ProviderDataSerializer(serializers.Serializer):
     """Nested serializer for specialist-specific data."""
     id = serializers.IntegerField()
     professional_id = serializers.CharField()
@@ -79,11 +86,11 @@ class UserDataSerializer(serializers.Serializer):
     role = serializers.CharField()
 
 
-class SpecialistRegistrationResponseSerializer(serializers.Serializer):
+class ProviderRegistrationResponseSerializer(serializers.Serializer):
     """Response serializer for specialist registration."""
     message = serializers.CharField()
     user = UserDataSerializer()
-    specialist = SpecialistDataSerializer()
+    specialist = ProviderDataSerializer()
 
 
 class MeResponseSerializer(serializers.Serializer):
@@ -96,4 +103,8 @@ class MeResponseSerializer(serializers.Serializer):
     city = serializers.CharField(allow_null=True, allow_blank=True)
     role = serializers.CharField(allow_null=True)
     registration_complete = serializers.BooleanField()
-    specialist = SpecialistDataSerializer(allow_null=True)
+    specialist = ProviderDataSerializer(allow_null=True)
+
+class ProviderPatientListResponseSerializer(serializers.Serializer):
+    """Response serializer for /specialist/patients"""
+    id = serializers.IntegerField()

@@ -9,8 +9,10 @@ from .models import WoundsUser, Provider, Patient
 from .serializers import (
     GoogleAuthSerializer,
     GoogleAuthResponseSerializer,
-    SpecialistRegistrationSerializer,
-    SpecialistRegistrationResponseSerializer,
+    ProviderRegistrationSerializer,
+    ProviderRegistrationResponseSerializer,
+    ProviderPatientListSerializer,
+    ProviderPatientListResponseSerializer,
     MeResponseSerializer,
 )
 import logging
@@ -29,12 +31,10 @@ def _split_full_name(full_name: str):
         return parts[0], ""
     return parts[0], " ".join(parts[1:])
 
-
 def _user_display_name(user):
     """Return canonical display name from Django User."""
     full_name = user.get_full_name().strip()
     return full_name or None
-
 
 def _is_registration_complete(user):
     """
@@ -57,8 +57,6 @@ def _is_registration_complete(user):
     elif wounds_user.role == WoundsUser.Patient:
         return Patient.objects.filter(wounds_user=user).exists()
 
-
-
 def _get_user_role_display(wounds_user:  WoundsUser) -> str: 
     """Convert role code to display string."""
     if not wounds_user or not wounds_user.role:
@@ -66,6 +64,7 @@ def _get_user_role_display(wounds_user:  WoundsUser) -> str:
     return "specialist" if wounds_user.role == WoundsUser.Provider else "patient"
 
 
+# Registration views
 class GoogleLoginView(viewsets.ViewSet):
     """
     Google OAuth authentication endpoint.
@@ -144,23 +143,26 @@ class GoogleLoginView(viewsets.ViewSet):
 
 class SpecialistRegistrationView(viewsets.ViewSet):
     """
-    Complete specialist registration.
+    Complete provider registration.
     
     Sets user role to Specialist and creates professional profile.
     Requires JWT authentication.
     """
-    serializer_class = SpecialistRegistrationSerializer
+    serializer_class = ProviderRegistrationSerializer
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        request=SpecialistRegistrationSerializer,
+        request=ProviderRegistrationSerializer,
         responses={
-            200: SpecialistRegistrationResponseSerializer,
-            201: SpecialistRegistrationResponseSerializer,
+            200: ProviderRegistrationResponseSerializer,
+            201: ProviderRegistrationResponseSerializer,
         }
         
     )
     def create(self, request, *args, **kwargs):
+        """
+            Fills WoundsUser and Provider table
+        """
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
@@ -209,9 +211,29 @@ class SpecialistRegistrationView(viewsets.ViewSet):
     
         return Response(response_data, status=status.HTTP_201_CREATED)
 
+
+# Functionality views
+
+class SpecialistPatientListView(viewsets.ViewSet):
+    """
+        GET all patients related to a specific Provider/specialist
+    """
+    serializer = ProviderPatientListSerializer
+    permission_classes = [IsAuthenticated]
+
+    request = ProviderPatientListSerializer
+    @extend_schema(responses={
+        200:ProviderPatientListResponseSerializer,
+        404:ProviderPatientListResponseSerializer
+    })
+    def list(self, request):
+        provider = request.user.provider
+
+
+
 class MeView(viewsets.ViewSet):
     """
-    Get current user's complete profile.
+    GET current user's complete profile.
     
     Returns user data including role-specific information.
     Requires JWT authentication.
@@ -271,3 +293,4 @@ class MeView(viewsets.ViewSet):
             "registration_complete": _is_registration_complete(user),
             "specialist": specialist_data,
         })
+
