@@ -16,17 +16,22 @@ Note:
 """
 
 from unittest.mock import patch
-from datetime import date
+from datetime import date, datetime
 from django.contrib.auth import get_user_model
 from rest_framework.test import APITestCase
 from rest_framework.exceptions import APIException
 from app_cicatrizando.models import Provider, Patient, WoundsUser
 
+class BaseTestClass(APITestCase):
 
-class BaseAuthenticationFlowTests(APITestCase):
+	#auth urls
 	google_login_url = "/auth/google/"
 	specialist_registration_url = "/auth/register/specialist/"
 	me_url = "/auth/me/"
+
+	#features urls
+
+
 
 	def _create_user_with_wounds_profile(self, *, email, role=None, full_name="", birth_date=None):
 		first_name, _, last_name = full_name.strip().partition(" ") if full_name else ("", "", "")
@@ -44,12 +49,35 @@ class BaseAuthenticationFlowTests(APITestCase):
 			role=role or "",
 		)
 		return user, wounds_user
+	
+	def _create_Provider_or_Patient(self, *, WoundsUser: WoundsUser, role: str, **fields):
+		if role not in ("patient", "provider"):
+			raise ValueError("role needs to be an exact match with: 'patient' or 'provider'")
+		
+		if role == 'patient':
+
+			patient = Patient.objects.create(
+
+
+			)
+			patient.wounds_user = WoundsUser
+
+		if role == 'provider':
+			provider = Provider.objects.create(
+				wounds_user = WoundsUser
+
+
+			)
+		return provider or patient
+
+
 
 	def _auth_headers(self, access_token):
 		return {"HTTP_AUTHORIZATION": f"Bearer {access_token}"}
 
 
-class AuthenticationErrorTests(BaseAuthenticationFlowTests):
+# Authentication Tests
+class AuthenticationErrorTests(BaseTestClass):
 	def test_me_requires_authentication(self):
 		response = self.client.get(self.me_url)
 
@@ -136,7 +164,7 @@ class AuthenticationErrorTests(BaseAuthenticationFlowTests):
 		self.assertIn("state", response.data)
 
 
-class AuthenticationFlowTests(BaseAuthenticationFlowTests):
+class AuthenticationFlowTests(BaseTestClass):
 	@patch("app_cicatrizando.views.google_get_user_data")
 	def test_google_login_creates_new_user_returns_201(self, mock_google_get_user_data):
 		mock_google_get_user_data.return_value = {
@@ -321,3 +349,12 @@ class AuthenticationFlowTests(BaseAuthenticationFlowTests):
 
 		self.assertEqual(response.status_code, 201)
 		self.assertEqual(response.data["user"]["state"], "SP")  # Should be uppercased
+
+# Features Tests
+
+
+class ProviderFeaturesTests(BaseTestClass):
+	patientlisturl = "specialist/patients"
+	woundsuser = BaseTestClass.create_wounds_user(role="Provider")
+
+	

@@ -47,12 +47,32 @@ class ProviderRegistrationSerializer(serializers.Serializer):
     def validate_state(self, value):
         return validate_brazilian_state(value)
 
+class PatientRegisterSerializer(serializers.Serializer):
+    "Request serializer for Patient registration"
+
+    # WoundsUser fields
+    name = serializers.CharField(required=True, max_length=255)
+    birth_date = serializers.DateField(required=True)
+    state = serializers.CharField(required=True, max_length=2)
+    city = serializers.CharField(required=True, max_length=100)
+
+    # Patient fields
+    contact_phone = serializers.CharField(required=False, allow_blank=True, max_length=20)
+    contact_email = serializers.EmailField(required=False, allow_blank=True)
+
+
+    def validate_state(self, value):
+        return validate_brazilian_state(value)
+
+class ProviderPatientRegisterSerializer(PatientRegisterSerializer):
+    professional_id = serializers.CharField(required = True, max_length=50)
+
 
 class ProviderPatientListSerializer(serializers.Serializer):
     """
-    Verifies if the Provider sent from the request exists in database
+    Request serializer for listing all patients related to a provider
     """
-    provider = serializers.PrimaryKeyRelatedField(queryset=Provider.objects.all())
+    professional_id = serializers.CharField(required = True, max_length=50)
 
 # =============================================================================
 # Response Serializers
@@ -95,7 +115,7 @@ class ProviderRegistrationResponseSerializer(serializers.Serializer):
 
 class MeResponseSerializer(serializers.Serializer):
     """Response serializer for the /auth/me/ endpoint."""
-    id = serializers.IntegerField()
+    id = serializers.IntegerField(required =True)
     email = serializers.EmailField()
     name = serializers.CharField(allow_null=True)
     birth_date = serializers.DateField(allow_null=True)
@@ -107,4 +127,8 @@ class MeResponseSerializer(serializers.Serializer):
 
 class ProviderPatientListResponseSerializer(serializers.Serializer):
     """Response serializer for /specialist/patients"""
-    id = serializers.IntegerField()
+    id = serializers.IntegerField(required=True)
+    name = serializers.CharField(required=True, max_length=255)
+    contact_phone = serializers.CharField(allow_blank=True)
+    contact_email = serializers.EmailField(allow_blank=True)
+

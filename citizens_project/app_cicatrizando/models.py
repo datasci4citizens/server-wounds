@@ -24,7 +24,7 @@ class WoundsUser(models.Model):
 class Provider(models.Model):
     wounds_user = models.OneToOneField(WoundsUser, on_delete=models.CASCADE, related_name="provider")
 
-    professional_id = models.CharField(max_length=50)
+    professional_id = models.CharField(max_length=50, unique=True)
     contact_email = models.EmailField(blank=True)
     contact_phone = models.CharField(blank=True, max_length=15)
 

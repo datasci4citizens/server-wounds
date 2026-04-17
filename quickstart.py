@@ -117,7 +117,7 @@ def startup(service_name):
     " starts up database and/or django server using .env parameters"
 
 
-    cmd = sudo( [*compose_base_cmd(), "up", "-d"])
+    cmd = sudo( [*compose_base_cmd(), "up"])
 
     if(len(service_name)):
         cmd = [*cmd, service_name]

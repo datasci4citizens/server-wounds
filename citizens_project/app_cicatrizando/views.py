@@ -1,5 +1,5 @@
 from rest_framework import viewsets, status
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 from django.contrib.auth import get_user_model
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -13,6 +13,7 @@ from .serializers import (
     ProviderRegistrationResponseSerializer,
     ProviderPatientListSerializer,
     ProviderPatientListResponseSerializer,
+    ProviderPatientRegisterSerializer,
     MeResponseSerializer,
 )
 import logging
@@ -161,7 +162,7 @@ class SpecialistRegistrationView(viewsets.ViewSet):
     )
     def create(self, request, *args, **kwargs):
         """
-            Fills WoundsUser and Provider table
+        Fills WoundsUser and Provider table
         """
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -218,16 +219,76 @@ class SpecialistPatientListView(viewsets.ViewSet):
     """
         GET all patients related to a specific Provider/specialist
     """
-    serializer = ProviderPatientListSerializer
+    serializer_class = ProviderPatientListSerializer
     permission_classes = [IsAuthenticated]
 
     request = ProviderPatientListSerializer
     @extend_schema(responses={
-        200:ProviderPatientListResponseSerializer,
-        404:ProviderPatientListResponseSerializer
+        200:ProviderPatientListResponseSerializer(many=True),
+        404: OpenApiResponse(description="Specialist does not exist")
     })
     def list(self, request):
-        provider = request.user.provider
+        try:
+            provider = request.user.wounds_user.provider
+
+        except (WoundsUser.DoesNotExist, Provider.DoesNotExist, AttributeError):
+            return Response("Specialist does not exist", status=status.HTTP_404_NOT_FOUND)
+
+        patients = Patient.objects.filter(Specialist=provider)
+
+        # returns a dictonary list with all patients, empty list if no patients related
+        return Response(self.serializer_class(patients, many=True))
+
+class SpecialistPatientRegisterView(viewsets.ViewSet):
+    serializer_class = ProviderPatientRegisterSerializer
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        request=ProviderPatientRegisterSerializer,
+        responses={
+            201: ProviderPatientRegisterSerializer
+        }
+    )
+
+    def create(self, request):
+        user = request.user
+        try:
+            provider = user.wounds_user.provider
+
+        except (WoundsUser.DoesNotExist, Provider.DoesNotExist, AttributeError):
+            return Response("Specialist does not exist", status=status.HTTP_404_NOT_FOUND)
+
+
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        # creates WoundsUser
+        wounds_user, _ = WoundsUser.objects.get_or_create(user=user)
+        first_name, last_name = _split_full_name(data["name"])
+        user.first_name = first_name
+        user.last_name = last_name
+        user.save(update_fields=["first_name", "last_name"])
+        
+        wounds_user.birth_date = data["birth_date"]
+        wounds_user.state = data["state"]
+        wounds_user.city = data["city"]
+        wounds_user.role = WoundsUser.Provider
+        wounds_user.save()
+
+        Patient.objects.create({
+
+            "contact_phone": data.get("contact_phone", ""),
+            "contact_email": data.get("contact_email", ""),
+            "specialist": provider
+        }
+        )
+
+        response = {
+            
+
+        }
+        return Response(response, status=status.HTTP_201_CREATED)
 
 
 
@@ -245,52 +306,29 @@ class MeView(viewsets.ViewSet):
         user = request.user
         
         wounds_user = user.wounds_user
+
+        response = {
+            "id": user.id,
+            "email": user.email,
+            "name": _user_display_name(user),
+            "birth_date": wounds_user.birth_date.isoformat() if wounds_user.birth_date else None,
+            "state": wounds_user.state or None,
+            "city": wounds_user.city or None,
+            "role": _get_user_role_display(wounds_user),
+            "registration_complete": _is_registration_complete(user),
+        }
         
-        specialist_data = None
-        patient_data = None
         if wounds_user.role == WoundsUser.Provider:
-            try:
-                provider = user.provider
-                specialist_data = {
-                    "id": provider.pk,
-                    "professional_id": provider.professional_id,
-                    "contact_phone": provider.contact_phone,
-                    "contact_email": provider.contact_email,
-                }
-            except Provider.DoesNotExist:
-                pass
-        else:
-            try:
-                patient = user.patient
-                patient_data = {
-                    "id": patient.pk,
-                    "contact_phone": patient.contact_phone,
-                    "contact_email": patient.contact_email
-                }
-            except Patient.DoesNotExist:
-                pass
+            provider = user.Provider
 
-        if patient_data:
-            response = {
-            "id": user.id,
-            "email": user.email,
-            "name": _user_display_name(user),
-            "birth_date": wounds_user.birth_date.isoformat() if wounds_user.birth_date else None,
-            "state": wounds_user.state or None,
-            "city": wounds_user.city or None,
-            "role": _get_user_role_display(wounds_user),
-            "registration_complete": _is_registration_complete(user),
-            }
+            response["professional_id"] = provider.professional_id
+            response["contact_phone"] = provider.contact_phone
+            response["contact_email"] = provider.contact_email
 
-        return Response({
-            "id": user.id,
-            "email": user.email,
-            "name": _user_display_name(user),
-            "birth_date": wounds_user.birth_date.isoformat() if wounds_user.birth_date else None,
-            "state": wounds_user.state or None,
-            "city": wounds_user.city or None,
-            "role": _get_user_role_display(wounds_user),
-            "registration_complete": _is_registration_complete(user),
-            "specialist": specialist_data,
-        })
+        elif wounds_user.role == WoundsUser.Patient:
+            patient = user.patient
 
+            response["contact_phone"] = patient.contact_phone
+            response["contact_email"] = patient.contact_email
+
+        return Response(response)

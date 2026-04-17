@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework import routers
-from .views import GoogleLoginView, SpecialistRegistrationView,SpecialistPatientListView, MeView
+from .views import GoogleLoginView, SpecialistRegistrationView,SpecialistPatientListView, SpecialistPatientRegisterView, MeView
 from drf_spectacular.views import SpectacularSwaggerView, SpectacularAPIView
 
 router = routers.DefaultRouter()
@@ -13,6 +13,7 @@ router.register(r'auth/me', MeView, basename='me')
 
 # specialist endpoints
 router.register(r'specialist/patients', SpecialistPatientListView, basename='patient_list')
+router.register(r'specialist/patient/register', SpecialistPatientRegisterView, basename= 'register_patient')
 
 urlpatterns = [
     path('', include(router.urls)),
