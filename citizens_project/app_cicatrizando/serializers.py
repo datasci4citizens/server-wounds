@@ -26,6 +26,7 @@ def validate_brazilian_state(value):
 class GoogleAuthSerializer(serializers.Serializer):
     """Request serializer for Google OAuth authentication."""
     auth_code = serializers.CharField(required=True, allow_blank=False, allow_null=False)
+    redirect_uri = serializers.CharField(required=False, default="postmessage", allow_blank=True)
 
 
 class ProviderRegistrationSerializer(serializers.Serializer):
@@ -65,14 +66,15 @@ class PatientRegisterSerializer(serializers.Serializer):
         return validate_brazilian_state(value)
 
 class ProviderPatientRegisterSerializer(PatientRegisterSerializer):
-    professional_id = serializers.CharField(required = True, max_length=50)
+    # Professional ID is removed here because the backend relies on the token (request.user.wounds_user.provider)
+    pass
 
 
 class ProviderPatientListSerializer(serializers.Serializer):
     """
     Request serializer for listing all patients related to a provider
     """
-    professional_id = serializers.CharField(required = True, max_length=50)
+    pass
 
 # =============================================================================
 # Response Serializers

@@ -21,7 +21,7 @@ GOOGLE_ACCESS_TOKEN_OBTAIN_URL = "https://oauth2.googleapis.com/token"
 GOOGLE_USER_INFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
 
-def google_get_access_token(code: str) -> str:
+def google_get_access_token(code: str, redirect_uri: str = "postmessage") -> str:
     """
     Exchanges the authorization code for an access token.
     
@@ -34,7 +34,7 @@ def google_get_access_token(code: str) -> str:
         "code": code,
         "client_id": settings.GOOGLE_OAUTH2_CLIENT_ID,
         "client_secret": settings.GOOGLE_OAUTH2_CLIENT_SECRET,
-        "redirect_uri": "postmessage",
+        "redirect_uri": redirect_uri,
         "grant_type": "authorization_code",
     }
 
@@ -67,7 +67,7 @@ def google_get_user_info(access_token: str) -> Dict[str, Any]:
     return response.json()
 
 
-def google_get_user_data(auth_code: str) -> Dict[str, Any]:
+def google_get_user_data(auth_code: str, redirect_uri: str = "postmessage") -> Dict[str, Any]:
     """
     Main function to authenticate user via auth-code from @react-oauth/google.
     
@@ -77,12 +77,13 @@ def google_get_user_data(auth_code: str) -> Dict[str, Any]:
     
     Args:
         auth_code: The authorization code returned by @react-oauth/google
+        redirect_uri: The URI to redirect to
         
     Returns:
         Dict with email, name, given_name, family_name and sub (Google user ID)
     """
     logger.info("Exchanging auth code for access token")
-    access_token = google_get_access_token(code=auth_code)
+    access_token = google_get_access_token(code=auth_code, redirect_uri=redirect_uri)
     
     logger.info("Getting user info from Google")
     user_info = google_get_user_info(access_token=access_token)
