@@ -3,28 +3,27 @@ from drf_spectacular.utils import extend_schema, OpenApiResponse
 from django.contrib.auth import get_user_model
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
 from .google import google_get_user_data
 from .models import WoundsUser, Provider, Patient
 from .serializers import (
     GoogleAuthSerializer,
     GoogleAuthResponseSerializer,
     ProviderRegistrationSerializer,
-    ProviderRegistrationResponseSerializer,
-    ProviderPatientListSerializer,
-    ProviderPatientListResponseSerializer,
-    ProviderPatientRegisterSerializer,
+    ProviderRegisterResponseSerializer,
+    PatientResponseSerializer,
     MeResponseSerializer,
 )
 import logging
-
-User = get_user_model()
 logger = logging.getLogger(__name__)
+User = get_user_model()
 
-def _split_full_name(full_name: str | None) -> tuple[str, str]:
-    """Split a full name into first and last name."""
-    if not full_name:
+
+def _split_full_name(full_name: str):
+    """Split full name into first_name and last_name for Django User."""
+    parts = (full_name or "").strip().split()
+    if not parts:
         return "", ""
-    parts = full_name.split()
     if len(parts) == 1:
         return parts[0], ""
     return parts[0], " ".join(parts[1:])
@@ -79,6 +78,7 @@ class GoogleLoginView(viewsets.ViewSet):
             201: GoogleAuthResponseSerializer,
         }
     )
+
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -114,15 +114,14 @@ class GoogleLoginView(viewsets.ViewSet):
             defaults={}
         )
 
-        registration_complete = _is_registration_complete(user)
         is_new = user_created or wounds_user_created
-        
-        from rest_framework_simplejwt.tokens import RefreshToken
-        refresh = RefreshToken.for_user(user)
+        registration_complete = _is_registration_complete(user)
+
+        token = RefreshToken.for_user(user)
 
         response_data = {
-            "access": str(refresh.access_token),
-            "refresh": str(refresh),
+            "access": str(token.access_token),
+            "refresh": str(token),
             "email": user.email,
             "full_name": full_name,
             "registration_complete": registration_complete,
@@ -131,6 +130,7 @@ class GoogleLoginView(viewsets.ViewSet):
 
         status_code = status.HTTP_201_CREATED if is_new else status.HTTP_200_OK
         return Response(response_data, status=status_code)
+
 
 class SpecialistRegistrationView(viewsets.ViewSet):
     """
@@ -145,8 +145,8 @@ class SpecialistRegistrationView(viewsets.ViewSet):
     @extend_schema(
         request=ProviderRegistrationSerializer,
         responses={
-            200: ProviderRegistrationResponseSerializer,
-            201: ProviderRegistrationResponseSerializer,
+            200: ProviderRegisterResponseSerializer,
+            201: ProviderRegisterResponseSerializer,
         }
     )
     def create(self, request, *args, **kwargs):
@@ -206,7 +206,6 @@ class SpecialistPatientListView(viewsets.ViewSet):
     """
         GET all patients related to a specific Provider/specialist
     """
-    serializer_class = ProviderPatientListSerializer
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
@@ -218,6 +217,7 @@ class SpecialistPatientListView(viewsets.ViewSet):
     def list(self, request):
         try:
             provider = request.user.wounds_user.provider
+
         except (WoundsUser.DoesNotExist, Provider.DoesNotExist, AttributeError):
             return Response("Specialist does not exist", status=status.HTTP_404_NOT_FOUND)
 
@@ -238,40 +238,37 @@ class SpecialistPatientListView(viewsets.ViewSet):
         return Response(response_data)
 
 class SpecialistPatientRegisterView(viewsets.ViewSet):
-    serializer_class = ProviderPatientRegisterSerializer
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        request=ProviderPatientRegisterSerializer,
         responses={
-            201: ProviderPatientRegisterSerializer
+            201: PatientResponseSerializer(many=True),
+            404: OpenApiResponse(description= "Specialist does not exist")
         }
     )
+
     def create(self, request):
         user = request.user
         try:
             provider = user.wounds_user.provider
+
         except (WoundsUser.DoesNotExist, Provider.DoesNotExist, AttributeError):
-            return Response({"error": "Specialist does not exist"}, status=status.HTTP_404_NOT_FOUND)
+            return Response("Specialist does not exist", status=status.HTTP_404_NOT_FOUND)
+
 
         serializer = self.serializer_class(data=request.data)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
         patient_email = data.get("contact_email")
         if not patient_email:
-             return Response({"error": "contact_email is required to create a patient account"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "contact_email is required to create a patient account"}, status=status.HTTP_400_BAD_REQUEST)
 
-        patient_user, _ = User.objects.get_or_create(
-            username=patient_email,
-            defaults={"email": patient_email}
-        )
-        
-        first_name, last_name = _split_full_name(data.get("name", ""))
-        patient_user.first_name = first_name
-        patient_user.last_name = last_name
-        patient_user.save(update_fields=["first_name", "last_name"])
+        patient_user, _ = User.objects.get_or_create(user=user)
+        first_name, last_name = _split_full_name(data["name"])
+        user.first_name = first_name
+        user.last_name = last_name
+        user.save(update_fields=["first_name", "last_name"])
         
         patient_wounds_user, _ = WoundsUser.objects.get_or_create(user=patient_user)
         
@@ -294,7 +291,6 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
         patient.Specialist.add(provider)
 
         response = {
-            "message": "Patient registered successfully",
             "patient": {
                 "id": patient.id,
                 "name": data.get("name"),
@@ -303,6 +299,8 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
             }
         }
         return Response(response, status=status.HTTP_201_CREATED)
+
+
 
 class MeView(viewsets.ViewSet):
     """

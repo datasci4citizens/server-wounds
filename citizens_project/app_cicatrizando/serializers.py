@@ -65,16 +65,6 @@ class PatientRegisterSerializer(serializers.Serializer):
     def validate_state(self, value):
         return validate_brazilian_state(value)
 
-class ProviderPatientRegisterSerializer(PatientRegisterSerializer):
-    # Professional ID is removed here because the backend relies on the token (request.user.wounds_user.provider)
-    pass
-
-
-class ProviderPatientListSerializer(serializers.Serializer):
-    """
-    Request serializer for listing all patients related to a provider
-    """
-    pass
 
 # =============================================================================
 # Response Serializers
@@ -108,7 +98,7 @@ class UserDataSerializer(serializers.Serializer):
     role = serializers.CharField()
 
 
-class ProviderRegistrationResponseSerializer(serializers.Serializer):
+class ProviderRegisterResponseSerializer(serializers.Serializer):
     """Response serializer for specialist registration."""
     message = serializers.CharField()
     user = UserDataSerializer()
@@ -127,10 +117,9 @@ class MeResponseSerializer(serializers.Serializer):
     registration_complete = serializers.BooleanField()
     specialist = ProviderDataSerializer(allow_null=True)
 
-class ProviderPatientListResponseSerializer(serializers.Serializer):
-    """Response serializer for /specialist/patients"""
+class PatientResponseSerializer(serializers.Serializer):
+    """Response serializer with patients basic information"""
     id = serializers.IntegerField(required=True)
     name = serializers.CharField(required=True, max_length=255)
     contact_phone = serializers.CharField(allow_blank=True)
     contact_email = serializers.EmailField(allow_blank=True)
-

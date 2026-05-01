@@ -2,7 +2,6 @@
 
 set -e
 
-python citizens_project/manage.py makemigrations
 python citizens_project/manage.py migrate --noinput
 
 
