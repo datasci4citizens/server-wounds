@@ -24,14 +24,24 @@ class WoundsUser(models.Model):
 class Provider(models.Model):
     wounds_user = models.OneToOneField(WoundsUser, on_delete=models.CASCADE, related_name="provider")
 
-    professional_id = models.CharField(max_length=50, unique=True)
-    contact_email = models.EmailField(blank=True)
-    contact_phone = models.CharField(blank=True, max_length=15)
+    professional_document = models.CharField(max_length=30)
+    professional_id = models.CharField(max_length=50)
+    contact_email = models.EmailField(blank=True, null=True, max_length=50, unique = true)
+    contact_phone = models.CharField(blank=True, null=True max_length=15, unique = true) 
+
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["professional_document", "professional_id"], name="unique_provider"
+            )
+        ]
+
 
 class Patient(models.Model):
     wounds_user = models.OneToOneField(WoundsUser, on_delete=models.CASCADE)
     
-    contact_email = models.EmailField(blank=True)
-    contact_phone = models.CharField(blank=True, max_length=15) 
+    contact_email = models.EmailField(blank=True, null=True, max_length=50, unique = true)
+    contact_phone = models.CharField(blank=True, null=True max_length=15, unique = true) 
 
-    Specialist = models.ManyToManyField(Provider)
+    assigned_providers = models.ManyToManyField(Provider)

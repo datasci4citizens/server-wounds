@@ -11,7 +11,8 @@ from .serializers import (
     GoogleAuthResponseSerializer,
     ProviderRegistrationSerializer,
     ProviderRegisterResponseSerializer,
-    PatientResponseSerializer,
+    PatientRegisterSerializer,
+    PatientDataSerializer,
     MeResponseSerializer,
 )
 import logging
@@ -238,11 +239,12 @@ class SpecialistPatientListView(viewsets.ViewSet):
         return Response(response_data)
 
 class SpecialistPatientRegisterView(viewsets.ViewSet):
+    serializer = PatientRegisterSerializer
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
         responses={
-            201: PatientResponseSerializer(many=True),
+            201: PatientDataSerializer(many=True),
             404: OpenApiResponse(description= "Specialist does not exist")
         }
     )

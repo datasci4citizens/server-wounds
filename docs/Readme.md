@@ -11,62 +11,56 @@
 * [.env.model](../.env.model) - Environment variables template
 
 ## Setup
-### 1. .env
 
-Copy the template from [env.model](../.env.model) to .env and edit the required fields.
+### 1. Prerequisites
 
-### 2. Build Docker
+- Docker and Docker Compose installed
+- Python 3.8+ (for local development)
+- PostgreSQL client (for direct database access)
+
+### 2. Configure Environment Variables
+
+Copy the template from [.env.model](../.env.model) to `.env` in the root directory and edit the required fields.
 
 ```bash
-
-# from root directory
-docker compose -f docker/docker-compose.yml --env-file ./.env up --build # Linux users may need sudo
+cp .env.model .env
+# Edit .env with your configuration
 ```
 
----
+### 3. Virtual Environment (Optional - for local development)
 
-### It's recommended the use of a Venv (Virtual Environment) for debugging and testing outside of a docker:
+Create and activate a virtual environment:
 
-### creating a venv:
-from root directory
 ```bash
+# Create venv
 python -m venv .venv
-```
 
-starting up a venv
-```bash
-# linux
+# Activate venv
+# Linux/macOS
 source ./.venv/bin/activate
 
-#windows
+# Windows
 ./.venv/scripts/activate.ps1
-```
 
-once the venv is active for the first time:
-```bash
+# Install dependencies
 pip install --upgrade pip && pip install -r requirements.txt
-```
 
-to leave venv:
-```bash
+# Deactivate when done
 deactivate
 ```
 
 ## Running the Application
 
-
-### 1. Start the database and server with the python script
+The recommended way to run the application is using the provided quickstart script, which manages both the database and server:
 
 ```bash
-# from the root directory
-
+# From the root directory
 python quickstart.py
 ```
 
 Read the quickstart scripts documentation at [quickstart.py](../quickstart.py) for additional options
 
-The server will be available at http://localhost:8000
-
+The server will be available at http://localhost:8000 once running.
 
 
 
@@ -74,32 +68,36 @@ The server will be available at http://localhost:8000
 
 The API routes are defined in:
 
-- [citizens_project/citizens_project/urls.py](../citizens_project/citizens_project/urls.py)
-- [citizens_project/app_cicatrizando/urls.py](../citizens_project/app_cicatrizando/urls.py)
+- [citizens_project/citizens_project/urls.py](../citizens_project/citizens_project/urls.py) — Main project routes
+- [citizens_project/app_cicatrizando/urls.py](../citizens_project/app_cicatrizando/urls.py) — Application-specific routes
 
-Available endpoints:
+### Authentication Endpoints
 
-- `POST /auth/login/google/` — Authenticate with Google OAuth2 and receive JWT tokens.
-- `POST /auth/login/role/` — Select user role (`provider` or `patient`).
+- `POST /auth/login/google/` — Authenticate with Google OAuth2 and receive JWT tokens
+- `POST /auth/login/role/` — Select user role (`provider` or `patient`)
+- `POST /auth/login/provider/` — Complete provider profile data
+- `POST /auth/login/patient/` — Complete patient profile data
+- `GET /auth/me/` — Validate token and return current authenticated user info
 
-- `POST /auth/login/provider/` — Complete provider profile data.
-- `POST /auth/login/patient/` — Complete patient profile data.
-- `GET /auth/me/` — Validate token and return current authenticated user info.
-- `GET /docs/` — Open interactive API documentation (Swagger UI).
+### Documentation
+
+- `GET /docs/` — Interactive API documentation (Swagger UI)
 
 ## Create an Admin User
 
-### Update the following values in .env:
+To create a superuser for accessing the Django admin panel, set these environment variables in `.env`:
 
-- DJANGO_SUPERUSER_USERNAME
-- DJANGO_SUPERUSER_EMAIL
-- DJANGO_SUPERUSER_PASSWORD
+- `DJANGO_SUPERUSER_USERNAME` — Username for the admin account
+- `DJANGO_SUPERUSER_EMAIL` — Email for the admin account
+- `DJANGO_SUPERUSER_PASSWORD` — Password for the admin account
+
+These values will be used automatically when the application starts. The admin panel can be accessed at http://localhost:8000/admin/
 
 ## Stack
 
-* **Backend**: [Django](https://www.djangoproject.com/)
-* **API**: [Django REST Framework](https://www.django-rest-framework.org/)
-* **Database**: [PostgreSQL](https://www.postgresql.org/)
-* **Auth**: [JWT](https://django-rest-framework-simplejwt.readthedocs.io/en/latest/)
+* **Backend Framework**: [Django](https://www.djangoproject.com/) — Web framework for Python
+* **API**: [Django REST Framework](https://www.django-rest-framework.org/) — REST API toolkit
+* **Database**: [PostgreSQL](https://www.postgresql.org/) — Relational database
+* **Containerization**: [Docker](https://www.docker.com/) — Container platform
+* **Authentication**: [Google OAuth2](https://developers.google.com/identity/protocols/oauth2) and [JWT tokens](https://django-rest-framework-simplejwt.readthedocs.io/en/latest/)
 * **Docs**: [drf-spectacular](https://drf-spectacular.readthedocs.io/en/latest/)
-* **Containerization**: [Docker](https://www.docker.com/)

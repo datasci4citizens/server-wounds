@@ -82,14 +82,23 @@ class GoogleAuthResponseSerializer(serializers.Serializer):
 
 class ProviderDataSerializer(serializers.Serializer):
     """Nested serializer for specialist-specific data."""
-    id = serializers.IntegerField()
-    professional_id = serializers.CharField()
+
+    id = serializers.IntegerField(required=True)
+    professional_id = serializers.CharField(required=True)
     contact_phone = serializers.CharField(allow_blank=True)
     contact_email = serializers.EmailField(allow_blank=True)
 
+class PatientDataSerializer(serializers.Serializer):
+    """Nested serializer for patient-specific data."""
+
+    id = serializers.IntegerField(required=True)
+    name = serializers.CharField(required=True, max_length=255)
+    contact_phone = serializers.CharField(allow_blank=True)
+    contact_email = serializers.EmailField(allow_blank=True)
 
 class UserDataSerializer(serializers.Serializer):
     """Nested serializer for wounds_user data."""
+    
     id = serializers.IntegerField()
     name = serializers.CharField()
     birth_date = serializers.DateField()
@@ -117,9 +126,4 @@ class MeResponseSerializer(serializers.Serializer):
     registration_complete = serializers.BooleanField()
     specialist = ProviderDataSerializer(allow_null=True)
 
-class PatientResponseSerializer(serializers.Serializer):
-    """Response serializer with patients basic information"""
-    id = serializers.IntegerField(required=True)
-    name = serializers.CharField(required=True, max_length=255)
-    contact_phone = serializers.CharField(allow_blank=True)
-    contact_email = serializers.EmailField(allow_blank=True)
+
