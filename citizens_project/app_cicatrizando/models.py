@@ -13,6 +13,8 @@ class WoundsUser(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    Validated = models.BooleanField()
+
     Provider = "Pr"
     Patient = "Pa"
     roles = [
@@ -26,8 +28,8 @@ class Provider(models.Model):
 
     professional_document = models.CharField(max_length=30)
     professional_id = models.CharField(max_length=50)
-    contact_email = models.EmailField(blank=True, null=True, max_length=50, unique = true)
-    contact_phone = models.CharField(blank=True, null=True max_length=15, unique = true) 
+    contact_email = models.EmailField(blank=True, null=True, max_length=50, unique = True)
+    contact_phone = models.CharField(blank=True, null=True, max_length=15, unique = True) 
 
 
     class Meta:
@@ -41,7 +43,8 @@ class Provider(models.Model):
 class Patient(models.Model):
     wounds_user = models.OneToOneField(WoundsUser, on_delete=models.CASCADE)
     
-    contact_email = models.EmailField(blank=True, null=True, max_length=50, unique = true)
-    contact_phone = models.CharField(blank=True, null=True max_length=15, unique = true) 
+    contact_email = models.EmailField(blank=True, null=True, max_length=50, unique = True)
+    contact_phone = models.CharField(blank=True, null=True, max_length=15, unique = True) 
+
 
     assigned_providers = models.ManyToManyField(Provider)

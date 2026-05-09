@@ -42,6 +42,7 @@ def _is_registration_complete(user):
     - If role is Provider, Provider record exists
     - If role is Patient, Patient record exists
     """
+
     try:
         wounds_user = user.wounds_user
     except WoundsUser.DoesNotExist:
@@ -117,6 +118,8 @@ class GoogleLoginView(viewsets.ViewSet):
 
         is_new = user_created or wounds_user_created
         registration_complete = _is_registration_complete(user)
+
+        wounds_user.Validated = True            
 
         token = RefreshToken.for_user(user)
 
@@ -274,11 +277,11 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
         
         patient_wounds_user, _ = WoundsUser.objects.get_or_create(user=patient_user)
         
-        # Safe-guard since WoundsUser might be created already
         patient_wounds_user.birth_date = data.get("birth_date")
         patient_wounds_user.state = data.get("state", "")
         patient_wounds_user.city = data.get("city", "")
         patient_wounds_user.role = WoundsUser.Patient
+        patient_wounds_user.Validated = False
         patient_wounds_user.save()
 
         patient, _ = Patient.objects.get_or_create(
