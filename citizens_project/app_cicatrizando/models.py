@@ -13,7 +13,7 @@ class WoundsUser(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    Validated = models.BooleanField()
+    validated = models.BooleanField()
 
     Provider = "Pr"
     Patient = "Pa"

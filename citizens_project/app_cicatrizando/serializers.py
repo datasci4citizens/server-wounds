@@ -52,8 +52,7 @@ class PatientRegisterSerializer(serializers.Serializer):
     "Request serializer for Patient registration"
 
     #User
-
-    google_email = serializers.EmailField(blank=False, null=False, max_length=50, unique = True)
+    google_email = serializers.EmailField(required=True, max_length=50, allow_blank=False)
 
     # WoundsUser fields
     name = serializers.CharField(required=True, max_length=255)
