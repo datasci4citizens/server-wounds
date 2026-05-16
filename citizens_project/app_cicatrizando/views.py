@@ -97,14 +97,17 @@ class GoogleLoginView(viewsets.ViewSet):
         )
 
         first_name, last_name = _split_full_name(full_name)
-        user, new = User.objects.get_or_create(
-            first_name = first_name,
-            last_name = last_name,
-            username=user_given_email,
-            email= user_given_email,
-            
-        )
         
+        user, new = User.objects.get_or_create(
+            username=user_given_email,
+        
+            defaults={
+                "first_name": first_name,
+                "last_name" : last_name,
+                "email": user_given_email
+            }
+        )
+    
         wounds_user, wounds_user_created = WoundsUser.objects.get_or_create(
             user=user
         )
@@ -112,12 +115,12 @@ class GoogleLoginView(viewsets.ViewSet):
         is_new = new or wounds_user_created
         registration_complete = _is_registration_complete(user)
 
-        wounds_user.validated = True            
+        wounds_user.validated = True
 
         token = RefreshToken.for_user(user)
 
         response_data = {
-            "access": str(token.access_token),
+            "access": str(token.access_token),             
             "refresh": str(token),
             "email": user.email,
             "full_name": full_name,
@@ -171,9 +174,10 @@ class SpecialistRegistrationView(viewsets.ViewSet):
         provider, _ = Provider.objects.update_or_create(
             wounds_user=wounds_user,
             defaults={
+                "professional_document":data["professional_document"],
                 "professional_id": data["professional_id"],
-                "contact_phone": data.get("contact_phone", ""),
-                "contact_email": data.get("contact_email", ""),
+                "contact_phone": data.get("contact_phone") or None,
+                "contact_email": data.get("contact_email") or None,
             }
         )
 
@@ -265,9 +269,12 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
 
         user_email = data.get("google_email")
         patient_user, new = User.objects.get_or_create(
-            first_name = name_in_list[0], last_name = name_in_list[1],
             username= user_email,
-            email = user_email
+            defaults={
+                "first_name" : name_in_list[0],
+                "last_name" : name_in_list[1],
+                "email": user_email
+            }
         )
 
         if not new:
@@ -285,20 +292,20 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
             return Response(response, status=status.HTTP_200_OK)
         
 
-        patient_wounds_user, _ = WoundsUser.objects.get_or_create(user=patient_user)
-        
-        patient_wounds_user.birth_date = data.get("birth_date")
-        patient_wounds_user.state = data.get("state", "")
-        patient_wounds_user.city = data.get("city", "")
-        patient_wounds_user.role = WoundsUser.Patient
-        patient_wounds_user.validated = False
-        patient_wounds_user.save()
+        patient_wounds_user = WoundsUser.objects.create(
+            user=patient_user,
+            birth_date = data.get("birth_date"),
+            state = data.get("state", ""),
+            city = data.get("city", ""),
+            role = WoundsUser.Patient,
+            validated = False,
+        )
 
         patient, _ = Patient.objects.get_or_create(
             wounds_user=patient_wounds_user,
             defaults={
-                "contact_phone": data.get("contact_phone", ""),
-                "contact_email": data.get("contact_email", ""),
+                "contact_phone": data.get("contact_phone") or None,
+                "contact_email": data.get("contact_email") or None,
             }
         )
         
@@ -314,6 +321,29 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
         }
         return Response(response, status=status.HTTP_201_CREATED)
 
+class PatientValidationView(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        responses={
+            200: OpenApiResponse(description="Patient exists and is allowed to login"),
+            403: OpenApiResponse(description="Patient is not allowed to login")
+        }
+
+    )
+    def list(self,request):
+        user = request.user
+        try:
+            wounds_user_obj = WoundsUser.objects.get(user=user)
+            patient_obj = Patient.objects.get(wounds_user=wounds_user_obj)
+        except (WoundsUser.DoesNotExist, Patient.DoesNotExist):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        
+        if wounds_user_obj.role == WoundsUser.Patient:
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        
 
 
 class MeView(viewsets.ViewSet):

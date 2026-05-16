@@ -41,9 +41,10 @@ class ProviderRegistrationSerializer(serializers.Serializer):
     city = serializers.CharField(required=True, max_length=100)
     
     # Provider/Specialist fields
+    professional_document = serializers.CharField(max_lenght = 30)
     professional_id = serializers.CharField(required=True, max_length=50)
-    contact_phone = serializers.CharField(required=False, allow_blank=True, max_length=20)
-    contact_email = serializers.EmailField(required=False, allow_blank=True)
+    contact_phone = serializers.CharField(required=False, allow_blank=True, allow_null=True, max_length=20)
+    contact_email = serializers.EmailField(required=False, allow_blank=True, allow_null=True)
 
     def validate_state(self, value):
         return validate_brazilian_state(value)
@@ -61,8 +62,8 @@ class PatientRegisterSerializer(serializers.Serializer):
     city = serializers.CharField(required=True, max_length=100)
 
     # Patient fields
-    contact_phone = serializers.CharField(required=False, allow_blank=True, max_length=20)
-    contact_email = serializers.EmailField(required=False, allow_blank=True)
+    contact_phone = serializers.CharField(required=False, allow_blank=True, allow_null=True, max_length=20)
+    contact_email = serializers.EmailField(required=False, allow_blank=True, allow_null=True)
 
 
     def validate_state(self, value):
@@ -88,16 +89,16 @@ class ProviderDataSerializer(serializers.Serializer):
 
     id = serializers.IntegerField(required=True)
     professional_id = serializers.CharField(required=True)
-    contact_phone = serializers.CharField(allow_blank=True)
-    contact_email = serializers.EmailField(allow_blank=True)
+    contact_phone = serializers.CharField(allow_blank=True, allow_null=True)
+    contact_email = serializers.EmailField(allow_blank=True, allow_null=True)
 
 class PatientDataSerializer(serializers.Serializer):
     """Nested serializer for patient-specific data."""
 
     id = serializers.IntegerField(required=True)
     name = serializers.CharField(required=True, max_length=255)
-    contact_phone = serializers.CharField(allow_blank=True)
-    contact_email = serializers.EmailField(allow_blank=True)
+    contact_phone = serializers.CharField(allow_blank=True, allow_null=True)
+    contact_email = serializers.EmailField(allow_blank=True, allow_null=True)
 
 class UserDataSerializer(serializers.Serializer):
     """Nested serializer for wounds_user data."""
