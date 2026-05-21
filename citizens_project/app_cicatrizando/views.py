@@ -1,22 +1,22 @@
 from rest_framework import viewsets, status
-from drf_spectacular.utils import extend_schema
-from django.contrib.auth import get_user_model
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+from drf_spectacular.utils import extend_schema, OpenApiResponse
+from django.contrib.auth import get_user_model
 from .google import google_get_user_data
 from .models import WoundsUser, Provider, Patient
 from .serializers import (
     GoogleAuthSerializer,
     GoogleAuthResponseSerializer,
-    SpecialistRegistrationSerializer,
-    SpecialistRegistrationResponseSerializer,
+    ProviderRegistrationSerializer,
+    ProviderRegisterResponseSerializer,
+    PatientRegisterSerializer,
+    PatientDataSerializer,
     MeResponseSerializer,
 )
 import logging
-
-logger = logging.getLogger("app_cicatrizando")
-
+logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
@@ -29,12 +29,10 @@ def _split_full_name(full_name: str):
         return parts[0], ""
     return parts[0], " ".join(parts[1:])
 
-
 def _user_display_name(user):
     """Return canonical display name from Django User."""
     full_name = user.get_full_name().strip()
     return full_name or None
-
 
 def _is_registration_complete(user):
     """
@@ -44,6 +42,7 @@ def _is_registration_complete(user):
     - If role is Provider, Provider record exists
     - If role is Patient, Patient record exists
     """
+
     try:
         wounds_user = user.wounds_user
     except WoundsUser.DoesNotExist:
@@ -53,11 +52,9 @@ def _is_registration_complete(user):
         return False
     
     if wounds_user.role == WoundsUser.Provider:
-        return Provider.objects.filter(wounds_user=user).exists()
+        return Provider.objects.filter(wounds_user=wounds_user).exists()
     elif wounds_user.role == WoundsUser.Patient:
-        return Patient.objects.filter(wounds_user=user).exists()
-
-
+        return Patient.objects.filter(wounds_user=wounds_user).exists()
 
 def _get_user_role_display(wounds_user:  WoundsUser) -> str: 
     """Convert role code to display string."""
@@ -65,7 +62,7 @@ def _get_user_role_display(wounds_user:  WoundsUser) -> str:
         return None
     return "specialist" if wounds_user.role == WoundsUser.Provider else "patient"
 
-
+# Registration views
 class GoogleLoginView(viewsets.ViewSet):
     """
     Google OAuth authentication endpoint.
@@ -73,64 +70,55 @@ class GoogleLoginView(viewsets.ViewSet):
     Exchanges Google auth code for JWT tokens.
     Returns 201 for new users, 200 for existing users.
     """
-    serializer_class = GoogleAuthSerializer
+    serializer = GoogleAuthSerializer
     permission_classes = [AllowAny]
 
     @extend_schema(
         request=GoogleAuthSerializer,
         responses={
-            200: GoogleAuthResponseSerializer,
-            201: GoogleAuthResponseSerializer,
+            200: OpenApiResponse(response=GoogleAuthResponseSerializer),
+            201: OpenApiResponse(response=GoogleAuthResponseSerializer),
         }
     )
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
+    def create(self, request):
+        serializer = self.serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        validated_data = serializer.validated_data
+        data = serializer.validated_data
 
-        user_data = google_get_user_data(validated_data["auth_code"])
-        logger.debug(f"User data from Google: {user_data}")
+        google_user_data = google_get_user_data(data["auth_code"], data.get("redirect_uri", "postmessage"))
+        logger.debug(f"User data from Google: {google_user_data}")
 
-        user_email = user_data.get("email")
+        user_given_email = google_user_data.get("email")
         full_name = (
-            user_data.get("name") or
-            f"{user_data.get('given_name', '')} {user_data.get('family_name', '')}".strip() or
-            user_email.split('@')[0]
+            google_user_data.get("name") or
+            f"{google_user_data.get('given_name', '')} {google_user_data.get('family_name', '')}".strip() or
+            user_given_email.split('@')[0]
         )
-
-        user, user_created = User.objects.get_or_create(
-            username=user_email,
-            defaults={"email": user_email}
-        )
-
-        if user.email != user_email:
-            user.email = user_email
-            user.save(update_fields=["email"])
 
         first_name, last_name = _split_full_name(full_name)
-        fields_to_update = []
-        if user.first_name != first_name:
-            user.first_name = first_name
-            fields_to_update.append("first_name")
-        if user.last_name != last_name:
-            user.last_name = last_name
-            fields_to_update.append("last_name")
-        if fields_to_update:
-            user.save(update_fields=fields_to_update)
-
+        
+        user, new = User.objects.get_or_create(
+            username=user_given_email,
+        
+            defaults={
+                "first_name": first_name,
+                "last_name" : last_name,
+                "email": user_given_email
+            }
+        )
+    
         wounds_user, wounds_user_created = WoundsUser.objects.get_or_create(
-            user=user,
-            defaults={}
+            user=user
         )
 
-        is_new = user_created or wounds_user_created
+        is_new = new or wounds_user_created
         registration_complete = _is_registration_complete(user)
 
         token = RefreshToken.for_user(user)
 
         response_data = {
-            "access": str(token.access_token),
+            "access": str(token.access_token),             
             "refresh": str(token),
             "email": user.email,
             "full_name": full_name,
@@ -141,27 +129,28 @@ class GoogleLoginView(viewsets.ViewSet):
         status_code = status.HTTP_201_CREATED if is_new else status.HTTP_200_OK
         return Response(response_data, status=status_code)
 
-
 class SpecialistRegistrationView(viewsets.ViewSet):
     """
-    Complete specialist registration.
+    Complete provider registration.
     
     Sets user role to Specialist and creates professional profile.
     Requires JWT authentication.
     """
-    serializer_class = SpecialistRegistrationSerializer
+    serializer = ProviderRegistrationSerializer
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        request=SpecialistRegistrationSerializer,
+        request=ProviderRegistrationSerializer,
         responses={
-            200: SpecialistRegistrationResponseSerializer,
-            201: SpecialistRegistrationResponseSerializer,
+            200: OpenApiResponse(response=ProviderRegisterResponseSerializer),
+            201: OpenApiResponse(response=ProviderRegisterResponseSerializer),
         }
-        
     )
     def create(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
+        """
+        Fills WoundsUser and Provider table
+        """
+        serializer = self.serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
@@ -180,11 +169,11 @@ class SpecialistRegistrationView(viewsets.ViewSet):
         wounds_user.save()
 
         provider, _ = Provider.objects.update_or_create(
-            wounds_user=user,
+            wounds_user=wounds_user,
             defaults={
                 "professional_id": data["professional_id"],
-                "contact_phone": data.get("contact_phone", ""),
-                "contact_email": data.get("contact_email", ""),
+                "contact_phone": data.get("contact_phone") or None,
+                "contact_email": data.get("contact_email") or None,
             }
         )
 
@@ -203,53 +192,173 @@ class SpecialistRegistrationView(viewsets.ViewSet):
                 "professional_id": provider.professional_id,
                 "contact_phone": provider.contact_phone,
                 "contact_email": provider.contact_email,
-            },
+            }
         }
-
     
         return Response(response_data, status=status.HTTP_201_CREATED)
 
+# Functionality views
+
+class SpecialistPatientListView(viewsets.ViewSet):
+    """
+        GET all patients related to a specific Provider/specialist
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        responses={
+            200: OpenApiResponse(response=PatientDataSerializer(many=True)),
+            404: OpenApiResponse(description="Specialist does not exist")
+        }
+    )
+    def list(self, request):
+        try:
+            provider = request.user.wounds_user.provider
+
+        except (WoundsUser.DoesNotExist, Provider.DoesNotExist, AttributeError):
+            return Response("Specialist does not exist", status=status.HTTP_404_NOT_FOUND)
+
+        patients = Patient.objects.filter(assigned_providers=provider)
+
+        response_data = []
+        for patient in patients:
+            user_obj = patient.wounds_user.user
+            name = user_obj.get_full_name()
+                
+            response_data.append({
+                "id": patient.id,
+                "name": name,
+                "contact_phone": patient.contact_phone,
+                "contact_email": patient.contact_email
+            })
+            
+        return Response(response_data)
+
+class SpecialistPatientRegisterView(viewsets.ViewSet):
+    serializer = PatientRegisterSerializer
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        responses={
+            200: OpenApiResponse(description="Patient already exists, added specialist relation", response=PatientDataSerializer()),
+            201: OpenApiResponse(description="Created new Patient entry", response=PatientDataSerializer()),
+            404: OpenApiResponse(description="Specialist does not exist")
+        }
+    )
+
+    def create(self, request):
+        user = request.user
+        try:
+            provider = user.wounds_user.provider
+
+        except (WoundsUser.DoesNotExist, Provider.DoesNotExist, AttributeError):
+            return Response("Specialist does not exist", status=status.HTTP_404_NOT_FOUND)
+
+
+        serializer = self.serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        
+        name_in_list =  _split_full_name(data["name"])
+
+        user_email = data.get("google_email")
+        patient_user, new = User.objects.get_or_create(
+            username= user_email,
+            defaults={
+                "first_name" : name_in_list[0],
+                "last_name" : name_in_list[1],
+                "email": user_email
+            }
+        )
+
+        if not new:
+            patient_wounds_user_object = WoundsUser.objects.get(user=patient_user)
+            patient = Patient.objects.get(wounds_user=patient_wounds_user_object)
+            patient.assigned_providers.add(provider)
+
+            response = {
+          
+                "id": patient.id,
+                "name": data.get("name"),
+                "contact_phone": patient.contact_phone,
+                "contact_email": patient.contact_email
+            }
+            return Response(response, status=status.HTTP_200_OK)
+        
+
+        patient_wounds_user = WoundsUser.objects.create(
+            user=patient_user,
+            birth_date = data.get("birth_date"),
+            state = data.get("state", ""),
+            city = data.get("city", ""),
+            role = WoundsUser.Patient,
+        )
+
+        patient, _ = Patient.objects.get_or_create(
+            wounds_user=patient_wounds_user,
+            defaults={
+                "contact_phone": data.get("contact_phone") or None,
+                "contact_email": data.get("contact_email") or None,
+            }
+        )
+        
+        # Link to provider
+        patient.assigned_providers.add(provider)
+
+        response = {
+          
+            "id": patient.id,
+            "name": data.get("name"),
+            "contact_phone": patient.contact_phone,
+            "contact_email": patient.contact_email
+        }
+        return Response(response, status=status.HTTP_201_CREATED)
+
+class PatientValidationView(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        responses={
+            200: OpenApiResponse(description="Patient exists and is allowed to login"),
+            403: OpenApiResponse(description="Patient is not allowed to login")
+        }
+
+    )
+    def list(self,request):
+        user = request.user
+        try:
+            wounds_user_obj = WoundsUser.objects.get(user=user)
+            patient_obj = Patient.objects.get(wounds_user=wounds_user_obj)
+        except (WoundsUser.DoesNotExist, Patient.DoesNotExist):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        
+        if wounds_user_obj.role == WoundsUser.Patient:
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        
 class MeView(viewsets.ViewSet):
     """
-    Get current user's complete profile.
+    GET current user's complete profile.
     
     Returns user data including role-specific information.
     Requires JWT authentication.
     """
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(responses={200: MeResponseSerializer})
+    @extend_schema(
+        responses={
+            200: OpenApiResponse(response=MeResponseSerializer)
+        }
+    )
     def list(self, request):
         user = request.user
         
         wounds_user = user.wounds_user
-        
-        specialist_data = None
-        patient_data = None
-        if wounds_user.role == WoundsUser.Provider:
-            try:
-                provider = user.provider
-                specialist_data = {
-                    "id": provider.pk,
-                    "professional_id": provider.professional_id,
-                    "contact_phone": provider.contact_phone,
-                    "contact_email": provider.contact_email,
-                }
-            except Provider.DoesNotExist:
-                pass
-        else:
-            try:
-                patient = user.patient
-                patient_data = {
-                    "id": patient.pk,
-                    "contact_phone": patient.contact_phone,
-                    "contact_email": patient.contact_email
-                }
-            except Patient.DoesNotExist:
-                pass
 
-        if patient_data:
-            response = {
+        response = {
             "id": user.id,
             "email": user.email,
             "name": _user_display_name(user),
@@ -258,16 +367,25 @@ class MeView(viewsets.ViewSet):
             "city": wounds_user.city or None,
             "role": _get_user_role_display(wounds_user),
             "registration_complete": _is_registration_complete(user),
+        }
+        
+        if wounds_user.role == WoundsUser.Provider:
+            provider = wounds_user.provider
+
+            response["specialist"] = {
+                "id": provider.id,
+                "professional_id": provider.professional_id,
+                "contact_phone": provider.contact_phone,
+                "contact_email": provider.contact_email
             }
 
-        return Response({
-            "id": user.id,
-            "email": user.email,
-            "name": _user_display_name(user),
-            "birth_date": wounds_user.birth_date.isoformat() if wounds_user.birth_date else None,
-            "state": wounds_user.state or None,
-            "city": wounds_user.city or None,
-            "role": _get_user_role_display(wounds_user),
-            "registration_complete": _is_registration_complete(user),
-            "specialist": specialist_data,
-        })
+        elif wounds_user.role == WoundsUser.Patient:
+            patient = wounds_user.patient
+
+            response["patient"] = {
+                "id": patient.id,
+                "contact_phone": patient.contact_phone,
+                "contact_email": patient.contact_email
+            }
+
+        return Response(response)
