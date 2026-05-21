@@ -127,7 +127,7 @@ def startup(service_name):
 
 
 def run_test(test_name):
-    if ( not is_db_running) or (not is_server_running):
+    if (not is_db_running()) or (not is_server_running()):
         startup("")
 
     cmd = sudo([*compose_base_cmd(), "exec", "web", "python", "citizens_project/manage.py", "test", test_name])

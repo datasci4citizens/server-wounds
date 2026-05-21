@@ -28,7 +28,6 @@ class GoogleAuthSerializer(serializers.Serializer):
     auth_code = serializers.CharField(required=True, allow_blank=False, allow_null=False)
     redirect_uri = serializers.CharField(required=False, default="postmessage", allow_blank=True)
 
-
 class ProviderRegistrationSerializer(serializers.Serializer):
     """
     Request serializer for specialist registration.
@@ -83,11 +82,11 @@ class GoogleAuthResponseSerializer(serializers.Serializer):
     registration_complete = serializers.BooleanField()
     role = serializers.CharField(allow_null=True)
 
-
 class ProviderDataSerializer(serializers.Serializer):
     """Nested serializer for specialist-specific data."""
 
     id = serializers.IntegerField(required=True)
+    professional_document = serializers.CharField(required=True)
     professional_id = serializers.CharField(required=True)
     contact_phone = serializers.CharField(allow_blank=True, allow_null=True)
     contact_email = serializers.EmailField(allow_blank=True, allow_null=True)
@@ -110,13 +109,11 @@ class UserDataSerializer(serializers.Serializer):
     city = serializers.CharField()
     role = serializers.CharField()
 
-
 class ProviderRegisterResponseSerializer(serializers.Serializer):
     """Response serializer for specialist registration."""
     message = serializers.CharField()
     user = UserDataSerializer()
     specialist = ProviderDataSerializer()
-
 
 class MeResponseSerializer(serializers.Serializer):
     """Response serializer for the /auth/me/ endpoint."""
@@ -129,5 +126,3 @@ class MeResponseSerializer(serializers.Serializer):
     role = serializers.CharField(allow_null=True)
     registration_complete = serializers.BooleanField()
     specialist = ProviderDataSerializer(allow_null=True)
-
-

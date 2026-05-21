@@ -1,9 +1,9 @@
 from rest_framework import viewsets, status
-from drf_spectacular.utils import extend_schema, OpenApiResponse
-from django.contrib.auth import get_user_model
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+from drf_spectacular.utils import extend_schema, OpenApiResponse
+from django.contrib.auth import get_user_model
 from .google import google_get_user_data
 from .models import WoundsUser, Provider, Patient
 from .serializers import (
@@ -193,6 +193,7 @@ class SpecialistRegistrationView(viewsets.ViewSet):
             },
             "specialist": {
                 "id": provider.pk,
+                "professional_document": provider.professional_document,
                 "professional_id": provider.professional_id,
                 "contact_phone": provider.contact_phone,
                 "contact_email": provider.contact_email,
@@ -381,6 +382,7 @@ class MeView(viewsets.ViewSet):
 
             response["specialist"] = {
                 "id": provider.id,
+                "professional_document": provider.professional_document,
                 "professional_id": provider.professional_id,
                 "contact_phone": provider.contact_phone,
                 "contact_email": provider.contact_email
