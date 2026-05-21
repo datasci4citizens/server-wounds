@@ -115,8 +115,6 @@ class GoogleLoginView(viewsets.ViewSet):
         is_new = new or wounds_user_created
         registration_complete = _is_registration_complete(user)
 
-        wounds_user.validated = True
-
         token = RefreshToken.for_user(user)
 
         response_data = {
@@ -130,7 +128,6 @@ class GoogleLoginView(viewsets.ViewSet):
 
         status_code = status.HTTP_201_CREATED if is_new else status.HTTP_200_OK
         return Response(response_data, status=status_code)
-
 
 class SpecialistRegistrationView(viewsets.ViewSet):
     """
@@ -174,7 +171,6 @@ class SpecialistRegistrationView(viewsets.ViewSet):
         provider, _ = Provider.objects.update_or_create(
             wounds_user=wounds_user,
             defaults={
-                "professional_document":data["professional_document"],
                 "professional_id": data["professional_id"],
                 "contact_phone": data.get("contact_phone") or None,
                 "contact_email": data.get("contact_email") or None,
@@ -193,7 +189,6 @@ class SpecialistRegistrationView(viewsets.ViewSet):
             },
             "specialist": {
                 "id": provider.pk,
-                "professional_document": provider.professional_document,
                 "professional_id": provider.professional_id,
                 "contact_phone": provider.contact_phone,
                 "contact_email": provider.contact_email,
@@ -299,7 +294,6 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
             state = data.get("state", ""),
             city = data.get("city", ""),
             role = WoundsUser.Patient,
-            validated = False,
         )
 
         patient, _ = Patient.objects.get_or_create(
@@ -345,8 +339,6 @@ class PatientValidationView(viewsets.ViewSet):
         else:
             return Response(status=status.HTTP_403_FORBIDDEN)
         
-
-
 class MeView(viewsets.ViewSet):
     """
     GET current user's complete profile.
@@ -382,7 +374,6 @@ class MeView(viewsets.ViewSet):
 
             response["specialist"] = {
                 "id": provider.id,
-                "professional_document": provider.professional_document,
                 "professional_id": provider.professional_id,
                 "contact_phone": provider.contact_phone,
                 "contact_email": provider.contact_email
