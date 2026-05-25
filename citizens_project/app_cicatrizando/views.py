@@ -13,6 +13,7 @@ from .serializers import (
     ProviderRegisterResponseSerializer,
     PatientRegisterSerializer,
     PatientDataSerializer,
+    RegisterPatientComobiditySerializer,
     MeResponseSerializer,
 )
 import logging
@@ -225,14 +226,14 @@ class SpecialistPatientListView(viewsets.ViewSet):
         for patient in patients:
             user_obj = patient.wounds_user.user
             name = user_obj.get_full_name()
-                
+            
             response_data.append({
                 "id": patient.id,
                 "name": name,
                 "contact_phone": patient.contact_phone,
                 "contact_email": patient.contact_email
             })
-            
+        
         return Response(response_data)
 
 class SpecialistPatientRegisterView(viewsets.ViewSet):
@@ -315,6 +316,31 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
             "contact_email": patient.contact_email
         }
         return Response(response, status=status.HTTP_201_CREATED)
+
+class RegisterPatientComobidityView(viewsets.ViewSet):
+    serializer = RegisterPatientComobiditySerializer
+    permission_classes = [IsAuthenticated]
+    
+    @extend_schema(
+        responses={
+            200: OpenApiResponse(serializer = PatientDataSerializer)
+
+        }
+
+
+    )
+    def create(self, request):
+        serializer = self.serializer(data= request)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+    
+        user = request.user
+        Wounds = user.wounds_user
+        patient = Wounds.patient
+
+        for comorbidity in data.comorbidities:
+          patient.comorbidities.add(comorbidity)
+
 
 class PatientValidationView(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]

@@ -3,6 +3,10 @@ from django.contrib.auth import get_user_model
 
 django_user = get_user_model()
 
+class Comorbidity(models.Model):
+    name = models.CharField()
+    concept_id = models.CharField(primary_key=True)
+
 class WoundsUser(models.Model):
     user = models.OneToOneField(django_user, on_delete=models.CASCADE, related_name="wounds_user")
     
@@ -35,3 +39,4 @@ class Patient(models.Model):
     contact_phone = models.CharField(blank=True, null=True, max_length=15, unique = True) 
 
     assigned_providers = models.ManyToManyField(Provider)
+    comorbidities = models.ManyToManyField(Comorbidity)
