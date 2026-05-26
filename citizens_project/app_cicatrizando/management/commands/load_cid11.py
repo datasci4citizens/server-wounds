@@ -5,7 +5,7 @@ from django.conf import settings
 from app_cicatrizando.models import Comorbidity
 
 class Command(BaseCommand):
-    help = 'Populates the Comorbidity database with contents from cid11.csv'
+    'Populates the Comorbidity database with contents from cid11.csv'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -49,7 +49,7 @@ class Command(BaseCommand):
                 if not title:
                     title = row.get('TitleEN', '').strip()
                     
-                title = title[:255]
+                title = title[:100]
                 
                 objs.append(Comorbidity(concept_id=concept_id, name=title))
                 

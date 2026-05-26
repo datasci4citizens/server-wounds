@@ -70,7 +70,16 @@ class PatientRegisterSerializer(serializers.Serializer):
         return validate_brazilian_state(value)
 
 class RegisterPatientComobiditySerializer(serializers.Serializer):
-    comorbidities = serializers.ListField(child=serializers.CharField(max_length=255))
+    patient_id = serializers.CharField()
+    patient_email = serializers.EmailField()
+    comorbidities = serializers.ListField(child=serializers.CharField(max_length=100))
+
+
+    def validate(self, data):
+        if (not self.patient_id) and (not self.patient_email):
+            raise serializers.ValidationError("at least one field is required")
+        return data
+
 
 # =============================================================================
 # Response Serializers

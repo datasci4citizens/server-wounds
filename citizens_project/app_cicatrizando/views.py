@@ -5,7 +5,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from django.contrib.auth import get_user_model
 from .google import google_get_user_data
-from .models import WoundsUser, Provider, Patient
+from .models import WoundsUser, Provider, Patient, Comorbidity
 from .serializers import (
     GoogleAuthSerializer,
     GoogleAuthResponseSerializer,
@@ -323,22 +323,35 @@ class RegisterPatientComobidityView(viewsets.ViewSet):
     
     @extend_schema(
         responses={
-            200: OpenApiResponse(response=PatientDataSerializer)
+            200: OpenApiResponse(description="Comorbidities added successfully."),
+            400: OpenApiResponse(description="Comorbidity not in Database."),
+            404: OpenApiResponse(description="Patient does not exist.")
         }
     )
     def create(self, request):
         serializer = self.serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
-    
-        user = request.user
-        Wounds = user.wounds_user
-        patient = Wounds.patient
 
-        for comorbidity in data.get('comorbidities', []):
-          patient.comorbidities.add(comorbidity)
+        try:
+            if data["patient_id"]:
+                patient = Patient.objects.get(id = data["patient_id"])
+            elif data["patient_email"]:
+                user = User.objects.get(email = data["patient_email"])
+                wounds_user = user.wounds_user
+                patient = wounds_user.patient
+        except Patient.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
-        return Response({"message": "Comorbidities added successfully"}, status=status.HTTP_200_OK)
+
+        for comorbidity_name in data.get('comorbidities', []):
+            try:  
+                comorbidity = Comorbidity.objects.get(name__iexact = comorbidity_name)
+            except Comorbidity.DoesNotExist:
+                return Response(message = f"{comorbidity_name} not in database",status=status.HTTP_400_BAD_REQUEST)
+            patient.comorbidities.add(comorbidity)
+
+        return Response(status=status.HTTP_200_OK)
 
 
 class PatientValidationView(viewsets.ViewSet):
