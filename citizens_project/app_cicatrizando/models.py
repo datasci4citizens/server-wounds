@@ -4,8 +4,8 @@ from django.contrib.auth import get_user_model
 django_user = get_user_model()
 
 class Comorbidity(models.Model):
-    name = models.CharField()
-    concept_id = models.CharField(primary_key=True)
+    name = models.CharField(max_length=255)
+    concept_id = models.CharField(max_length=255, primary_key=True)
 
 class WoundsUser(models.Model):
     user = models.OneToOneField(django_user, on_delete=models.CASCADE, related_name="wounds_user")
