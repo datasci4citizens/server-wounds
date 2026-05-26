@@ -70,7 +70,7 @@ class PatientRegisterSerializer(serializers.Serializer):
         return validate_brazilian_state(value)
 
 class RegisterPatientComobiditySerializer(serializers.Serializer):
-    comorbidities = serializers.MultipleChoiceField()
+    comorbidities = serializers.ListField(child=serializers.CharField(max_length=255))
 
 # =============================================================================
 # Response Serializers

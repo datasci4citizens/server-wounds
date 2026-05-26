@@ -323,14 +323,11 @@ class RegisterPatientComobidityView(viewsets.ViewSet):
     
     @extend_schema(
         responses={
-            200: OpenApiResponse(serializer = PatientDataSerializer)
-
+            200: OpenApiResponse(response=PatientDataSerializer)
         }
-
-
     )
     def create(self, request):
-        serializer = self.serializer(data= request)
+        serializer = self.serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
     
@@ -338,8 +335,10 @@ class RegisterPatientComobidityView(viewsets.ViewSet):
         Wounds = user.wounds_user
         patient = Wounds.patient
 
-        for comorbidity in data.comorbidities:
+        for comorbidity in data.get('comorbidities', []):
           patient.comorbidities.add(comorbidity)
+
+        return Response({"message": "Comorbidities added successfully"}, status=status.HTTP_200_OK)
 
 
 class PatientValidationView(viewsets.ViewSet):
