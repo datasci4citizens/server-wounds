@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Provider
+from .models import Provider, Comorbidity
 
 
 # Valid Brazilian state codes
@@ -130,3 +130,8 @@ class MeResponseSerializer(serializers.Serializer):
     role = serializers.CharField(allow_null=True)
     registration_complete = serializers.BooleanField()
     specialist = ProviderDataSerializer(allow_null=True)
+
+class ComorbiditySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comorbidity
+        fields = ['concept_id', 'name']

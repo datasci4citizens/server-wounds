@@ -5,7 +5,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from django.contrib.auth import get_user_model
 from .google import google_get_user_data
-from .models import WoundsUser, Provider, Patient
+from .models import WoundsUser, Provider, Patient, Comorbidity
 from .serializers import (
     GoogleAuthSerializer,
     GoogleAuthResponseSerializer,
@@ -15,6 +15,7 @@ from .serializers import (
     PatientDataSerializer,
     RegisterPatientComobiditySerializer,
     MeResponseSerializer,
+    ComorbiditySerializer,
 )
 import logging
 logger = logging.getLogger(__name__)
@@ -414,3 +415,21 @@ class MeView(viewsets.ViewSet):
             }
 
         return Response(response)
+from rest_framework.pagination import LimitOffsetPagination
+
+class ComorbidityPagination(LimitOffsetPagination):
+    default_limit = 20
+    max_limit = 100
+
+class ComorbiditySearchView(viewsets.ReadOnlyModelViewSet):
+    queryset = Comorbidity.objects.all()
+    serializer_class = ComorbiditySerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = ComorbidityPagination
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        search_query = self.request.query_params.get('search', None)
+        if search_query:
+            queryset = queryset.filter(name__icontains=search_query)
+        return queryset

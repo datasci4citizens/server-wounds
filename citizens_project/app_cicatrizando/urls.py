@@ -7,7 +7,8 @@ from .views import(
     SpecialistPatientRegisterView,
     PatientValidationView,
     MeView,
-    RegisterPatientComobidityView
+    RegisterPatientComobidityView,
+    ComorbiditySearchView
 )
 from drf_spectacular.views import SpectacularSwaggerView, SpectacularAPIView
 
@@ -24,6 +25,7 @@ router.register(r'auth/register/patient', PatientValidationView, basename="Valid
 router.register(r'specialist/patients', SpecialistPatientListView, basename='patient_list')
 router.register(r'specialist/patient/register', SpecialistPatientRegisterView, basename= 'register_patient')
 router.register(r'patient/comorbidities', RegisterPatientComobidityView, basename='patient-comorbidities')
+router.register(r'comorbidities/search', ComorbiditySearchView, basename='comorbidities-search')
 
 urlpatterns = [
     path('', include(router.urls)),
