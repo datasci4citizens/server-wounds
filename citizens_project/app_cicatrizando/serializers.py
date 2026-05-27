@@ -69,14 +69,14 @@ class PatientRegisterSerializer(serializers.Serializer):
     def validate_state(self, value):
         return validate_brazilian_state(value)
 
-class RegisterPatientComobiditySerializer(serializers.Serializer):
+class RegisterPatientComorbiditySerializer(serializers.Serializer):
     patient_id = serializers.CharField()
     patient_email = serializers.EmailField()
     comorbidities = serializers.ListField(child=serializers.CharField(max_length=220))
 
 
     def validate(self, data):
-        if (not self.patient_id) and (not self.patient_email):
+        if (not data.get("patient_id")) and (not data.get("patient_email")):
             raise serializers.ValidationError("at least one field is required")
         return data
 
@@ -109,8 +109,8 @@ class PatientDataSerializer(serializers.Serializer):
     name = serializers.CharField(required=True, max_length=255)
     contact_phone = serializers.CharField(allow_blank=True, allow_null=True)
     contact_email = serializers.EmailField(allow_blank=True, allow_null=True)
-    assigned_specialists = serializers.ListField()
-    comorbidities = serializers.ListField()
+    assigned_specialists = serializers.ListField(required=False, default=list)
+    comorbidities = serializers.ListField(required=False, default=list)
 
 class UserDataSerializer(serializers.Serializer):
     """Nested serializer for wounds_user data."""

@@ -6,6 +6,7 @@ from drf_spectacular.utils import extend_schema, OpenApiResponse
 from django.contrib.auth import get_user_model
 from .google import google_get_user_data
 from .models import WoundsUser, Provider, Patient, Comorbidity
+from django.db import transaction
 from .serializers import (
     GoogleAuthSerializer,
     GoogleAuthResponseSerializer,
@@ -13,7 +14,7 @@ from .serializers import (
     ProviderRegisterResponseSerializer,
     PatientRegisterSerializer,
     PatientDataSerializer,
-    RegisterPatientComobiditySerializer,
+    RegisterPatientComorbiditySerializer,
     MeResponseSerializer,
 )
 import logging
@@ -317,39 +318,66 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
         }
         return Response(response, status=status.HTTP_201_CREATED)
 
-class RegisterPatientComobidityView(viewsets.ViewSet):
-    serializer = RegisterPatientComobiditySerializer
+class RegisterPatientComorbidityView(viewsets.ViewSet):
+    serializer = RegisterPatientComorbiditySerializer
     permission_classes = [IsAuthenticated]
     
     @extend_schema(
         responses={
             200: OpenApiResponse(description="Comorbidities added successfully."),
             400: OpenApiResponse(description="Comorbidity not in Database."),
+            403: OpenApiResponse(description="User is not allowed to add this patients comorbidity"),
             404: OpenApiResponse(description="Patient does not exist.")
         }
     )
+
     def create(self, request):
+        request_user = request.user
         serializer = self.serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
         try:
-            if data["patient_id"]:
-                patient = Patient.objects.get(id = data["patient_id"])
-            elif data["patient_email"]:
-                user = User.objects.get(email = data["patient_email"])
-                wounds_user = user.wounds_user
-                patient = wounds_user.patient
-        except Patient.DoesNotExist:
+            if data.get("patient_id"):
+                patient = Patient.objects.get(id=data["patient_id"])
+            elif data.get("patient_email"):
+                target_user = User.objects.get(email=data["patient_email"])
+                target_wounds_user = target_user.wounds_user
+                patient = target_wounds_user.patient
+            else:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+        except (Patient.DoesNotExist, User.DoesNotExist, WoundsUser.DoesNotExist, AttributeError):
             return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            caller_wounds_user = request_user.wounds_user
+        except WoundsUser.DoesNotExist:
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
+        if caller_wounds_user.role == WoundsUser.Provider:
+            try:
+                provider = caller_wounds_user.provider
+            except Provider.DoesNotExist:
+                return Response(status=status.HTTP_403_FORBIDDEN)
+            if not patient.assigned_providers.filter(pk=provider.pk).exists():
+                return Response(status=status.HTTP_403_FORBIDDEN)
+        elif caller_wounds_user != patient.wounds_user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        
 
+        comorbidities_to_add = []
         for comorbidity_name in data.get('comorbidities', []):
-            try:  
-                comorbidity = Comorbidity.objects.get(name__iexact = comorbidity_name)
+            try:
+                comorbidity = Comorbidity.objects.get(name__iexact=comorbidity_name)
             except Comorbidity.DoesNotExist:
-                return Response(message = f"{comorbidity_name} not in database",status=status.HTTP_400_BAD_REQUEST)
-            patient.comorbidities.add(comorbidity)
+                return Response(status=status.HTTP_404_NOT_FOUND)
+            comorbidities_to_add.append(comorbidity)
+
+        try:
+            with transaction.atomic():
+                patient.comorbidities.add(*comorbidities_to_add)
+        except Exception:
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response(status=status.HTTP_200_OK)
 

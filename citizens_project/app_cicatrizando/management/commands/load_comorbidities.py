@@ -19,15 +19,28 @@ class Command(BaseCommand):
             type=str,
             default='comorbidities_ICD11.csv',
         )
+        parser.add_argument(
+            '--force',
+            action='store_true',
+            help='Repopulate comorbidities even if the table already has records. Use when new comorbidities need to be added',
+        )
 
     def handle(self, *args, **options):
         file_path = options['file']
+        force = options['force']
         if not os.path.isabs(file_path):
             file_path = os.path.join(settings.BASE_DIR.parent, file_path)
 
         if not os.path.exists(file_path):
             self.stdout.write(self.style.ERROR(f'File not found at {file_path}'))
             return
+
+        if Comorbidity.objects.exists() and not force:
+            self.stdout.write(self.style.WARNING('Comorbidity table already has records. Skipping population.'))
+            return
+
+        if force and Comorbidity.objects.exists():
+            self.stdout.write(self.style.WARNING('Force enabled: repopulating comorbidities table.'))
 
         self.stdout.write(self.style.NOTICE('Starting population of comorbidities...'))
         
@@ -43,7 +56,10 @@ class Command(BaseCommand):
                 if not lin_uri:
                     continue
                     
-                concept_id = lin_uri
+                concept_matches = re.findall(r'(\d+)', lin_uri)
+                if not concept_matches:
+                    continue
+                concept_id = concept_matches[-1]
                 
                 if concept_id in seen_ids:
                     continue
@@ -55,10 +71,11 @@ class Command(BaseCommand):
 
                 # removes the hifen prefixes | "- - - title"
                 title = re.sub(r'^(?:-\s)+', '', title).strip()
-                
-                if title.__len__ > comorbidity_max_name_lenght:
-                    raise RuntimeError(f"{title}({title.__len__} characters) is too long for our database settings")
-                
+
+                title_length = len(title)
+                if title_length > comorbidity_max_name_lenght:
+                    raise RuntimeError(f"{title}({title_length} characters) is too long for our database settings")
+               
                 objs.append(Comorbidity(concept_id=concept_id, name=title))
                 
                 if len(objs) >= batch_size:
