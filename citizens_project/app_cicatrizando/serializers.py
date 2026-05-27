@@ -104,6 +104,9 @@ class PatientDataSerializer(serializers.Serializer):
 
     id = serializers.IntegerField(required=True)
     name = serializers.CharField(required=True, max_length=255)
+    birth_date = serializers.DateField(required=False, allow_null=True)
+    state = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    city = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     contact_phone = serializers.CharField(allow_blank=True, allow_null=True)
     contact_email = serializers.EmailField(allow_blank=True, allow_null=True)
     gender = serializers.CharField(allow_blank=True, allow_null=True, required=False)

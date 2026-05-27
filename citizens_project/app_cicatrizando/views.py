@@ -231,6 +231,9 @@ class SpecialistPatientListView(viewsets.ViewSet):
             response_data.append({
                 "id": patient.id,
                 "name": name,
+                "birth_date": patient.wounds_user.birth_date,
+                "state": patient.wounds_user.state,
+                "city": patient.wounds_user.city,
                 "contact_phone": patient.contact_phone,
                 "contact_email": patient.contact_email,
                 "gender": patient.gender,
@@ -310,6 +313,9 @@ class SpecialistPatientUpdateView(viewsets.ViewSet):
         response = {
             "id": patient.id,
             "name": wounds_user.user.get_full_name() or data.get("name", ""),
+            "birth_date": wounds_user.birth_date,
+            "state": wounds_user.state,
+            "city": wounds_user.city,
             "contact_phone": patient.contact_phone,
             "contact_email": patient.contact_email,
             "gender": patient.gender,
@@ -372,10 +378,19 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
                 comorbidities = Comorbidity.objects.filter(concept_id__in=data["comorbidities"])
                 patient.comorbidities.set(comorbidities)
 
+            # Update WoundsUser fields
+            if "birth_date" in data: patient_wounds_user_object.birth_date = data["birth_date"]
+            if "state" in data: patient_wounds_user_object.state = data["state"]
+            if "city" in data: patient_wounds_user_object.city = data["city"]
+            patient_wounds_user_object.save()
+
             response = {
           
                 "id": patient.id,
                 "name": data.get("name"),
+                "birth_date": patient_wounds_user_object.birth_date,
+                "state": patient_wounds_user_object.state,
+                "city": patient_wounds_user_object.city,
                 "contact_phone": patient.contact_phone,
                 "contact_email": patient.contact_email,
                 "gender": patient.gender,
@@ -421,6 +436,9 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
           
             "id": patient.id,
             "name": data.get("name"),
+            "birth_date": patient_wounds_user.birth_date,
+            "state": patient_wounds_user.state,
+            "city": patient_wounds_user.city,
             "contact_phone": patient.contact_phone,
             "contact_email": patient.contact_email,
             "gender": patient.gender,
