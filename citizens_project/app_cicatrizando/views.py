@@ -232,7 +232,8 @@ class SpecialistPatientListView(viewsets.ViewSet):
                 "id": patient.id,
                 "name": name,
                 "contact_phone": patient.contact_phone,
-                "contact_email": patient.contact_email
+                "contact_email": patient.contact_email,
+                "comorbidities": ComorbiditySerializer(patient.comorbidities.all(), many=True).data
             })
         
         return Response(response_data)
