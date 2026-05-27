@@ -13,8 +13,10 @@ from .serializers import (
     ProviderRegistrationSerializer,
     ProviderRegisterResponseSerializer,
     PatientRegisterSerializer,
+    PatientsExistsSerializer,
     PatientDataSerializer,
     RegisterPatientComorbiditySerializer,
+    UpdateFieldsSerializer,
     MeResponseSerializer,
 )
 import logging
@@ -40,23 +42,28 @@ def _is_registration_complete(user):
     """
     Check if user has completed registration.
     Registration is complete when:
-    - WoundsUser exists with a role set
-    - If role is Provider, Provider record exists
-    - If role is Patient, Patient record exists
+    - WoundsUser exists, with a role set and all information
+    - If role is Provider, Provider record exists with professional_id
+    - If role is Patient, Patient record exists, with at least one Provider
     """
 
     try:
         wounds_user = user.wounds_user
     except WoundsUser.DoesNotExist:
         return False
-    
-    if not wounds_user.role:
+
+    if wounds_user.birth_date is None or wounds_user.state == "" or wounds_user.city == "":
         return False
-    
+
     if wounds_user.role == WoundsUser.Provider:
-        return Provider.objects.filter(wounds_user=wounds_user).exists()
+        result = Provider.objects.filter(wounds_user=wounds_user, professional_id__isnull=False).exists()
     elif wounds_user.role == WoundsUser.Patient:
-        return Patient.objects.filter(wounds_user=wounds_user).exists()
+        result = Patient.objects.filter(wounds_user=wounds_user, assigned_providers__isnull=False).exists()
+    else:
+        result = False
+
+    return result
+
 
 def _get_user_role_display(wounds_user:  WoundsUser) -> str: 
     """Convert role code to display string."""
@@ -174,8 +181,8 @@ class SpecialistRegistrationView(viewsets.ViewSet):
             wounds_user=wounds_user,
             defaults={
                 "professional_id": data["professional_id"],
-                "contact_phone": data.get("contact_phone") or None,
-                "contact_email": data.get("contact_email") or None,
+                "contact_phone": data.get("contact_phone", None),
+                "contact_email": data.get("contact_email", None),
             }
         )
 
@@ -199,6 +206,39 @@ class SpecialistRegistrationView(viewsets.ViewSet):
     
         return Response(response_data, status=status.HTTP_201_CREATED)
 
+class PatientsExistsView(viewsets.ViewSet):
+    serializer = PatientsExistsSerializer
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        request= serializer,
+        Response={
+            200: OpenApiResponse(response={"patient_id": int, "registration_complete": bool}),
+            401: OpenApiResponse(description= "Patient not in database, should not login")
+        }
+    )
+    def retrieve(self, request):
+
+        serializer = self.serializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        try:
+            user = User.objects.get(email = data["email"])
+            wounds_user = WoundsUser.objects.get(user = user)
+            patient = Patient.objects.get(wounds_user=wounds_user)
+
+            Registration_complete = _is_registration_complete(user)
+            response_data = {
+                "patient_id": patient.pk,
+                "registration_complete" : Registration_complete
+            }
+
+        except (User.DoesNotExist, WoundsUser.DoesNotExist, Patient.DoesNotExist):
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        
+        return Response(response_data, status=status.HTTP_200_OK)
+        
 # Functionality views
 
 class SpecialistPatientListView(viewsets.ViewSet):
@@ -291,7 +331,7 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
 
         patient_wounds_user = WoundsUser.objects.create(
             user=patient_user,
-            birth_date = data.get("birth_date"),
+            birth_date = data.get("birth_date", None),
             state = serializer.validate_state(data.get("state", "")),
             city = data.get("city", ""),
             role = WoundsUser.Patient,
@@ -300,8 +340,8 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
         patient, _ = Patient.objects.get_or_create(
             wounds_user=patient_wounds_user,
             defaults={
-                "contact_phone": data.get("contact_phone"),
-                "contact_email": data.get("contact_email"),
+                "contact_phone": data.get("contact_phone", None),
+                "contact_email": data.get("contact_email", None),
             }
         )
         
@@ -380,30 +420,58 @@ class RegisterPatientComorbidityView(viewsets.ViewSet):
 
         return Response(status=status.HTTP_200_OK)
 
-
-class PatientValidationView(viewsets.ViewSet):
+class UpdateFieldsView(viewsets.ViewSet):
+    serializer = UpdateFieldsSerializer
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
         responses={
-            200: OpenApiResponse(description="Patient exists and is allowed to login"),
-            403: OpenApiResponse(description="Patient is not allowed to login")
+            200: OpenApiResponse(description="Information updated"),
+            404: OpenApiResponse(description="User not found")
         }
-
     )
-    def list(self,request):
+    def patch(self, request):
         user = request.user
+        serializer = self.serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        if data.get("name"):
+            first, last = _split_full_name(data["name"])
+            user.first_name, user.last_name = first, last
+            user.save(update_fields=["first_name", "last_name"])
+
         try:
-            wounds_user_obj = WoundsUser.objects.get(user=user)
-            patient_obj = Patient.objects.get(wounds_user=wounds_user_obj)
-        except (WoundsUser.DoesNotExist, Patient.DoesNotExist):
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            wounds_user = user.wounds_user
+        except WoundsUser.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        if data.get("state") and (data["state"] != ""):
+            wounds_user.state = data["state"]
+        if data.get("city") and (data["city"] != ""):
+            wounds_user.city = data["city"]
         
-        if wounds_user_obj.role == WoundsUser.Patient:
-            return Response(status=status.HTTP_200_OK)
-        else:
-            return Response(status=status.HTTP_403_FORBIDDEN)
-        
+        wounds_user.save()
+
+        if wounds_user.role == WoundsUser.Provider:
+            provider = wounds_user.provider
+            if data.get("contact_email") is not None:
+                provider.contact_email = data["contact_email"]
+            if data.get("contact_phone") is not None:
+                provider.contact_phone = data["contact_phone"]
+            provider.save()
+
+        elif wounds_user.role == WoundsUser.Patient:
+            patient = wounds_user.patient
+            if data.get("contact_email") is not None:
+                patient.contact_email = data["contact_email"]
+            if data.get("contact_phone") is not None:
+                patient.contact_phone = data["contact_phone"]
+            patient.save()
+
+        return Response(status=status.HTTP_200_OK)
+
+   
 class MeView(viewsets.ViewSet):
     """
     GET current user's complete profile.

@@ -36,7 +36,7 @@ class ProviderRegistrationSerializer(serializers.Serializer):
     Flat structure for frontend simplicity.
     """
     # WoundsUser fields
-    name = serializers.CharField(required=True, max_length=255)
+    name = serializers.CharField(required=True, max_length=300)
     birth_date = serializers.DateField(required=True)
     state = serializers.CharField(required=True, max_length=2)
     city = serializers.CharField(required=True, max_length=100)
@@ -56,7 +56,7 @@ class PatientRegisterSerializer(serializers.Serializer):
     google_email = serializers.EmailField(required=True, max_length=50, allow_blank=False)
 
     # WoundsUser fields
-    name = serializers.CharField(required=False, max_length=255)
+    name = serializers.CharField(required=False, max_length=300)
     birth_date = serializers.DateField(required=False)
     state = serializers.CharField(required=False, max_length=2)
     city = serializers.CharField(required=False, max_length=100)
@@ -65,6 +65,25 @@ class PatientRegisterSerializer(serializers.Serializer):
     contact_phone = serializers.CharField(required=False, allow_blank=True, allow_null=True, max_length=20)
     contact_email = serializers.EmailField(required=False, allow_blank=True, allow_null=True)
 
+
+    def validate_state(self, value):
+        return validate_brazilian_state(value)
+
+class PatientsExistsSerializer(serializers.Serializer):
+    patient_email = serializers.EmailField(required=True)
+
+class UpdateFieldsSerializer(serializers.Serializer):
+
+    # Django user fields:
+    name = serializers.CharField(max_length=300)
+    
+    #WoundsUser fields:
+    state = serializers.CharField(required = False, max_length=2)
+    city = serializers.CharField(required = False, max_length=100)
+
+    #Patient/Provider fields:
+    contact_email = serializers.EmailField(max_length=50)
+    contact_phone = serializers.CharField(max_length=15) 
 
     def validate_state(self, value):
         return validate_brazilian_state(value)
@@ -90,7 +109,7 @@ class GoogleAuthResponseSerializer(serializers.Serializer):
     access = serializers.CharField()
     refresh = serializers.CharField()
     email = serializers.EmailField()
-    full_name = serializers.CharField()
+    full_name = serializers.CharField(max_length = 300)
     registration_complete = serializers.BooleanField()
     role = serializers.CharField(allow_null=True)
 
@@ -106,7 +125,7 @@ class PatientDataSerializer(serializers.Serializer):
     """Nested serializer for patient-specific data."""
 
     id = serializers.IntegerField(required=True)
-    name = serializers.CharField(required=True, max_length=255)
+    name = serializers.CharField(required=True, max_length=300)
     contact_phone = serializers.CharField(allow_blank=True, allow_null=True)
     contact_email = serializers.EmailField(allow_blank=True, allow_null=True)
     assigned_specialists = serializers.ListField(required=False, default=list)
@@ -116,7 +135,7 @@ class UserDataSerializer(serializers.Serializer):
     """Nested serializer for wounds_user data."""
     
     id = serializers.IntegerField()
-    name = serializers.CharField()
+    name = serializers.CharField(max_length=300)
     birth_date = serializers.DateField()
     state = serializers.CharField()
     city = serializers.CharField()
@@ -132,7 +151,7 @@ class MeResponseSerializer(serializers.Serializer):
     """Response serializer for the /auth/me/ endpoint."""
     id = serializers.IntegerField(required =True)
     email = serializers.EmailField()
-    name = serializers.CharField(allow_null=True)
+    name = serializers.CharField(allow_null=True, max_length = 300)
     birth_date = serializers.DateField(allow_null=True)
     state = serializers.CharField(allow_null=True, allow_blank=True)
     city = serializers.CharField(allow_null=True, allow_blank=True)
