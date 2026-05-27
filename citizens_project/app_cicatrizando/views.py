@@ -263,9 +263,9 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
         data = serializer.validated_data
 
         
-        name_in_list =  _split_full_name(data["name"])
+        name_in_list =  _split_full_name(data.get("name"))
 
-        user_email = data.get("google_email")
+        user_email = data["google_email"]
         patient_user, new = User.objects.get_or_create(
             username= user_email,
             defaults={
@@ -281,7 +281,6 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
             patient.assigned_providers.add(provider)
 
             response = {
-          
                 "id": patient.id,
                 "name": data.get("name"),
                 "contact_phone": patient.contact_phone,
@@ -293,7 +292,7 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
         patient_wounds_user = WoundsUser.objects.create(
             user=patient_user,
             birth_date = data.get("birth_date"),
-            state = data.get("state", ""),
+            state = serializer.validate_state(data.get("state", "")),
             city = data.get("city", ""),
             role = WoundsUser.Patient,
         )
@@ -301,12 +300,11 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
         patient, _ = Patient.objects.get_or_create(
             wounds_user=patient_wounds_user,
             defaults={
-                "contact_phone": data.get("contact_phone") or None,
-                "contact_email": data.get("contact_email") or None,
+                "contact_phone": data.get("contact_phone"),
+                "contact_email": data.get("contact_email"),
             }
         )
         
-        # Link to provider
         patient.assigned_providers.add(provider)
 
         response = {
@@ -339,9 +337,9 @@ class RegisterPatientComorbidityView(viewsets.ViewSet):
 
         try:
             if data.get("patient_id"):
-                patient = Patient.objects.get(id=data["patient_id"])
+                patient = Patient.objects.get(id=data.get("patient_id", None))
             elif data.get("patient_email"):
-                target_user = User.objects.get(email=data["patient_email"])
+                target_user = User.objects.get(email=data.get("patient_email"))
                 target_wounds_user = target_user.wounds_user
                 patient = target_wounds_user.patient
             else:

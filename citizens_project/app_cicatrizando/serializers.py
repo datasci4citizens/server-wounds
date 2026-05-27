@@ -70,9 +70,9 @@ class PatientRegisterSerializer(serializers.Serializer):
         return validate_brazilian_state(value)
 
 class RegisterPatientComorbiditySerializer(serializers.Serializer):
-    patient_id = serializers.CharField()
-    patient_email = serializers.EmailField()
-    comorbidities = serializers.ListField(child=serializers.CharField(max_length=220))
+    patient_id = serializers.CharField(required=False)
+    patient_email = serializers.EmailField(required=False)
+    comorbidities = serializers.ListField(required=True, child=serializers.CharField(max_length=220))
 
 
     def validate(self, data):
