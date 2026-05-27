@@ -64,6 +64,11 @@ class PatientRegisterSerializer(serializers.Serializer):
     # Patient fields
     contact_phone = serializers.CharField(required=False, allow_blank=True, allow_null=True, max_length=20)
     contact_email = serializers.EmailField(required=False, allow_blank=True, allow_null=True)
+    gender = serializers.CharField(required=False, allow_blank=True, allow_null=True, max_length=1)
+    height = serializers.FloatField(required=False, allow_null=True)
+    weight = serializers.FloatField(required=False, allow_null=True)
+    smoking_status = serializers.CharField(required=False, allow_blank=True, allow_null=True, max_length=10)
+    alcohol_consumption = serializers.CharField(required=False, allow_blank=True, allow_null=True, max_length=10)
     comorbidities = serializers.ListField(child=serializers.CharField(max_length=255), required=False, default=list)
 
 
@@ -101,6 +106,11 @@ class PatientDataSerializer(serializers.Serializer):
     name = serializers.CharField(required=True, max_length=255)
     contact_phone = serializers.CharField(allow_blank=True, allow_null=True)
     contact_email = serializers.EmailField(allow_blank=True, allow_null=True)
+    gender = serializers.CharField(allow_blank=True, allow_null=True, required=False)
+    height = serializers.FloatField(allow_null=True, required=False)
+    weight = serializers.FloatField(allow_null=True, required=False)
+    smoking_status = serializers.CharField(allow_blank=True, allow_null=True, required=False)
+    alcohol_consumption = serializers.CharField(allow_blank=True, allow_null=True, required=False)
     assigned_specialists = serializers.ListField()
     comorbidities = serializers.ListField()
 

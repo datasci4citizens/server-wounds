@@ -233,6 +233,11 @@ class SpecialistPatientListView(viewsets.ViewSet):
                 "name": name,
                 "contact_phone": patient.contact_phone,
                 "contact_email": patient.contact_email,
+                "gender": patient.gender,
+                "height": patient.height,
+                "weight": patient.weight,
+                "smoking_status": patient.smoking_status,
+                "alcohol_consumption": patient.alcohol_consumption,
                 "comorbidities": ComorbiditySerializer(patient.comorbidities.all(), many=True).data
             })
         
@@ -267,6 +272,16 @@ class SpecialistPatientUpdateView(viewsets.ViewSet):
             patient.contact_phone = data["contact_phone"]
         if "contact_email" in data:
             patient.contact_email = data["contact_email"]
+        if "gender" in data:
+            patient.gender = data["gender"]
+        if "height" in data:
+            patient.height = data["height"]
+        if "weight" in data:
+            patient.weight = data["weight"]
+        if "smoking_status" in data:
+            patient.smoking_status = data["smoking_status"]
+        if "alcohol_consumption" in data:
+            patient.alcohol_consumption = data["alcohol_consumption"]
         patient.save()
 
         # Update WoundsUser fields
@@ -297,6 +312,11 @@ class SpecialistPatientUpdateView(viewsets.ViewSet):
             "name": wounds_user.user.get_full_name() or data.get("name", ""),
             "contact_phone": patient.contact_phone,
             "contact_email": patient.contact_email,
+            "gender": patient.gender,
+            "height": patient.height,
+            "weight": patient.weight,
+            "smoking_status": patient.smoking_status,
+            "alcohol_consumption": patient.alcohol_consumption,
             "assigned_specialists": [p.id for p in patient.assigned_providers.all()],
             "comorbidities": ComorbiditySerializer(patient.comorbidities.all(), many=True).data
         }
@@ -358,6 +378,11 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
                 "name": data.get("name"),
                 "contact_phone": patient.contact_phone,
                 "contact_email": patient.contact_email,
+                "gender": patient.gender,
+                "height": patient.height,
+                "weight": patient.weight,
+                "smoking_status": patient.smoking_status,
+                "alcohol_consumption": patient.alcohol_consumption,
                 "assigned_specialists": [p.id for p in patient.assigned_providers.all()],
                 "comorbidities": ComorbiditySerializer(patient.comorbidities.all(), many=True).data
             }
@@ -377,6 +402,11 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
             defaults={
                 "contact_phone": data.get("contact_phone") or None,
                 "contact_email": data.get("contact_email") or None,
+                "gender": data.get("gender") or None,
+                "height": data.get("height") or None,
+                "weight": data.get("weight") or None,
+                "smoking_status": data.get("smoking_status") or None,
+                "alcohol_consumption": data.get("alcohol_consumption") or None,
             }
         )
         
@@ -393,6 +423,11 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
             "name": data.get("name"),
             "contact_phone": patient.contact_phone,
             "contact_email": patient.contact_email,
+            "gender": patient.gender,
+            "height": patient.height,
+            "weight": patient.weight,
+            "smoking_status": patient.smoking_status,
+            "alcohol_consumption": patient.alcohol_consumption,
             "assigned_specialists": [p.id for p in patient.assigned_providers.all()],
             "comorbidities": ComorbiditySerializer(patient.comorbidities.all(), many=True).data
         }

@@ -39,5 +39,11 @@ class Patient(models.Model):
     contact_email = models.EmailField(blank=True, null=True, max_length=50, unique = True)
     contact_phone = models.CharField(blank=True, null=True, max_length=15, unique = True) 
 
+    gender = models.CharField(max_length=1, blank=True, null=True)
+    height = models.FloatField(blank=True, null=True)
+    weight = models.FloatField(blank=True, null=True)
+    smoking_status = models.CharField(max_length=10, blank=True, null=True)
+    alcohol_consumption = models.CharField(max_length=10, blank=True, null=True)
+
     assigned_providers = models.ManyToManyField(Provider)
     comorbidities = models.ManyToManyField(Comorbidity)
