@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 from app_cicatrizando.models import Comorbidity
 
-comorbidity_max_name_lenght = Comorbidity._meta.get_field("name").max_length
+comorbidity_max_name_length = Comorbidity._meta.get_field("name").max_length
 
 ### This script is populating the database with ICD-11, and not with OMOP CDM.
 
@@ -17,7 +17,7 @@ class Command(BaseCommand):
         parser.add_argument(
             '--file',
             type=str,
-            default='comorbidities_ICD11.csv',
+            default='app_cicatrizandoapp_cicatrizando/management/comorbidities_ICD11.csv',
         )
         parser.add_argument(
             '--force',
@@ -39,8 +39,9 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING('Comorbidity table already has records. Skipping population.'))
             return
 
-        if force and Comorbidity.objects.exists():
-            self.stdout.write(self.style.WARNING('Force enabled: repopulating comorbidities table.'))
+        if Comorbidity.objects.exists() and force:
+            self.stdout.write(self.style.WARNING('Repopulating comorbidities table.'))
+            Comorbidity.objects.all().delete()
 
         self.stdout.write(self.style.NOTICE('Starting population of comorbidities...'))
         
@@ -73,7 +74,7 @@ class Command(BaseCommand):
                 title = re.sub(r'^(?:-\s)+', '', title).strip()
 
                 title_length = len(title)
-                if title_length > comorbidity_max_name_lenght:
+                if title_length > comorbidity_max_name_length:
                     raise RuntimeError(f"{title}({title_length} characters) is too long for our database settings")
                
                 objs.append(Comorbidity(concept_id=concept_id, name=title))

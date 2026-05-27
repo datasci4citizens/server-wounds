@@ -287,7 +287,7 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
                 "contact_email": patient.contact_email
             }
             return Response(response, status=status.HTTP_200_OK)
-        
+
 
         patient_wounds_user = WoundsUser.objects.create(
             user=patient_user,
@@ -334,6 +334,7 @@ class RegisterPatientComorbidityView(viewsets.ViewSet):
         serializer = self.serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
+        
 
         try:
             if data.get("patient_id"):
@@ -343,7 +344,7 @@ class RegisterPatientComorbidityView(viewsets.ViewSet):
                 target_wounds_user = target_user.wounds_user
                 patient = target_wounds_user.patient
             else:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+                return Response(status=status.HTTP_404_NOT_FOUND)
         except (Patient.DoesNotExist, User.DoesNotExist, WoundsUser.DoesNotExist, AttributeError):
             return Response(status=status.HTTP_404_NOT_FOUND)
         
@@ -368,7 +369,7 @@ class RegisterPatientComorbidityView(viewsets.ViewSet):
             try:
                 comorbidity = Comorbidity.objects.get(name__iexact=comorbidity_name)
             except Comorbidity.DoesNotExist:
-                return Response(status=status.HTTP_404_NOT_FOUND)
+                return Response(status=status.HTTP_400_BAD_REQUEST)
             comorbidities_to_add.append(comorbidity)
 
         try:

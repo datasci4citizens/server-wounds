@@ -6,7 +6,7 @@ from .models import Provider
 BRAZILIAN_STATES = [
     "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS",
     "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC",
-    "SP", "SE", "TO"
+    "SP", "SE", "TO", ""
 ]
 
 
@@ -77,7 +77,7 @@ class RegisterPatientComorbiditySerializer(serializers.Serializer):
 
     def validate(self, data):
         if (not data.get("patient_id")) and (not data.get("patient_email")):
-            raise serializers.ValidationError("at least one field is required")
+            raise serializers.ValidationError("Either patient_id or patient_email is required")
         return data
 
 
