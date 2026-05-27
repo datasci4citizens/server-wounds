@@ -237,6 +237,73 @@ class SpecialistPatientListView(viewsets.ViewSet):
         
         return Response(response_data)
 
+class SpecialistPatientUpdateView(viewsets.ViewSet):
+    serializer = PatientRegisterSerializer
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        responses={
+            200: OpenApiResponse(description="Patient updated successfully", response=PatientDataSerializer()),
+            404: OpenApiResponse(description="Patient or Specialist not found")
+        }
+    )
+    def update(self, request, pk=None):
+        user = request.user
+        try:
+            provider = user.wounds_user.provider
+            patient = Patient.objects.get(pk=pk, assigned_providers=provider)
+        except (WoundsUser.DoesNotExist, Provider.DoesNotExist):
+            return Response("Specialist does not exist", status=status.HTTP_404_NOT_FOUND)
+        except Patient.DoesNotExist:
+            return Response("Patient not found or not assigned to this specialist", status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.serializer(data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        # Update patient fields
+        if "contact_phone" in data:
+            patient.contact_phone = data["contact_phone"]
+        if "contact_email" in data:
+            patient.contact_email = data["contact_email"]
+        patient.save()
+
+        # Update WoundsUser fields
+        wounds_user = patient.wounds_user
+        if "birth_date" in data:
+            wounds_user.birth_date = data["birth_date"]
+        if "state" in data:
+            wounds_user.state = data["state"]
+        if "city" in data:
+            wounds_user.city = data["city"]
+        wounds_user.save()
+
+        # Update User fields (name)
+        if "name" in data:
+            name_in_list = _split_full_name(data["name"])
+            django_user = wounds_user.user
+            django_user.first_name = name_in_list[0]
+            django_user.last_name = name_in_list[1]
+            django_user.save()
+
+        # Update Comorbidities
+        if "comorbidities" in data:
+            comorbidities = Comorbidity.objects.filter(concept_id__in=data["comorbidities"])
+            patient.comorbidities.set(comorbidities)
+
+        response = {
+            "id": patient.id,
+            "name": wounds_user.user.get_full_name() or data.get("name", ""),
+            "contact_phone": patient.contact_phone,
+            "contact_email": patient.contact_email,
+            "assigned_specialists": [p.id for p in patient.assigned_providers.all()],
+            "comorbidities": ComorbiditySerializer(patient.comorbidities.all(), many=True).data
+        }
+        return Response(response, status=status.HTTP_200_OK)
+
+    def partial_update(self, request, pk=None):
+        return self.update(request, pk)
+
 class SpecialistPatientRegisterView(viewsets.ViewSet):
     serializer = PatientRegisterSerializer
     permission_classes = [IsAuthenticated]
@@ -280,12 +347,18 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
             patient = Patient.objects.get(wounds_user=patient_wounds_user_object)
             patient.assigned_providers.add(provider)
 
+            if "comorbidities" in data:
+                comorbidities = Comorbidity.objects.filter(concept_id__in=data["comorbidities"])
+                patient.comorbidities.set(comorbidities)
+
             response = {
           
                 "id": patient.id,
                 "name": data.get("name"),
                 "contact_phone": patient.contact_phone,
-                "contact_email": patient.contact_email
+                "contact_email": patient.contact_email,
+                "assigned_specialists": [p.id for p in patient.assigned_providers.all()],
+                "comorbidities": ComorbiditySerializer(patient.comorbidities.all(), many=True).data
             }
             return Response(response, status=status.HTTP_200_OK)
         
@@ -308,13 +381,19 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
         
         # Link to provider
         patient.assigned_providers.add(provider)
+        
+        if "comorbidities" in data:
+            comorbidities = Comorbidity.objects.filter(concept_id__in=data["comorbidities"])
+            patient.comorbidities.set(comorbidities)
 
         response = {
           
             "id": patient.id,
             "name": data.get("name"),
             "contact_phone": patient.contact_phone,
-            "contact_email": patient.contact_email
+            "contact_email": patient.contact_email,
+            "assigned_specialists": [p.id for p in patient.assigned_providers.all()],
+            "comorbidities": ComorbiditySerializer(patient.comorbidities.all(), many=True).data
         }
         return Response(response, status=status.HTTP_201_CREATED)
 

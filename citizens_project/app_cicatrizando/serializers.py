@@ -64,6 +64,7 @@ class PatientRegisterSerializer(serializers.Serializer):
     # Patient fields
     contact_phone = serializers.CharField(required=False, allow_blank=True, allow_null=True, max_length=20)
     contact_email = serializers.EmailField(required=False, allow_blank=True, allow_null=True)
+    comorbidities = serializers.ListField(child=serializers.CharField(max_length=255), required=False, default=list)
 
 
     def validate_state(self, value):

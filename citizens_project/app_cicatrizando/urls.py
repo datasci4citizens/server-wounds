@@ -5,6 +5,7 @@ from .views import(
     SpecialistRegistrationView,
     SpecialistPatientListView,
     SpecialistPatientRegisterView,
+    SpecialistPatientUpdateView,
     PatientValidationView,
     MeView,
     RegisterPatientComobidityView,
@@ -24,6 +25,7 @@ router.register(r'auth/register/patient', PatientValidationView, basename="Valid
 # specialist endpoints
 router.register(r'specialist/patients', SpecialistPatientListView, basename='patient_list')
 router.register(r'specialist/patient/register', SpecialistPatientRegisterView, basename= 'register_patient')
+router.register(r'specialist/patient/update', SpecialistPatientUpdateView, basename='update_patient')
 router.register(r'patient/comorbidities', RegisterPatientComobidityView, basename='patient-comorbidities')
 router.register(r'comorbidities/search', ComorbiditySearchView, basename='comorbidities-search')
 
