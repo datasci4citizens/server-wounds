@@ -3,7 +3,7 @@
 set -e
 
 python citizens_project/manage.py migrate --noinput
-
+python manage.py load_comorbidities --file docs/mapeamento_conceptID/comorbidities_cid.csv
 
 # Automatically create the superuser if .env values are configured
 if [[ -n "$DJANGO_SUPERUSER_USERNAME" && "$DJANGO_SUPERUSER_USERNAME" != "admin" && \

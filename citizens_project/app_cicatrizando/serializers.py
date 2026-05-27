@@ -72,7 +72,7 @@ class PatientRegisterSerializer(serializers.Serializer):
 class RegisterPatientComobiditySerializer(serializers.Serializer):
     patient_id = serializers.CharField()
     patient_email = serializers.EmailField()
-    comorbidities = serializers.ListField(child=serializers.CharField(max_length=100))
+    comorbidities = serializers.ListField(child=serializers.CharField(max_length=220))
 
 
     def validate(self, data):

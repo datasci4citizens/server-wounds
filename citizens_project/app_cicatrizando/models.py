@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 django_user = get_user_model()
 
 class Comorbidity(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=220)
     concept_id = models.CharField(max_length=20, primary_key=True)
 
 class WoundsUser(models.Model):
