@@ -134,4 +134,4 @@ class MeResponseSerializer(serializers.Serializer):
 class ComorbiditySerializer(serializers.ModelSerializer):
     class Meta:
         model = Comorbidity
-        fields = ['concept_id', 'name']
+        fields = ['concept_id', 'code', 'name']

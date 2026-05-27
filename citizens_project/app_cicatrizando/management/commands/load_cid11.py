@@ -49,9 +49,13 @@ class Command(BaseCommand):
                 if not title:
                     title = row.get('TitleEN', '').strip()
                     
+                # Remove leading dashes and spaces
+                title = title.lstrip('- ')
                 title = title[:255]
                 
-                objs.append(Comorbidity(concept_id=concept_id, name=title))
+                code = row.get('Code', '').strip() or None
+                
+                objs.append(Comorbidity(concept_id=concept_id, code=code, name=title))
                 
                 if len(objs) >= batch_size:
                     Comorbidity.objects.bulk_create(objs, ignore_conflicts=True)

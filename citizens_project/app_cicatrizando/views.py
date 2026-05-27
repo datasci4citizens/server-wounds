@@ -431,5 +431,6 @@ class ComorbiditySearchView(viewsets.ReadOnlyModelViewSet):
         queryset = super().get_queryset()
         search_query = self.request.query_params.get('search', None)
         if search_query:
-            queryset = queryset.filter(name__icontains=search_query)
+            from django.db.models import Q
+            queryset = queryset.filter(Q(name__icontains=search_query) | Q(code__icontains=search_query))
         return queryset

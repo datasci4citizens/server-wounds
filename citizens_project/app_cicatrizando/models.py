@@ -6,6 +6,7 @@ django_user = get_user_model()
 class Comorbidity(models.Model):
     name = models.CharField(max_length=255)
     concept_id = models.CharField(max_length=255, primary_key=True)
+    code = models.CharField(max_length=50, blank=True, null=True)
 
 class WoundsUser(models.Model):
     user = models.OneToOneField(django_user, on_delete=models.CASCADE, related_name="wounds_user")
