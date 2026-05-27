@@ -5,9 +5,10 @@ from .views import(
     SpecialistRegistrationView,
     SpecialistPatientListView,
     SpecialistPatientRegisterView,
-    PatientValidationView,
+    PatientsExistsView,
+    RegisterPatientComorbidityView,
+    UpdateFieldsView,
     MeView,
-    RegisterPatientComorbidityView
 )
 from drf_spectacular.views import SpectacularSwaggerView, SpectacularAPIView
 
@@ -17,13 +18,18 @@ router = routers.DefaultRouter()
 router.register(r'auth/google', GoogleLoginView, basename='google-login')
 router.register(r'auth/register/specialist', SpecialistRegistrationView, basename='specialist-registration')
 router.register(r'auth/me', MeView, basename='me')
-router.register(r'auth/register/patient', PatientValidationView, basename="Validate-Patient")
+router.register(r'auth/register/patient', PatientsExistsView, basename="Validate-Patient")
 
 
-# specialist endpoints
+#Provider endpoints
 router.register(r'specialist/patients', SpecialistPatientListView, basename='patient_list')
 router.register(r'specialist/patient/register', SpecialistPatientRegisterView, basename= 'register_patient')
+
+#Patient endpoints
 router.register(r'patient/comorbidities', RegisterPatientComorbidityView, basename='patient-comorbidities')
+
+#other endpoints
+router.register(r'Update', UpdateFieldsView, basename="Update Information")
 
 urlpatterns = [
     path('', include(router.urls)),
