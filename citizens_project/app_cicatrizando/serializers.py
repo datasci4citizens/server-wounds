@@ -6,7 +6,7 @@ from .models import Provider
 BRAZILIAN_STATES = [
     "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS",
     "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC",
-    "SP", "SE", "TO"
+    "SP", "SE", "TO", ""
 ]
 
 
@@ -19,6 +19,8 @@ def validate_brazilian_state(value):
         )
     else: 
         return value
+    
+
 # =============================================================================
 # Request Serializers
 # =============================================================================
@@ -54,10 +56,10 @@ class PatientRegisterSerializer(serializers.Serializer):
     google_email = serializers.EmailField(required=True, max_length=50, allow_blank=False)
 
     # WoundsUser fields
-    name = serializers.CharField(required=True, max_length=255)
-    birth_date = serializers.DateField(required=True)
-    state = serializers.CharField(required=True, max_length=2)
-    city = serializers.CharField(required=True, max_length=100)
+    name = serializers.CharField(required=False, max_length=255)
+    birth_date = serializers.DateField(required=False)
+    state = serializers.CharField(required=False, max_length=2)
+    city = serializers.CharField(required=False, max_length=100)
 
     # Patient fields
     contact_phone = serializers.CharField(required=False, allow_blank=True, allow_null=True, max_length=20)
@@ -66,6 +68,17 @@ class PatientRegisterSerializer(serializers.Serializer):
 
     def validate_state(self, value):
         return validate_brazilian_state(value)
+
+class RegisterPatientComorbiditySerializer(serializers.Serializer):
+    patient_id = serializers.CharField(required=False)
+    patient_email = serializers.EmailField(required=False)
+    comorbidities = serializers.ListField(required=True, child=serializers.CharField(max_length=220))
+
+
+    def validate(self, data):
+        if (not data.get("patient_id")) and (not data.get("patient_email")):
+            raise serializers.ValidationError("Either patient_id or patient_email is required")
+        return data
 
 
 # =============================================================================
@@ -96,6 +109,8 @@ class PatientDataSerializer(serializers.Serializer):
     name = serializers.CharField(required=True, max_length=255)
     contact_phone = serializers.CharField(allow_blank=True, allow_null=True)
     contact_email = serializers.EmailField(allow_blank=True, allow_null=True)
+    assigned_specialists = serializers.ListField(required=False, default=list)
+    comorbidities = serializers.ListField(required=False, default=list)
 
 class UserDataSerializer(serializers.Serializer):
     """Nested serializer for wounds_user data."""

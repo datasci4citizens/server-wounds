@@ -5,7 +5,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from django.contrib.auth import get_user_model
 from .google import google_get_user_data
-from .models import WoundsUser, Provider, Patient
+from .models import WoundsUser, Provider, Patient, Comorbidity
+from django.db import transaction
 from .serializers import (
     GoogleAuthSerializer,
     GoogleAuthResponseSerializer,
@@ -13,6 +14,7 @@ from .serializers import (
     ProviderRegisterResponseSerializer,
     PatientRegisterSerializer,
     PatientDataSerializer,
+    RegisterPatientComorbiditySerializer,
     MeResponseSerializer,
 )
 import logging
@@ -225,14 +227,14 @@ class SpecialistPatientListView(viewsets.ViewSet):
         for patient in patients:
             user_obj = patient.wounds_user.user
             name = user_obj.get_full_name()
-                
+            
             response_data.append({
                 "id": patient.id,
                 "name": name,
                 "contact_phone": patient.contact_phone,
                 "contact_email": patient.contact_email
             })
-            
+        
         return Response(response_data)
 
 class SpecialistPatientRegisterView(viewsets.ViewSet):
@@ -261,9 +263,9 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
         data = serializer.validated_data
 
         
-        name_in_list =  _split_full_name(data["name"])
+        name_in_list =  _split_full_name(data.get("name"))
 
-        user_email = data.get("google_email")
+        user_email = data["google_email"]
         patient_user, new = User.objects.get_or_create(
             username= user_email,
             defaults={
@@ -279,19 +281,18 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
             patient.assigned_providers.add(provider)
 
             response = {
-          
                 "id": patient.id,
                 "name": data.get("name"),
                 "contact_phone": patient.contact_phone,
                 "contact_email": patient.contact_email
             }
             return Response(response, status=status.HTTP_200_OK)
-        
+
 
         patient_wounds_user = WoundsUser.objects.create(
             user=patient_user,
             birth_date = data.get("birth_date"),
-            state = data.get("state", ""),
+            state = serializer.validate_state(data.get("state", "")),
             city = data.get("city", ""),
             role = WoundsUser.Patient,
         )
@@ -299,12 +300,11 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
         patient, _ = Patient.objects.get_or_create(
             wounds_user=patient_wounds_user,
             defaults={
-                "contact_phone": data.get("contact_phone") or None,
-                "contact_email": data.get("contact_email") or None,
+                "contact_phone": data.get("contact_phone"),
+                "contact_email": data.get("contact_email"),
             }
         )
         
-        # Link to provider
         patient.assigned_providers.add(provider)
 
         response = {
@@ -315,6 +315,71 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
             "contact_email": patient.contact_email
         }
         return Response(response, status=status.HTTP_201_CREATED)
+
+class RegisterPatientComorbidityView(viewsets.ViewSet):
+    serializer = RegisterPatientComorbiditySerializer
+    permission_classes = [IsAuthenticated]
+    
+    @extend_schema(
+        responses={
+            200: OpenApiResponse(description="Comorbidities added successfully."),
+            400: OpenApiResponse(description="Comorbidity not in Database."),
+            403: OpenApiResponse(description="User is not allowed to add this patients comorbidity"),
+            404: OpenApiResponse(description="Patient does not exist.")
+        }
+    )
+
+    def create(self, request):
+        request_user = request.user
+        serializer = self.serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        
+
+        try:
+            if data.get("patient_id"):
+                patient = Patient.objects.get(id=data.get("patient_id", None))
+            elif data.get("patient_email"):
+                target_user = User.objects.get(email=data.get("patient_email"))
+                target_wounds_user = target_user.wounds_user
+                patient = target_wounds_user.patient
+            else:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+        except (Patient.DoesNotExist, User.DoesNotExist, WoundsUser.DoesNotExist, AttributeError):
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            caller_wounds_user = request_user.wounds_user
+        except WoundsUser.DoesNotExist:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        if caller_wounds_user.role == WoundsUser.Provider:
+            try:
+                provider = caller_wounds_user.provider
+            except Provider.DoesNotExist:
+                return Response(status=status.HTTP_403_FORBIDDEN)
+            if not patient.assigned_providers.filter(pk=provider.pk).exists():
+                return Response(status=status.HTTP_403_FORBIDDEN)
+        elif caller_wounds_user != patient.wounds_user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        
+
+        comorbidities_to_add = []
+        for comorbidity_name in data.get('comorbidities', []):
+            try:
+                comorbidity = Comorbidity.objects.get(name__iexact=comorbidity_name)
+            except Comorbidity.DoesNotExist:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            comorbidities_to_add.append(comorbidity)
+
+        try:
+            with transaction.atomic():
+                patient.comorbidities.add(*comorbidities_to_add)
+        except Exception:
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response(status=status.HTTP_200_OK)
+
 
 class PatientValidationView(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
