@@ -252,6 +252,41 @@ class SpecialistPatientUpdateView(viewsets.ViewSet):
 
     @extend_schema(
         responses={
+            200: OpenApiResponse(description="Patient data retrieved successfully", response=PatientDataSerializer()),
+            404: OpenApiResponse(description="Patient or Specialist not found")
+        }
+    )
+    def retrieve(self, request, pk=None):
+        user = request.user
+        try:
+            provider = user.wounds_user.provider
+            patient = Patient.objects.get(pk=pk, assigned_providers=provider)
+        except (WoundsUser.DoesNotExist, Provider.DoesNotExist):
+            return Response("Specialist does not exist", status=status.HTTP_404_NOT_FOUND)
+        except Patient.DoesNotExist:
+            return Response("Patient not found or not assigned to this specialist", status=status.HTTP_404_NOT_FOUND)
+
+        wounds_user = patient.wounds_user
+        response = {
+            "id": patient.id,
+            "name": wounds_user.user.get_full_name(),
+            "birth_date": wounds_user.birth_date,
+            "state": wounds_user.state,
+            "city": wounds_user.city,
+            "contact_phone": patient.contact_phone,
+            "contact_email": patient.contact_email,
+            "gender": patient.gender,
+            "height": patient.height,
+            "weight": patient.weight,
+            "smoking_status": patient.smoking_status,
+            "alcohol_consumption": patient.alcohol_consumption,
+            "assigned_specialists": [p.id for p in patient.assigned_providers.all()],
+            "comorbidities": ComorbiditySerializer(patient.comorbidities.all(), many=True).data
+        }
+        return Response(response, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        responses={
             200: OpenApiResponse(description="Patient updated successfully", response=PatientDataSerializer()),
             404: OpenApiResponse(description="Patient or Specialist not found")
         }
