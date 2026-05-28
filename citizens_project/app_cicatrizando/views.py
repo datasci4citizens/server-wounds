@@ -18,6 +18,7 @@ from .serializers import (
     RegisterPatientComorbiditySerializer,
     UpdateFieldsSerializer,
     MeResponseSerializer,
+    ComorbiditySerializer,
 )
 import logging
 logger = logging.getLogger(__name__)
@@ -212,7 +213,7 @@ class PatientsExistsView(viewsets.ViewSet):
 
     @extend_schema(
         request= serializer,
-        Response={
+        responses={
             200: OpenApiResponse(response={"patient_id": int, "registration_complete": bool}),
             401: OpenApiResponse(description= "Patient not in database, should not login")
         }
@@ -271,11 +272,140 @@ class SpecialistPatientListView(viewsets.ViewSet):
             response_data.append({
                 "id": patient.id,
                 "name": name,
+                "birth_date": patient.wounds_user.birth_date,
+                "state": patient.wounds_user.state,
+                "city": patient.wounds_user.city,
                 "contact_phone": patient.contact_phone,
-                "contact_email": patient.contact_email
+                "contact_email": patient.contact_email,
+                "gender": patient.gender,
+                "height": patient.height,
+                "weight": patient.weight,
+                "smoking_status": patient.smoking_status,
+                "alcohol_consumption": patient.alcohol_consumption,
+                "comorbidities": ComorbiditySerializer(patient.comorbidities.all(), many=True).data
             })
         
         return Response(response_data)
+
+class SpecialistPatientUpdateView(viewsets.ViewSet):
+    serializer = PatientRegisterSerializer
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        responses={
+            200: OpenApiResponse(description="Patient data retrieved successfully", response=PatientDataSerializer()),
+            404: OpenApiResponse(description="Patient or Specialist not found")
+        }
+    )
+    def retrieve(self, request, pk=None):
+        user = request.user
+        try:
+            provider = user.wounds_user.provider
+            patient = Patient.objects.get(pk=pk, assigned_providers=provider)
+        except (WoundsUser.DoesNotExist, Provider.DoesNotExist):
+            return Response("Specialist does not exist", status=status.HTTP_404_NOT_FOUND)
+        except Patient.DoesNotExist:
+            return Response("Patient not found or not assigned to this specialist", status=status.HTTP_404_NOT_FOUND)
+
+        wounds_user = patient.wounds_user
+        response = {
+            "id": patient.id,
+            "name": wounds_user.user.get_full_name(),
+            "birth_date": wounds_user.birth_date,
+            "state": wounds_user.state,
+            "city": wounds_user.city,
+            "contact_phone": patient.contact_phone,
+            "contact_email": patient.contact_email,
+            "gender": patient.gender,
+            "height": patient.height,
+            "weight": patient.weight,
+            "smoking_status": patient.smoking_status,
+            "alcohol_consumption": patient.alcohol_consumption,
+            "assigned_specialists": [p.id for p in patient.assigned_providers.all()],
+            "comorbidities": ComorbiditySerializer(patient.comorbidities.all(), many=True).data
+        }
+        return Response(response, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        responses={
+            200: OpenApiResponse(description="Patient updated successfully", response=PatientDataSerializer()),
+            404: OpenApiResponse(description="Patient or Specialist not found")
+        }
+    )
+    def update(self, request, pk=None):
+        user = request.user
+        try:
+            provider = user.wounds_user.provider
+            patient = Patient.objects.get(pk=pk, assigned_providers=provider)
+        except (WoundsUser.DoesNotExist, Provider.DoesNotExist):
+            return Response("Specialist does not exist", status=status.HTTP_404_NOT_FOUND)
+        except Patient.DoesNotExist:
+            return Response("Patient not found or not assigned to this specialist", status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.serializer(data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        # Update patient fields
+        if "contact_phone" in data:
+            patient.contact_phone = data["contact_phone"]
+        if "contact_email" in data:
+            patient.contact_email = data["contact_email"]
+        if "gender" in data:
+            patient.gender = data["gender"]
+        if "height" in data:
+            patient.height = data["height"]
+        if "weight" in data:
+            patient.weight = data["weight"]
+        if "smoking_status" in data:
+            patient.smoking_status = data["smoking_status"]
+        if "alcohol_consumption" in data:
+            patient.alcohol_consumption = data["alcohol_consumption"]
+        patient.save()
+
+        # Update WoundsUser fields
+        wounds_user = patient.wounds_user
+        if "birth_date" in data:
+            wounds_user.birth_date = data["birth_date"]
+        if "state" in data:
+            wounds_user.state = data["state"]
+        if "city" in data:
+            wounds_user.city = data["city"]
+        wounds_user.save()
+
+        # Update User fields (name)
+        if "name" in data:
+            name_in_list = _split_full_name(data["name"])
+            django_user = wounds_user.user
+            django_user.first_name = name_in_list[0]
+            django_user.last_name = name_in_list[1]
+            django_user.save()
+
+        # Update Comorbidities
+        if "comorbidities" in data:
+            comorbidities = Comorbidity.objects.filter(concept_id__in=data["comorbidities"])
+            patient.comorbidities.set(comorbidities)
+
+        response = {
+            "id": patient.id,
+            "name": wounds_user.user.get_full_name() or data.get("name", ""),
+            "birth_date": wounds_user.birth_date,
+            "state": wounds_user.state,
+            "city": wounds_user.city,
+            "contact_phone": patient.contact_phone,
+            "contact_email": patient.contact_email,
+            "gender": patient.gender,
+            "height": patient.height,
+            "weight": patient.weight,
+            "smoking_status": patient.smoking_status,
+            "alcohol_consumption": patient.alcohol_consumption,
+            "assigned_specialists": [p.id for p in patient.assigned_providers.all()],
+            "comorbidities": ComorbiditySerializer(patient.comorbidities.all(), many=True).data
+        }
+        return Response(response, status=status.HTTP_200_OK)
+
+    def partial_update(self, request, pk=None):
+        return self.update(request, pk)
 
 class SpecialistPatientRegisterView(viewsets.ViewSet):
     serializer = PatientRegisterSerializer
@@ -320,11 +450,31 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
             patient = Patient.objects.get(wounds_user=patient_wounds_user_object)
             patient.assigned_providers.add(provider)
 
+            if "comorbidities" in data:
+                comorbidities = Comorbidity.objects.filter(concept_id__in=data["comorbidities"])
+                patient.comorbidities.set(comorbidities)
+
+            # Update WoundsUser fields
+            if "birth_date" in data: patient_wounds_user_object.birth_date = data["birth_date"]
+            if "state" in data: patient_wounds_user_object.state = data["state"]
+            if "city" in data: patient_wounds_user_object.city = data["city"]
+            patient_wounds_user_object.save()
+
             response = {
                 "id": patient.id,
                 "name": data.get("name"),
+                "birth_date": patient_wounds_user_object.birth_date,
+                "state": patient_wounds_user_object.state,
+                "city": patient_wounds_user_object.city,
                 "contact_phone": patient.contact_phone,
-                "contact_email": patient.contact_email
+                "contact_email": patient.contact_email,
+                "gender": patient.gender,
+                "height": patient.height,
+                "weight": patient.weight,
+                "smoking_status": patient.smoking_status,
+                "alcohol_consumption": patient.alcohol_consumption,
+                "assigned_specialists": [p.id for p in patient.assigned_providers.all()],
+                "comorbidities": ComorbiditySerializer(patient.comorbidities.all(), many=True).data
             }
             return Response(response, status=status.HTTP_200_OK)
 
@@ -340,19 +490,38 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
         patient, _ = Patient.objects.get_or_create(
             wounds_user=patient_wounds_user,
             defaults={
-                "contact_phone": data.get("contact_phone", None),
-                "contact_email": data.get("contact_email", None),
+                "contact_phone": data.get("contact_phone") or None,
+                "contact_email": data.get("contact_email") or None,
+                "gender": data.get("gender") or None,
+                "height": data.get("height") or None,
+                "weight": data.get("weight") or None,
+                "smoking_status": data.get("smoking_status") or None,
+                "alcohol_consumption": data.get("alcohol_consumption") or None,
             }
         )
         
         patient.assigned_providers.add(provider)
+        
+        if "comorbidities" in data:
+            comorbidities = Comorbidity.objects.filter(concept_id__in=data["comorbidities"])
+            patient.comorbidities.set(comorbidities)
 
         response = {
           
             "id": patient.id,
             "name": data.get("name"),
+            "birth_date": patient_wounds_user.birth_date,
+            "state": patient_wounds_user.state,
+            "city": patient_wounds_user.city,
             "contact_phone": patient.contact_phone,
-            "contact_email": patient.contact_email
+            "contact_email": patient.contact_email,
+            "gender": patient.gender,
+            "height": patient.height,
+            "weight": patient.weight,
+            "smoking_status": patient.smoking_status,
+            "alcohol_consumption": patient.alcohol_consumption,
+            "assigned_specialists": [p.id for p in patient.assigned_providers.all()],
+            "comorbidities": ComorbiditySerializer(patient.comorbidities.all(), many=True).data
         }
         return Response(response, status=status.HTTP_201_CREATED)
 
@@ -472,6 +641,29 @@ class UpdateFieldsView(viewsets.ViewSet):
         return Response(status=status.HTTP_200_OK)
 
    
+class PatientValidationView(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        responses={
+            200: OpenApiResponse(description="Patient exists and is allowed to login"),
+            403: OpenApiResponse(description="Patient is not allowed to login")
+        }
+
+    )
+    def list(self,request):
+        user = request.user
+        try:
+            wounds_user_obj = WoundsUser.objects.get(user=user)
+            patient_obj = Patient.objects.get(wounds_user=wounds_user_obj)
+        except (WoundsUser.DoesNotExist, Patient.DoesNotExist):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        
+        if wounds_user_obj.role == WoundsUser.Patient:
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        
 class MeView(viewsets.ViewSet):
     """
     GET current user's complete profile.
@@ -522,3 +714,22 @@ class MeView(viewsets.ViewSet):
             }
 
         return Response(response)
+from rest_framework.pagination import LimitOffsetPagination
+
+class ComorbidityPagination(LimitOffsetPagination):
+    default_limit = 20
+    max_limit = 100
+
+class ComorbiditySearchView(viewsets.ReadOnlyModelViewSet):
+    queryset = Comorbidity.objects.all()
+    serializer_class = ComorbiditySerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = ComorbidityPagination
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        search_query = self.request.query_params.get('search', None)
+        if search_query:
+            from django.db.models import Q
+            queryset = queryset.filter(Q(name__icontains=search_query) | Q(code__icontains=search_query))
+        return queryset

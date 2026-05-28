@@ -5,11 +5,15 @@ from .views import(
     SpecialistRegistrationView,
     SpecialistPatientListView,
     SpecialistPatientRegisterView,
+    SpecialistPatientUpdateView,
     PatientsExistsView,
-    RegisterPatientComorbidityView,
-    UpdateFieldsView,
+    PatientValidationView,
     MeView,
+    RegisterPatientComorbidityView,
+    ComorbiditySearchView,
+    UpdateFieldsView
 )
+from rest_framework_simplejwt.views import TokenRefreshView
 from drf_spectacular.views import SpectacularSwaggerView, SpectacularAPIView
 
 router = routers.DefaultRouter()
@@ -19,20 +23,20 @@ router.register(r'auth/google', GoogleLoginView, basename='google-login')
 router.register(r'auth/register/specialist', SpecialistRegistrationView, basename='specialist-registration')
 router.register(r'auth/me', MeView, basename='me')
 router.register(r'auth/register/patient', PatientsExistsView, basename="Validate-Patient")
+router.register(r'patient/validation', PatientValidationView, basename="Patient-Validation")
 
 
-#Provider endpoints
+# specialist endpoints
 router.register(r'specialist/patients', SpecialistPatientListView, basename='patient_list')
 router.register(r'specialist/patient/register', SpecialistPatientRegisterView, basename= 'register_patient')
-
-#Patient endpoints
+router.register(r'specialist/patient/update', SpecialistPatientUpdateView, basename='update_patient')
 router.register(r'patient/comorbidities', RegisterPatientComorbidityView, basename='patient-comorbidities')
-
-#other endpoints
+router.register(r'comorbidities/search', ComorbiditySearchView, basename='comorbidities-search')
 router.register(r'Update', UpdateFieldsView, basename="Update Information")
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/schema', SpectacularAPIView.as_view(), name='schema')
 ]
