@@ -69,15 +69,14 @@ class Command(BaseCommand):
                 title = row.get('Title', '').strip()
                 if not title:
                     title = row.get('TitleEN', '').strip()
-
-                # removes the hifen prefixes | "- - - title"
-                title = re.sub(r'^(?:-\s)+', '', title).strip()
-
-                title_length = len(title)
-                if title_length > comorbidity_max_name_length:
-                    raise RuntimeError(f"{title}({title_length} characters) is too long for our database settings")
-               
-                objs.append(Comorbidity(concept_id=concept_id, name=title))
+                    
+                # Remove leading dashes and spaces
+                title = title.lstrip('- ')
+                title = title[:255]
+                
+                code = row.get('Code', '').strip() or None
+                
+                objs.append(Comorbidity(concept_id=concept_id, code=code, name=title))
                 
                 if len(objs) >= batch_size:
                     Comorbidity.objects.bulk_create(objs, ignore_conflicts=True)

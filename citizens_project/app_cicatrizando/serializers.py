@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Provider
+from .models import Provider, Comorbidity
 
 
 # Valid Brazilian state codes
@@ -12,6 +12,8 @@ BRAZILIAN_STATES = [
 
 def validate_brazilian_state(value):
     """Validate that the state is a valid 2-letter Brazilian state code."""
+    if not value:
+        return value
     value = value.upper()
     if value not in BRAZILIAN_STATES:
         raise serializers.ValidationError(
@@ -56,14 +58,20 @@ class PatientRegisterSerializer(serializers.Serializer):
     google_email = serializers.EmailField(required=True, max_length=50, allow_blank=False)
 
     # WoundsUser fields
-    name = serializers.CharField(required=False, max_length=300)
-    birth_date = serializers.DateField(required=False)
-    state = serializers.CharField(required=False, max_length=2)
-    city = serializers.CharField(required=False, max_length=100)
+    name = serializers.CharField(required=False, max_length=300, allow_blank=True, allow_null=True)
+    birth_date = serializers.DateField(required=False, allow_null=True)
+    state = serializers.CharField(required=False, max_length=2, allow_blank=True, allow_null=True)
+    city = serializers.CharField(required=False, max_length=100, allow_blank=True, allow_null=True)
 
     # Patient fields
     contact_phone = serializers.CharField(required=False, allow_blank=True, allow_null=True, max_length=20)
     contact_email = serializers.EmailField(required=False, allow_blank=True, allow_null=True)
+    gender = serializers.CharField(required=False, allow_blank=True, allow_null=True, max_length=1)
+    height = serializers.DecimalField(max_digits=4, decimal_places=2, required=False, allow_null=True)
+    weight = serializers.DecimalField(max_digits=5, decimal_places=2, required=False, allow_null=True)
+    smoking_status = serializers.CharField(required=False, allow_blank=True, allow_null=True, max_length=10)
+    alcohol_consumption = serializers.CharField(required=False, allow_blank=True, allow_null=True, max_length=10)
+    comorbidities = serializers.ListField(child=serializers.CharField(max_length=255), required=False, default=list)
 
 
     def validate_state(self, value):
@@ -126,10 +134,18 @@ class PatientDataSerializer(serializers.Serializer):
 
     id = serializers.IntegerField(required=True)
     name = serializers.CharField(required=True, max_length=300)
+    birth_date = serializers.DateField(required=False, allow_null=True)
+    state = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    city = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     contact_phone = serializers.CharField(allow_blank=True, allow_null=True)
     contact_email = serializers.EmailField(allow_blank=True, allow_null=True)
-    assigned_specialists = serializers.ListField(required=False, default=list)
-    comorbidities = serializers.ListField(required=False, default=list)
+    gender = serializers.CharField(allow_blank=True, allow_null=True, required=False)
+    height = serializers.DecimalField(max_digits=4, decimal_places=2, allow_null=True, required=False)
+    weight = serializers.DecimalField(max_digits=5, decimal_places=2, allow_null=True, required=False)
+    smoking_status = serializers.CharField(allow_blank=True, allow_null=True, required=False)
+    alcohol_consumption = serializers.CharField(allow_blank=True, allow_null=True, required=False)
+    assigned_specialists = serializers.ListField()
+    comorbidities = serializers.ListField()
 
 class UserDataSerializer(serializers.Serializer):
     """Nested serializer for wounds_user data."""
@@ -158,3 +174,8 @@ class MeResponseSerializer(serializers.Serializer):
     role = serializers.CharField(allow_null=True)
     registration_complete = serializers.BooleanField()
     specialist = ProviderDataSerializer(allow_null=True)
+
+class ComorbiditySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comorbidity
+        fields = ['concept_id', 'code', 'name']

@@ -64,6 +64,18 @@ The server will be available at http://localhost:8000 once running.
 
 
 
+## Database Initialization
+
+Once the containers are running for the first time, you must run migrations and populate the comorbidities database (CID-11):
+
+```bash
+# Make sure your containers are running, then run migrations:
+sudo docker compose --env-file .env -f docker/docker-compose.yml exec -w /app/citizens_project web python3 manage.py migrate
+
+# Populate the CID-11 Comorbidities database:
+sudo docker compose --env-file .env -f docker/docker-compose.yml exec -w /app/citizens_project web python3 manage.py load_cid11 --file /app/cid11.csv
+```
+
 ## Main Endpoints
 
 The API routes are defined in:
@@ -78,6 +90,16 @@ The API routes are defined in:
 - `POST /auth/login/provider/` — Complete provider profile data
 - `POST /auth/login/patient/` — Complete patient profile data
 - `GET /auth/me/` — Validate token and return current authenticated user info
+
+### Specialist & Patient Endpoints
+
+- `GET /specialist/patients/` — List all patients assigned to the authenticated specialist (includes comorbidities data)
+- `POST /specialist/patient/register/` — Register a new patient or link an existing one (accepts an array of comorbidity CID-11 URIs)
+- `PUT/PATCH /specialist/patient/update/<id>/` — Update an existing patient's details and their comorbidities list
+
+### Comorbidities Endpoints
+
+- `GET /comorbidities/search/?search=<query>` — Search the CID-11 database by disease name or code (paginated)
 
 ### Documentation
 
