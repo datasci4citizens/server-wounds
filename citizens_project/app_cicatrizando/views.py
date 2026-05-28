@@ -357,7 +357,7 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
         data = serializer.validated_data
 
         
-        name_in_list =  _split_full_name(data["name"])
+        name_in_list =  _split_full_name(data.get("name"))
 
         user_email = data.get("google_email")
         patient_user, new = User.objects.get_or_create(

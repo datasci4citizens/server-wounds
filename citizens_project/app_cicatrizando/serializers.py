@@ -12,6 +12,8 @@ BRAZILIAN_STATES = [
 
 def validate_brazilian_state(value):
     """Validate that the state is a valid 2-letter Brazilian state code."""
+    if not value:
+        return value
     value = value.upper()
     if value not in BRAZILIAN_STATES:
         raise serializers.ValidationError(
@@ -56,10 +58,10 @@ class PatientRegisterSerializer(serializers.Serializer):
     google_email = serializers.EmailField(required=True, max_length=50, allow_blank=False)
 
     # WoundsUser fields
-    name = serializers.CharField(required=False, max_length=255)
-    birth_date = serializers.DateField(required=False)
-    state = serializers.CharField(required=False, max_length=2)
-    city = serializers.CharField(required=False, max_length=100)
+    name = serializers.CharField(required=False, max_length=255, allow_blank=True, allow_null=True)
+    birth_date = serializers.DateField(required=False, allow_null=True)
+    state = serializers.CharField(required=False, max_length=2, allow_blank=True, allow_null=True)
+    city = serializers.CharField(required=False, max_length=100, allow_blank=True, allow_null=True)
 
     # Patient fields
     contact_phone = serializers.CharField(required=False, allow_blank=True, allow_null=True, max_length=20)
