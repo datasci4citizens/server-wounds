@@ -213,7 +213,7 @@ class PatientsExistsView(viewsets.ViewSet):
 
     @extend_schema(
         request= serializer,
-        Response={
+        responses={
             200: OpenApiResponse(response={"patient_id": int, "registration_complete": bool}),
             401: OpenApiResponse(description= "Patient not in database, should not login")
         }
