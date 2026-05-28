@@ -11,6 +11,7 @@ from .views import(
     RegisterPatientComobidityView,
     ComorbiditySearchView
 )
+from rest_framework_simplejwt.views import TokenRefreshView
 from drf_spectacular.views import SpectacularSwaggerView, SpectacularAPIView
 
 router = routers.DefaultRouter()
@@ -31,6 +32,7 @@ router.register(r'comorbidities/search', ComorbiditySearchView, basename='comorb
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/schema', SpectacularAPIView.as_view(), name='schema')
 ]
