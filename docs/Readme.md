@@ -78,7 +78,7 @@ sudo docker compose --env-file .env -f docker/docker-compose.yml exec -w /app/ci
 
 ### Utilities (Testing)
 
-To safely erase all `Patient`, `Provider`, and `WoundsUser` records (excluding superusers) for a clean testing state:
+To safely erase all `Patient`, `Provider`, `Wound`, `Observation` and `WoundsUser` records (excluding superusers) for a clean testing state:
 ```bash
 sudo docker compose --env-file .env -f docker/docker-compose.yml exec -w /app/citizens_project web python3 manage.py clear_test_data
 ```
@@ -105,6 +105,13 @@ The API routes are defined in:
 - `PUT/PATCH /specialist/patient/update/<id>/` — Update an existing patient's details and their clinical metrics
 - `GET /patient/me/` — Retrieve the authenticated patient's own comprehensive health profile and assigned specialists
 - `PATCH /Update/` — Update the authenticated user's own profile (supports updating clinical metrics and comorbidities for patients)
+
+### Wound Monitoring Endpoints
+
+- `GET /wounds/` — List wounds. Patients see their own; Specialists see wounds of their assigned patients.
+- `POST /wounds/` — Register a new wound for a patient (Specialist only).
+- `GET /wounds/<id>/observations/` — Retrieve the chronological clinical history of a specific wound.
+- `POST /wounds/<id>/observations/` — Log a new clinical snapshot (pain, exudate, tissue, etc.) for a wound.
 
 ### Comorbidities Endpoints
 
