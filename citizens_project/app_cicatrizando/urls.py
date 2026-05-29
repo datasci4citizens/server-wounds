@@ -34,10 +34,10 @@ router.register(r'specialist/patient/register', SpecialistPatientRegisterView, b
 router.register(r'specialist/patient/update', SpecialistPatientUpdateView, basename='update_patient')
 router.register(r'patient/comorbidities', RegisterPatientComorbidityView, basename='patient-comorbidities')
 router.register(r'comorbidities/search', ComorbiditySearchView, basename='comorbidities-search')
-router.register(r'Update', UpdateFieldsView, basename="Update Information")
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('Update/', UpdateFieldsView.as_view({'patch': 'patch'}), name="Update Information"),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/schema', SpectacularAPIView.as_view(), name='schema')
