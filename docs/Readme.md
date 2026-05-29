@@ -70,17 +70,17 @@ Once the containers are running for the first time, you must run migrations and 
 
 ```bash
 # Make sure your containers are running, then run migrations:
-sudo docker compose --env-file .env -f docker/docker-compose.yml exec -w /app/citizens_project web python3 manage.py migrate
+sudo docker compose --env-file .env -f docker/docker-compose.yml exec -w /code web python3 citizens_project/manage.py migrate
 
 # Populate the CID-11 Comorbidities database:
-sudo docker compose --env-file .env -f docker/docker-compose.yml exec -w /app/citizens_project web python3 manage.py load_cid11 --file /app/cid11.csv
+sudo docker compose --env-file .env -f docker/docker-compose.yml exec -w /code web python3 citizens_project/manage.py load_comorbidities
 ```
 
 ### Utilities (Testing)
 
 To safely erase all `Patient`, `Provider`, `Wound`, `Observation` and `WoundsUser` records (excluding superusers) for a clean testing state:
 ```bash
-sudo docker compose --env-file .env -f docker/docker-compose.yml exec -w /app/citizens_project web python3 manage.py clear_test_data
+sudo docker compose --env-file .env -f docker/docker-compose.yml exec -w /code web python3 citizens_project/manage.py clear_test_data
 ```
 
 ## Main Endpoints
