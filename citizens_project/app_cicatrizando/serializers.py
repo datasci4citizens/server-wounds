@@ -83,16 +83,24 @@ class PatientsExistsSerializer(serializers.Serializer):
 class UpdateFieldsSerializer(serializers.Serializer):
 
     # Django user fields:
-    name = serializers.CharField(max_length=300)
-    
+    name = serializers.CharField(max_length=300, required=False)
+
     #WoundsUser fields:
-    state = serializers.CharField(required = False, max_length=2)
-    city = serializers.CharField(required = False, max_length=100)
+    state = serializers.CharField(required = False, max_length=2, allow_blank=True)
+    city = serializers.CharField(required = False, max_length=100, allow_blank=True)
+    birth_date = serializers.DateField(required=False, allow_null=True)
 
     #Patient/Provider fields:
-    contact_email = serializers.EmailField(max_length=50)
-    contact_phone = serializers.CharField(max_length=15) 
+    contact_email = serializers.EmailField(max_length=50, required=False, allow_null=True)
+    contact_phone = serializers.CharField(max_length=15, required=False, allow_null=True)
 
+    # Patient-only metrics:
+    gender = serializers.CharField(required=False, allow_blank=True, allow_null=True, max_length=1)
+    height = serializers.DecimalField(max_digits=4, decimal_places=2, required=False, allow_null=True)
+    weight = serializers.DecimalField(max_digits=5, decimal_places=2, required=False, allow_null=True)
+    smoking_status = serializers.CharField(required=False, allow_blank=True, allow_null=True, max_length=10)
+    alcohol_consumption = serializers.CharField(required=False, allow_blank=True, allow_null=True, max_length=10)
+    comorbidities = serializers.ListField(child=serializers.CharField(max_length=255), required=False)
     def validate_state(self, value):
         return validate_brazilian_state(value)
 

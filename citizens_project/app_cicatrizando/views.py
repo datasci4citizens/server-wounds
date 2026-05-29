@@ -573,13 +573,7 @@ class RegisterPatientComorbidityView(viewsets.ViewSet):
             return Response(status=status.HTTP_403_FORBIDDEN)
         
 
-        comorbidities_to_add = []
-        for comorbidity_name in data.get('comorbidities', []):
-            try:
-                comorbidity = Comorbidity.objects.get(name__iexact=comorbidity_name)
-            except Comorbidity.DoesNotExist:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-            comorbidities_to_add.append(comorbidity)
+        comorbidities_to_add = Comorbidity.objects.filter(concept_id__in=data.get('comorbidities', []))
 
         try:
             with transaction.atomic():
@@ -619,7 +613,9 @@ class UpdateFieldsView(viewsets.ViewSet):
             wounds_user.state = data["state"]
         if data.get("city") and (data["city"] != ""):
             wounds_user.city = data["city"]
-        
+        if data.get("birth_date"):
+            wounds_user.birth_date = data["birth_date"]
+
         wounds_user.save()
 
         if wounds_user.role == WoundsUser.Provider:
@@ -636,6 +632,24 @@ class UpdateFieldsView(viewsets.ViewSet):
                 patient.contact_email = data["contact_email"]
             if data.get("contact_phone") is not None:
                 patient.contact_phone = data["contact_phone"]
+            
+            # Update metrics
+            if "gender" in data:
+                patient.gender = data["gender"]
+            if "height" in data:
+                patient.height = data["height"]
+            if "weight" in data:
+                patient.weight = data["weight"]
+            if "smoking_status" in data:
+                patient.smoking_status = data["smoking_status"]
+            if "alcohol_consumption" in data:
+                patient.alcohol_consumption = data["alcohol_consumption"]
+            
+            # Update comorbidities
+            if "comorbidities" in data:
+                comorbidities = Comorbidity.objects.filter(concept_id__in=data["comorbidities"])
+                patient.comorbidities.set(comorbidities)
+
             patient.save()
 
         return Response(status=status.HTTP_200_OK)
