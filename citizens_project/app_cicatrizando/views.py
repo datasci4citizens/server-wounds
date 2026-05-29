@@ -13,7 +13,6 @@ from .serializers import (
     ProviderRegistrationSerializer,
     ProviderRegisterResponseSerializer,
     PatientRegisterSerializer,
-    PatientsExistsSerializer,
     PatientDataSerializer,
     RegisterPatientComorbiditySerializer,
     UpdateFieldsSerializer,
@@ -207,39 +206,6 @@ class SpecialistRegistrationView(viewsets.ViewSet):
     
         return Response(response_data, status=status.HTTP_201_CREATED)
 
-class PatientsExistsView(viewsets.ViewSet):
-    serializer = PatientsExistsSerializer
-    permission_classes = [AllowAny]
-
-    @extend_schema(
-        request= serializer,
-        responses={
-            200: OpenApiResponse(response={"patient_id": int, "registration_complete": bool}),
-            401: OpenApiResponse(description= "Patient not in database, should not login")
-        }
-    )
-    def retrieve(self, request):
-
-        serializer = self.serializer(data=request.query_params)
-        serializer.is_valid(raise_exception=True)
-        data = serializer.validated_data
-
-        try:
-            user = User.objects.get(email = data["email"])
-            wounds_user = WoundsUser.objects.get(user = user)
-            patient = Patient.objects.get(wounds_user=wounds_user)
-
-            Registration_complete = _is_registration_complete(user)
-            response_data = {
-                "patient_id": patient.pk,
-                "registration_complete" : Registration_complete
-            }
-
-        except (User.DoesNotExist, WoundsUser.DoesNotExist, Patient.DoesNotExist):
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-        
-        return Response(response_data, status=status.HTTP_200_OK)
-        
 # Functionality views
 
 class SpecialistPatientListView(viewsets.ViewSet):

@@ -77,9 +77,6 @@ class PatientRegisterSerializer(serializers.Serializer):
     def validate_state(self, value):
         return validate_brazilian_state(value)
 
-class PatientsExistsSerializer(serializers.Serializer):
-    patient_email = serializers.EmailField(required=True)
-
 class UpdateFieldsSerializer(serializers.Serializer):
 
     # Django user fields:

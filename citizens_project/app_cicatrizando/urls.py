@@ -6,7 +6,6 @@ from .views import(
     SpecialistPatientListView,
     SpecialistPatientRegisterView,
     SpecialistPatientUpdateView,
-    PatientsExistsView,
     PatientValidationView,
     PatientMeView,
     MeView,
@@ -24,7 +23,6 @@ router.register(r'auth/google', GoogleLoginView, basename='google-login')
 router.register(r'auth/register/specialist', SpecialistRegistrationView, basename='specialist-registration')
 router.register(r'auth/me', MeView, basename='me')
 router.register(r'patient/me', PatientMeView, basename='patient-me')
-router.register(r'auth/register/patient', PatientsExistsView, basename="Validate-Patient")
 router.register(r'patient/validation', PatientValidationView, basename="Patient-Validation")
 
 
