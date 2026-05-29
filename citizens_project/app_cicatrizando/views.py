@@ -773,3 +773,55 @@ class ComorbiditySearchView(viewsets.ReadOnlyModelViewSet):
             from django.db.models import Q
             queryset = queryset.filter(Q(name__icontains=search_query) | Q(code__icontains=search_query))
         return queryset
+
+from .serializers import WoundSerializer, ObservationSerializer
+from .models import Wound, Observation
+from rest_framework.decorators import action
+
+class WoundViewSet(viewsets.ModelViewSet):
+    """
+    Manage patient wounds and their clinical observations.
+    """
+    queryset = Wound.objects.all()
+    serializer_class = WoundSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = Wound.objects.all()
+        user = self.request.user
+        
+        # Filter by patient_id if provided
+        patient_id = self.request.query_params.get('patient_id')
+        if patient_id:
+            queryset = queryset.filter(patient_id=patient_id)
+            
+        # Security: Patients only see their own wounds
+        if hasattr(user, 'wounds_user') and user.wounds_user.role == WoundsUser.Patient:
+            queryset = queryset.filter(patient__wounds_user=user.wounds_user)
+        # Security: Specialists only see wounds of their assigned patients
+        elif hasattr(user, 'wounds_user') and user.wounds_user.role == WoundsUser.Provider:
+            queryset = queryset.filter(patient__assigned_providers=user.wounds_user.provider)
+            
+        return queryset.distinct()
+
+    def create(self, request, *args, **kwargs):
+        # Only Specialists should create wounds
+        if not hasattr(request.user, 'wounds_user') or request.user.wounds_user.role != WoundsUser.Provider:
+            return Response({"error": "Only specialists can register new wounds."}, status=status.HTTP_403_FORBIDDEN)
+        return super().create(request, *args, **kwargs)
+
+    @action(detail=True, methods=['get', 'post'], url_path='observations')
+    def observations(self, request, pk=None):
+        wound = self.get_object()
+        
+        if request.method == 'GET':
+            observations = wound.observations.all()
+            serializer = ObservationSerializer(observations, many=True)
+            return Response(serializer.data)
+        
+        if request.method == 'POST':
+            serializer = ObservationSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            # Link to wound and set current user as author
+            serializer.save(wound=wound, author=request.user.wounds_user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)

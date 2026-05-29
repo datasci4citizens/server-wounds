@@ -185,3 +185,25 @@ class ComorbiditySerializer(serializers.ModelSerializer):
     class Meta:
         model = Comorbidity
         fields = ['concept_id', 'code', 'name']
+
+from .models import Wound, Observation
+
+class WoundSerializer(serializers.ModelSerializer):
+    patient_name = serializers.CharField(source='patient.wounds_user.user.get_full_name', read_only=True)
+    
+    class Meta:
+        model = Wound
+        fields = ['id', 'patient', 'patient_name', 'etiology', 'location', 'created_at', 'is_healed']
+
+class ObservationSerializer(serializers.ModelSerializer):
+    author_name = serializers.CharField(source='author.user.get_full_name', read_only=True)
+    author_role = serializers.CharField(source='author.role', read_only=True)
+    
+    class Meta:
+        model = Observation
+        fields = [
+            'id', 'wound', 'author', 'author_name', 'author_role', 'created_at', 
+            'pain_level', 'exudate_amount', 'exudate_type', 
+            'tissue_type', 'dressing_changes', 'periwound_skin', 
+            'wound_edge', 'fever_24h', 'extra_notes', 'patient_guidelines'
+        ]

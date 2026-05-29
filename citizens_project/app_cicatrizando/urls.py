@@ -11,7 +11,8 @@ from .views import(
     MeView,
     RegisterPatientComorbidityView,
     ComorbiditySearchView,
-    UpdateFieldsView
+    UpdateFieldsView,
+    WoundViewSet
 )
 from rest_framework_simplejwt.views import TokenRefreshView
 from drf_spectacular.views import SpectacularSwaggerView, SpectacularAPIView
@@ -32,6 +33,7 @@ router.register(r'specialist/patient/register', SpecialistPatientRegisterView, b
 router.register(r'specialist/patient/update', SpecialistPatientUpdateView, basename='update_patient')
 router.register(r'patient/comorbidities', RegisterPatientComorbidityView, basename='patient-comorbidities')
 router.register(r'comorbidities/search', ComorbiditySearchView, basename='comorbidities-search')
+router.register(r'wounds', WoundViewSet, basename='wounds')
 
 urlpatterns = [
     path('', include(router.urls)),
