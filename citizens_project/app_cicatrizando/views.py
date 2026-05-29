@@ -573,13 +573,7 @@ class RegisterPatientComorbidityView(viewsets.ViewSet):
             return Response(status=status.HTTP_403_FORBIDDEN)
         
 
-        comorbidities_to_add = []
-        for comorbidity_name in data.get('comorbidities', []):
-            try:
-                comorbidity = Comorbidity.objects.get(name__iexact=comorbidity_name)
-            except Comorbidity.DoesNotExist:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-            comorbidities_to_add.append(comorbidity)
+        comorbidities_to_add = Comorbidity.objects.filter(concept_id__in=data.get('comorbidities', []))
 
         try:
             with transaction.atomic():
@@ -653,15 +647,8 @@ class UpdateFieldsView(viewsets.ViewSet):
             
             # Update comorbidities
             if "comorbidities" in data:
-                comorbidities_to_add = []
-                for comorbidity_name in data['comorbidities']:
-                    try:
-                        comorbidity = Comorbidity.objects.get(name__iexact=comorbidity_name)
-                        comorbidities_to_add.append(comorbidity)
-                    except Comorbidity.DoesNotExist:
-                        continue
-                if comorbidities_to_add:
-                    patient.comorbidities.set(comorbidities_to_add)
+                comorbidities = Comorbidity.objects.filter(concept_id__in=data["comorbidities"])
+                patient.comorbidities.set(comorbidities)
 
             patient.save()
 
