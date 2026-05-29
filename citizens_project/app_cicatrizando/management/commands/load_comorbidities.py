@@ -17,7 +17,7 @@ class Command(BaseCommand):
         parser.add_argument(
             '--file',
             type=str,
-            default='app_cicatrizandoapp_cicatrizando/management/comorbidities_ICD11.csv',
+            default='app_cicatrizando/management/comorbidities_ICD11.csv',
         )
         parser.add_argument(
             '--force',
