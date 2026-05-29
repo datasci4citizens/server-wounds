@@ -174,6 +174,7 @@ class MeResponseSerializer(serializers.Serializer):
     role = serializers.CharField(allow_null=True)
     registration_complete = serializers.BooleanField()
     specialist = ProviderDataSerializer(allow_null=True)
+    patient = PatientDataSerializer(allow_null=True)
 
 class ComorbiditySerializer(serializers.ModelSerializer):
     class Meta:

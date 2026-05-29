@@ -709,11 +709,71 @@ class MeView(viewsets.ViewSet):
 
             response["patient"] = {
                 "id": patient.id,
+                "name": user.get_full_name(),
+                "birth_date": wounds_user.birth_date,
+                "state": wounds_user.state,
+                "city": wounds_user.city,
                 "contact_phone": patient.contact_phone,
-                "contact_email": patient.contact_email
+                "contact_email": patient.contact_email,
+                "gender": patient.gender,
+                "height": patient.height,
+                "weight": patient.weight,
+                "smoking_status": patient.smoking_status,
+                "alcohol_consumption": patient.alcohol_consumption,
+                "assigned_specialists": [p.id for p in patient.assigned_providers.all()],
+                "comorbidities": ComorbiditySerializer(patient.comorbidities.all(), many=True).data
             }
 
         return Response(response)
+
+class PatientMeView(viewsets.ViewSet):
+    """
+    GET authenticated patient's own health profile.
+    """
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        responses={
+            200: OpenApiResponse(response=PatientDataSerializer)
+        }
+    )
+    def list(self, request):
+        user = request.user
+        try:
+            wounds_user = user.wounds_user
+            patient = wounds_user.patient
+        except (WoundsUser.DoesNotExist, Patient.DoesNotExist):
+            return Response("Patient profile not found", status=status.HTTP_404_NOT_FOUND)
+
+        if wounds_user.role != WoundsUser.Patient:
+            return Response("Access denied: Not a patient", status=status.HTTP_403_FORBIDDEN)
+
+        response_data = {
+            "id": patient.id,
+            "name": user.get_full_name(),
+            "birth_date": wounds_user.birth_date,
+            "state": wounds_user.state,
+            "city": wounds_user.city,
+            "contact_phone": patient.contact_phone,
+            "contact_email": patient.contact_email,
+            "gender": patient.gender,
+            "height": patient.height,
+            "weight": patient.weight,
+            "smoking_status": patient.smoking_status,
+            "alcohol_consumption": patient.alcohol_consumption,
+            "assigned_specialists": [
+                {
+                    "id": p.id,
+                    "name": p.wounds_user.user.get_full_name(),
+                    "professional_id": p.professional_id,
+                    "contact_phone": p.contact_phone,
+                    "contact_email": p.contact_email
+                } for p in patient.assigned_providers.all()
+            ],
+            "comorbidities": ComorbiditySerializer(patient.comorbidities.all(), many=True).data
+        }
+        
+        return Response(response_data)
 from rest_framework.pagination import LimitOffsetPagination
 
 class ComorbidityPagination(LimitOffsetPagination):
