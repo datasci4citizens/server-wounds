@@ -76,6 +76,13 @@ sudo docker compose --env-file .env -f docker/docker-compose.yml exec -w /app/ci
 sudo docker compose --env-file .env -f docker/docker-compose.yml exec -w /app/citizens_project web python3 manage.py load_cid11 --file /app/cid11.csv
 ```
 
+### Utilities (Testing)
+
+To safely erase all `Patient`, `Provider`, and `WoundsUser` records (excluding superusers) for a clean testing state:
+```bash
+sudo docker compose --env-file .env -f docker/docker-compose.yml exec -w /app/citizens_project web python3 manage.py clear_test_data
+```
+
 ## Main Endpoints
 
 The API routes are defined in:
@@ -89,13 +96,15 @@ The API routes are defined in:
 - `POST /auth/login/role/` — Select user role (`provider` or `patient`)
 - `POST /auth/login/provider/` — Complete provider profile data
 - `POST /auth/login/patient/` — Complete patient profile data
-- `GET /auth/me/` — Validate token and return current authenticated user info
+- `GET /auth/me/` — Validate token and return current authenticated user info (enhanced with profile data depending on role)
 
 ### Specialist & Patient Endpoints
 
 - `GET /specialist/patients/` — List all patients assigned to the authenticated specialist (includes comorbidities data)
-- `POST /specialist/patient/register/` — Register a new patient or link an existing one (accepts an array of comorbidity CID-11 URIs)
-- `PUT/PATCH /specialist/patient/update/<id>/` — Update an existing patient's details and their comorbidities list
+- `POST /specialist/patient/register/` — Register a new patient or link an existing one (accepts an array of comorbidity CID-11 concept IDs)
+- `PUT/PATCH /specialist/patient/update/<id>/` — Update an existing patient's details and their clinical metrics
+- `GET /patient/me/` — Retrieve the authenticated patient's own comprehensive health profile and assigned specialists
+- `PATCH /Update/` — Update the authenticated user's own profile (supports updating clinical metrics and comorbidities for patients)
 
 ### Comorbidities Endpoints
 
