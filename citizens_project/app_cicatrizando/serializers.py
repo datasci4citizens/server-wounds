@@ -208,3 +208,18 @@ class ObservationSerializer(serializers.ModelSerializer):
             'wound_edge', 'fever_24h', 'extra_notes', 'patient_guidelines'
         ]
         read_only_fields = ['wound', 'author']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        request = self.context.get('request')
+        
+        # Privacy logic: If the viewer is a patient and the author is a specialist, hide extra_notes
+        if request and hasattr(request.user, 'wounds_user'):
+            viewer_role = request.user.wounds_user.role
+            author_role = instance.author.role if instance.author else None
+            
+            # 'Pr' is Provider/Specialist in the model choices
+            if viewer_role == 'Pa' and author_role == 'Pr':
+                representation['extra_notes'] = None
+                
+        return representation
