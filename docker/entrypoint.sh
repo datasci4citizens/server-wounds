@@ -34,5 +34,28 @@ fi
 
 echo "Starting Django server..."
 
+# Initialize S3 bucket if environment variables are set
+if [[ -n "$AWS_S3_ENDPOINT_URL" && -n "$AWS_STORAGE_BUCKET_NAME" ]]; then
+  echo "🪣 Initializing S3 bucket: $AWS_STORAGE_BUCKET_NAME..."
+  python -c "
+import boto3, os
+try:
+    s3 = boto3.client('s3', 
+        endpoint_url=os.environ.get('AWS_S3_ENDPOINT_URL'),
+        aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+        aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+        region_name=os.environ.get('AWS_S3_REGION_NAME', 'us-east-1')
+    )
+    bucket = os.environ.get('AWS_STORAGE_BUCKET_NAME')
+    if bucket not in [b['Name'] for b in s3.list_buckets()['Buckets']]:
+        s3.create_bucket(Bucket=bucket)
+        print(f'Bucket {bucket} created.')
+    else:
+        print(f'Bucket {bucket} already exists.')
+except Exception as e:
+    print(f'Could not initialize bucket: {e}')
+"
+fi
+
 echo "Access the server at: http://localhost:8000"
 python citizens_project/manage.py runserver 0.0.0.0:8000
