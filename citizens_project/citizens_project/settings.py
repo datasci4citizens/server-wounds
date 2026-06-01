@@ -225,3 +225,5 @@ AWS_QUERYSTRING_AUTH = os.environ.get('AWS_QUERYSTRING_AUTH', 'False').lower() =
 AWS_S3_CUSTOM_DOMAIN = None
 AWS_S3_URL_PROTOCOL = os.environ.get('AWS_S3_URL_PROTOCOL', 'http')
 AWS_S3_SECURE_URLS = os.environ.get('AWS_S3_SECURE_URLS', 'False').lower() == 'true'
+
+
