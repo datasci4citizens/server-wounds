@@ -1,29 +1,44 @@
-from django.urls import include, path
-from django.conf import settings
-from django.conf.urls.static import static
+from django.urls import path, include
+from rest_framework import routers
+from .views import(
+    GoogleLoginView, 
+    SpecialistRegistrationView,
+    SpecialistPatientListView,
+    SpecialistPatientRegisterView,
+    SpecialistPatientUpdateView,
+    PatientValidationView,
+    PatientMeView,
+    MeView,
+    RegisterPatientComorbidityView,
+    ComorbiditySearchView,
+    UpdateFieldsView,
+    WoundViewSet
+)
+from rest_framework_simplejwt.views import TokenRefreshView
+from drf_spectacular.views import SpectacularSwaggerView, SpectacularAPIView
 
-from app_cicatrizando.api import GoogleLoginView, MeView, UserPatientBindView
-from . import virtual_urls
+router = routers.DefaultRouter()
 
-# from django_scalar.views import scalar_viewer
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
-from app_cicatrizando.scalar import scalar_viewer
-
-from rest_framework.routers import DefaultRouter
-
-# --- ROUTER ---
-
-router = DefaultRouter() 
-router.register(r'auth/login/google', GoogleLoginView, basename='google-login')
+# Auth endpoints
+router.register(r'auth/google', GoogleLoginView, basename='google-login')
+router.register(r'auth/register/specialist', SpecialistRegistrationView, basename='specialist-registration')
 router.register(r'auth/me', MeView, basename='me')
-router.register(r'auth/patient-bind', UserPatientBindView, basename='patient-bind')
-# --- URLS ---
+router.register(r'patient/me', PatientMeView, basename='patient-me')
+router.register(r'patient/validation', PatientValidationView, basename="Patient-Validation")
+
+
+# specialist endpoints
+router.register(r'specialist/patients', SpecialistPatientListView, basename='patient_list')
+router.register(r'specialist/patient/register', SpecialistPatientRegisterView, basename= 'register_patient')
+router.register(r'specialist/patient/update', SpecialistPatientUpdateView, basename='update_patient')
+router.register(r'patient/comorbidities', RegisterPatientComorbidityView, basename='patient-comorbidities')
+router.register(r'comorbidities/search', ComorbiditySearchView, basename='comorbidities-search')
+router.register(r'wounds', WoundViewSet, basename='wounds')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('', include(virtual_urls.router.urls)),
-    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
-    path("docs/redoc", SpectacularRedocView.as_view(), name="redoc"),
-    path("docs/swagger", SpectacularSwaggerView.as_view(), name="schema-swagger-ui"),
-    path("docs", scalar_viewer, name="schema-scalar-ui"), 
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+    path('Update/', UpdateFieldsView.as_view({'patch': 'patch'}), name="Update Information"),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/schema', SpectacularAPIView.as_view(), name='schema')
+]
