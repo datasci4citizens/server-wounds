@@ -29,7 +29,11 @@ SECRET_KEY = os.environ.get("SERVER_WOUNDS_SECRET_KEY", "django-insecure-changem
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", default=False)
 
-ALLOWED_HOSTS = []
+allowed_hosts_env = os.environ.get("ALLOWED_HOSTS", "")
+if allowed_hosts_env:
+    ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(",")]
+else:
+    ALLOWED_HOSTS = ["*"] # Default to all if not specified in dev
 
 
 # Application definition
@@ -165,9 +169,23 @@ LOGGING = {
 }
 
 # CORS settings
-CORS_ALLOWED_ORIGINS = [
+cors_origins_env = os.environ.get("CORS_ALLOWED_ORIGINS", "")
+CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins_env.split(",") if origin.strip()] or [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "https://localhost",
 ]
+
 CORS_ALLOW_CREDENTIALS = True
+
+from corsheaders.defaults import default_headers
+if DEBUG:
+    CORS_ALLOW_HEADERS = list(default_headers) + [
+        'ngrok-skip-browser-warning',
+    ]
+else:
+    CORS_ALLOW_HEADERS = list(default_headers)
+
+# CSRF — origens confiáveis para POST cross-origin
+CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
 
