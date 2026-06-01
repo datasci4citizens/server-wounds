@@ -816,11 +816,11 @@ class WoundViewSet(viewsets.ModelViewSet):
         
         if request.method == 'GET':
             observations = wound.observations.all()
-            serializer = ObservationSerializer(observations, many=True)
+            serializer = ObservationSerializer(observations, many=True, context={'request': request})
             return Response(serializer.data)
         
         if request.method == 'POST':
-            serializer = ObservationSerializer(data=request.data)
+            serializer = ObservationSerializer(data=request.data, context={'request': request})
             serializer.is_valid(raise_exception=True)
             # Link to wound and set current user as author
             serializer.save(wound=wound, author=request.user.wounds_user)
