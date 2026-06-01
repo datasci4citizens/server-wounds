@@ -3,6 +3,8 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 from app_cicatrizando.models import WoundsUser, Provider, Patient, Wound, Observation, WoundEtiology, WoundLocation
 from datetime import date
+import io
+from PIL import Image
 
 User = get_user_model()
 
@@ -117,3 +119,43 @@ class WoundMVPTests(APITestCase):
         response = self.client.get(self.wounds_url)
         # Should only see John Doe's wound (none created yet in this test for John Doe, so 0)
         self.assertEqual(len(response.data), 0)
+
+    def test_specialist_can_upload_image_with_observation(self):
+        self.client.force_authenticate(user=self.specialist_user)
+        
+        # 1. Create Wound
+        wound = Wound.objects.create(
+            patient=self.patient,
+            etiology=WoundEtiology.DIABETIC_FOOT,
+            location=WoundLocation.HALLUX
+        )
+        
+        # 2. Create Dummy Image
+        file_io = io.BytesIO()
+        image = Image.new('RGB', (100, 100), color='red')
+        image.save(file_io, 'JPEG')
+        file_io.seek(0)
+        file_io.name = 'test_wound.jpg'
+
+        # 3. Upload Observation with Image
+        obs_url = f'{self.wounds_url}{wound.id}/observations/'
+        obs_data = {
+            "pain_level": 5,
+            "exudate_amount": "Médio",
+            "exudate_type": "Seroso",
+            "tissue_type": "Granulação",
+            "dressing_changes": 1,
+            "periwound_skin": "Inchaço/Edema",
+            "wound_edge": "Bem definidas, não aderidas à base da ferida",
+            "fever_24h": False,
+            "image": file_io
+        }
+        
+        # We must use format='multipart' for file uploads
+        response = self.client.post(obs_url, obs_data, format='multipart')
+        
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn('image', response.data)
+        self.assertIsNotNone(response.data['image'])
+        # Verification of the URL (it should point to our S3/SeaweedFS endpoint)
+        self.assertIn('wounds/observations/test_wound', response.data['image'])

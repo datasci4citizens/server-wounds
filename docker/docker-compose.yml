@@ -83,14 +83,27 @@ services:
     depends_on:
       - seaweedfs_master
 
+  seaweedfs_filer:
+    image: chrislusf/seaweedfs:latest
+    container_name: seaweedfs_filer
+    ports:
+      - "8888:8888"
+      - "18888:18888"
+    command: filer -master=seaweedfs_master:9333 -ip=seaweedfs_filer
+    volumes:
+      - seaweedfs-data:/data
+    depends_on:
+      - seaweedfs_master
+      - seaweedfs_volume
+
   seaweedfs_s3:
     image: chrislusf/seaweedfs:latest
     container_name: seaweedfs_s3
     ports:
       - "8333:8333"
-    command: s3 -domainName=localhost -key.file= -cert.file= -master=seaweedfs_master:9333
+    command: s3 -domainName=localhost -key.file= -cert.file= -filer=seaweedfs_filer:8888
     depends_on:
-      - seaweedfs_master
+      - seaweedfs_filer
 
 volumes:
   wound-data:
