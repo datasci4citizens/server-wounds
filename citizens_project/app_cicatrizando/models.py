@@ -166,8 +166,8 @@ class Observation(models.Model):
     extra_notes = models.TextField(blank=True, null=True)
     patient_guidelines = models.TextField(blank=True, null=True)
     
-    # Media (Phase 4 - will be added later)
-    # image = models.ImageField(upload_to='wounds/', blank=True, null=True)
+    # Media
+    image = models.ImageField(upload_to='wounds/observations/', blank=True, null=True)
 
     class Meta:
         ordering = ['-created_at']
