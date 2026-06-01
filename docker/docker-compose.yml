@@ -50,6 +50,11 @@ services:
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       SERVER_WOUNDS_SECRET_KEY: ${SERVER_WOUNDS_SECRET_KEY}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_STORAGE_BUCKET_NAME: ${AWS_STORAGE_BUCKET_NAME}
+      AWS_S3_ENDPOINT_URL: ${AWS_S3_ENDPOINT_URL}
+      AWS_S3_REGION_NAME: ${AWS_S3_REGION_NAME}
 
     ports:
       - "8000:8000"
@@ -58,9 +63,39 @@ services:
       db:
         condition: service_healthy
 
+  seaweedfs_master:
+    image: chrislusf/seaweedfs:latest
+    container_name: seaweedfs_master
+    ports:
+      - "9333:9333"
+    command: master -ip=seaweedfs_master
+    volumes:
+      - seaweedfs-data:/data
+
+  seaweedfs_volume:
+    image: chrislusf/seaweedfs:latest
+    container_name: seaweedfs_volume
+    ports:
+      - "8080:8080"
+    command: volume -mserver=seaweedfs_master:9333 -port=8080 -ip=seaweedfs_volume
+    volumes:
+      - seaweedfs-data:/data
+    depends_on:
+      - seaweedfs_master
+
+  seaweedfs_s3:
+    image: chrislusf/seaweedfs:latest
+    container_name: seaweedfs_s3
+    ports:
+      - "8333:8333"
+    command: s3 -domainName=localhost -key.file= -cert.file= -master=seaweedfs_master:9333
+    depends_on:
+      - seaweedfs_master
+
 volumes:
   wound-data:
     driver_opts:
       type: "none"
       device: ${EXTERNAL_MAPPING_PATH}
       o: "bind"
+  seaweedfs-data:
