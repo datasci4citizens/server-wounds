@@ -205,7 +205,7 @@ class ObservationSerializer(serializers.ModelSerializer):
             'id', 'wound', 'author', 'author_name', 'author_role', 'created_at', 
             'pain_level', 'exudate_amount', 'exudate_type', 
             'tissue_type', 'dressing_changes', 'periwound_skin', 
-            'wound_edge', 'fever_24h', 'extra_notes', 'patient_guidelines'
+            'wound_edge', 'fever_24h', 'extra_notes', 'patient_guidelines', 'image'
         ]
         read_only_fields = ['wound', 'author']
 
