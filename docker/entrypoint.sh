@@ -39,6 +39,8 @@ if [[ -n "$AWS_S3_ENDPOINT_URL" && -n "$AWS_STORAGE_BUCKET_NAME" ]]; then
   echo "🪣 Initializing S3 bucket: $AWS_STORAGE_BUCKET_NAME..."
   python -c "
 import boto3, os, time, sys
+from botocore.exceptions import ClientError
+
 s3 = boto3.client('s3', 
     endpoint_url=os.environ.get('AWS_S3_ENDPOINT_URL'),
     aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
@@ -50,17 +52,24 @@ bucket = os.environ.get('AWS_STORAGE_BUCKET_NAME')
 max_retries = 5
 for attempt in range(max_retries):
     try:
-        if bucket not in [b['Name'] for b in s3.list_buckets()['Buckets']]:
+        try:
             s3.create_bucket(Bucket=bucket)
-            print(f'Bucket {bucket} created.')
-        else:
-            print(f'Bucket {bucket} already exists.')
+            print(f'Bucket {bucket} created successfully.')
+        except ClientError as e:
+            error_code = e.response.get('Error', {}).get('Code')
+            if error_code in ('BucketAlreadyExists', 'BucketAlreadyOwnedByYou'):
+                print(f'Bucket {bucket} already exists.')
+            else:
+                raise e
         sys.exit(0)
     except Exception as e:
-        print(f'Attempt {attempt + 1}/{max_retries} - Could not connect to S3: {e}')
-        time.sleep(2)
-
-print('Failed to initialize bucket after maximum retries.')
+        print(f'Attempt {attempt + 1}/{max_retries} - Could not initialize bucket: {e}')
+        if attempt < max_retries - 1:
+            time.sleep(2)
+        else:
+            print('Failed to initialize bucket after maximum retries.')
+            # We don't exit 1 here to allow the server to start even if init failed 
+            # (it might be a transient network issue during startup)
 "
 fi
 
