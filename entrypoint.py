@@ -1,27 +1,50 @@
 import os
-import subprocess
 import sys
+import subprocess
 
-diretorio_atual = os.path.dirname(os.path.abspath(__file__))
-
-diretorio_django = os.path.join(diretorio_atual, 'citizens_project')
-
-def executar_comando(comando):
-    print(f"==> Executando: {' '.join(comando)}")
+def run_command(command):
+    print(f"Running: {' '.join(command)}")
     try:
-        subprocess.run(comando, cwd=diretorio_django, check=True)
-    except subprocess.CalledProcessError as erro:
-        print(f"\n[ERRO] O comando falhou. Código de saída: {erro.returncode}")
+        subprocess.run(command, check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error: {e}")
         sys.exit(1)
 
+def main():
+    print("Starting entrypoint...")
+
+    print("Applying migrations...")
+    run_command(["python", "manage.py", "migrate", "--noinput"])
+
+    print("Collecting static files...")
+    run_command(["python", "manage.py", "collectstatic", "--noinput"])
+
+    superuser_username = os.environ.get("DJANGO_SUPERUSER_USERNAME")
+    superuser_password = os.environ.get("DJANGO_SUPERUSER_PASSWORD")
+
+    if superuser_username and superuser_password:
+        print("Checking/Creating superuser...")
+        create_script = (
+            f"import os; "
+            f"from django.contrib.auth import get_user_model; "
+            f"User = get_user_model(); "
+            f"exists = User.objects.filter(username='{superuser_username}').exists(); "
+            f"print('User exists:', exists); "
+            f"not exists and User.objects.create_superuser('{superuser_username}', os.environ.get('DJANGO_SUPERUSER_EMAIL', ''), '{superuser_password}')"
+        )
+        try:
+            subprocess.run(["python", "manage.py", "shell", "-c", create_script], check=True)
+            print("Superuser process finished.")
+        except subprocess.CalledProcessError:
+            print("Failed to handle superuser creation, but moving forward.")
+    else:
+        print("Superuser config missing. Skipping.")
+
+    if len(sys.argv) > 1:
+        print(f"Executing: {' '.join(sys.argv[1:])}")
+        os.execvp(sys.argv[1], sys.argv[1:])
+    else:
+        print("No command provided.")
+
 if __name__ == "__main__":
-    print("Iniciando o Entrypoint Multiplataforma...")
-    
-    python_bin = sys.executable
-
-    executar_comando([python_bin, "manage.py", "migrate"])
-    
-    executar_comando([python_bin, "manage.py", "runserver", "0.0.0.0:8000"])
-
-    print("Entrypoint finalizado!")
-    
+    main()

@@ -27,7 +27,7 @@ services:
       dockerfile: docker/dockerfile
     entrypoint: python entrypoint.py
     volumes:
-     - /home/rayssahugo/Projetos/server-wounds:/code:z
+     - .:/code:z
 
     restart: on-failure:3
 
