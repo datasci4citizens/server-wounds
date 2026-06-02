@@ -197,6 +197,6 @@ AWS_QUERYSTRING_AUTH = False
 
 # This ensures the browser can access images via localhost:8333
 # while Django continues to upload internally via seaweedfs-s3:8333
-AWS_S3_CUSTOM_DOMAIN = "localhost:8333"
+AWS_S3_CUSTOM_DOMAIN = f"localhost:8333/{AWS_STORAGE_BUCKET_NAME}"
 AWS_S3_URL_PROTOCOL = 'http'
 AWS_S3_SECURE_URLS = False

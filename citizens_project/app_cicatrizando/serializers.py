@@ -222,9 +222,13 @@ class ObservationSerializer(serializers.ModelSerializer):
             if viewer_role == 'Pa' and author_role == 'Pr':
                 representation['extra_notes'] = None
         
-        # Manually set the image URL to the absolute S3/SeaweedFS path.
-        # This prevents DRF from prepending 'http://localhost:8000' to it when request context is present.
+        # Fix image URL: ensure it's absolute with http:// to prevent DRF/Browser from treating it as relative
         if instance.image:
-            representation['image'] = instance.image.url
+            url = instance.image.url
+            if not url.startswith('http'):
+                # Ensure protocol is present. localhost:8333/... -> http://localhost:8333/...
+                representation['image'] = f"http://{url}"
+            else:
+                representation['image'] = url
                 
         return representation
