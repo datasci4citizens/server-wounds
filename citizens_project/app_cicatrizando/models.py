@@ -167,7 +167,7 @@ class Observation(models.Model):
     patient_guidelines = models.TextField(blank=True, null=True)
     
     # Media
-    image = models.ImageField(upload_to='wounds/observations/', blank=True, null=True)
+    image = models.ImageField(upload_to='observations/', blank=True, null=True)
 
     class Meta:
         ordering = ['-created_at']
