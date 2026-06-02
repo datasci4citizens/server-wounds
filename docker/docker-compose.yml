@@ -63,47 +63,47 @@ services:
       db:
         condition: service_healthy
 
-  seaweedfs_master:
+  seaweedfs-master:
     image: chrislusf/seaweedfs:latest
-    container_name: seaweedfs_master
+    container_name: seaweedfs-master
     ports:
       - "9333:9333"
-    command: master -ip=seaweedfs_master
+    command: master -ip=seaweedfs-master
     volumes:
       - seaweedfs-data:/data
 
-  seaweedfs_volume:
+  seaweedfs-volume:
     image: chrislusf/seaweedfs:latest
-    container_name: seaweedfs_volume
+    container_name: seaweedfs-volume
     ports:
       - "8080:8080"
-    command: volume -mserver=seaweedfs_master:9333 -port=8080 -ip=seaweedfs_volume
+    command: volume -mserver=seaweedfs-master:9333 -port=8080 -ip=seaweedfs-volume
     volumes:
       - seaweedfs-data:/data
     depends_on:
-      - seaweedfs_master
+      - seaweedfs-master
 
-  seaweedfs_filer:
+  seaweedfs-filer:
     image: chrislusf/seaweedfs:latest
-    container_name: seaweedfs_filer
+    container_name: seaweedfs-filer
     ports:
       - "8888:8888"
       - "18888:18888"
-    command: filer -master=seaweedfs_master:9333 -ip=seaweedfs_filer
+    command: filer -master=seaweedfs-master:9333 -ip=seaweedfs-filer
     volumes:
       - seaweedfs-data:/data
     depends_on:
-      - seaweedfs_master
-      - seaweedfs_volume
+      - seaweedfs-master
+      - seaweedfs-volume
 
-  seaweedfs_s3:
+  seaweedfs-s3:
     image: chrislusf/seaweedfs:latest
-    container_name: seaweedfs_s3
+    container_name: seaweedfs-s3
     ports:
       - "8333:8333"
-    command: s3 -domainName=localhost -key.file= -cert.file= -filer=seaweedfs_filer:8888
+    command: s3 -domainName=localhost -key.file= -cert.file= -filer=seaweedfs-filer:8888
     depends_on:
-      - seaweedfs_filer
+      - seaweedfs-filer
 
 volumes:
   wound-data:

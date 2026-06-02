@@ -222,11 +222,17 @@ class ObservationSerializer(serializers.ModelSerializer):
             if viewer_role == 'Pa' and author_role == 'Pr':
                 representation['extra_notes'] = None
         
-        # Fix image URL: ensure it's absolute with http:// to prevent DRF/Browser from treating it as relative
+        # Fix image URL: ensure it's absolute and accessible by the browser.
+        # We replace the internal docker host 'seaweedfs-s3' with 'localhost'.
         if instance.image:
             url = instance.image.url
-            if not url.startswith('http'):
-                # Ensure protocol is present. localhost:8333/... -> http://localhost:8333/...
+            if 'seaweedfs-s3' in url:
+                url = url.replace('seaweedfs-s3', 'localhost')
+            
+            # Ensure protocol is present and correct
+            if url.startswith('//'):
+                representation['image'] = f"http:{url}"
+            elif not url.startswith('http'):
                 representation['image'] = f"http://{url}"
             else:
                 representation['image'] = url
