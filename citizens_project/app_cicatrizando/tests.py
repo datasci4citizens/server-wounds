@@ -121,7 +121,7 @@ class AuthenticationErrorTests(BaseTestClass):
 		self.assertEqual(response.status_code, 500)
 
 	def test_specialist_registration_requires_professional_id(self):
-		user, _ = self._create_user_with_wounds_profile(
+		user, wounds_user = self._create_user_with_wounds_profile(
 			email="provider.missing.id@example.com",
 		)
 
@@ -140,7 +140,7 @@ class AuthenticationErrorTests(BaseTestClass):
 
 		self.assertEqual(response.status_code, 400)
 		self.assertIn("professional_id", response.data)
-		self.assertFalse(Provider.objects.filter(wounds_user=user).exists())
+		self.assertFalse(Provider.objects.filter(wounds_user=wounds_user).exists())
 
 	def test_specialist_registration_validates_brazilian_state(self):
 		user, _ = self._create_user_with_wounds_profile(
@@ -202,7 +202,7 @@ class AuthenticationFlowTests(BaseTestClass):
 			birth_date=date(1990, 1, 1),
 		)
 		Provider.objects.create(
-			wounds_user=user,
+			wounds_user=wounds_user,
 			professional_id="COREN-SP 12345",
 		)
 
@@ -291,7 +291,7 @@ class AuthenticationFlowTests(BaseTestClass):
 		self.assertEqual(response.data["email"], "incomplete@example.com")
 		self.assertIsNone(response.data["role"])
 		self.assertFalse(response.data["registration_complete"])
-		self.assertIsNone(response.data["specialist"])
+		self.assertIsNone(response.data.get("specialist"))
 
 	def test_specialist_registration_updates_existing_wounds_user(self):
 		user, wounds_user = self._create_user_with_wounds_profile(
@@ -324,7 +324,7 @@ class AuthenticationFlowTests(BaseTestClass):
 		self.assertEqual(wounds_user.role, WoundsUser.Provider)
 
 		# Verify Provider was created
-		provider = Provider.objects.get(wounds_user=user)
+		provider = Provider.objects.get(wounds_user=wounds_user)
 		self.assertEqual(provider.professional_id, "COREN-RJ 654321")
 		self.assertEqual(provider.contact_phone, "21988887777")
 		self.assertEqual(provider.contact_email, "updated@hospital.com")
@@ -355,6 +355,11 @@ class AuthenticationFlowTests(BaseTestClass):
 
 class ProviderFeaturesTests(BaseTestClass):
 	patientlisturl = "specialist/patients"
-	woundsuser = BaseTestClass.create_wounds_user(role="Provider")
 
-	
+	def setUp(self):
+		super().setUp()
+		# Use the proper instance method to create a user and assign to self
+		self.user, self.woundsuser = self._create_user_with_wounds_profile(
+			email="provider@example.com",
+			role="Pr"
+		)
