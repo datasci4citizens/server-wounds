@@ -99,7 +99,7 @@ services:
     container_name: seaweedfs-s3
     ports:
       - "8333:8333"
-    command: s3 -domainName=localhost -ip=seaweedfs-s3 -filer=seaweedfs-filer:8888
+    command: s3 -domainName=localhost -filer=seaweedfs-filer:8888
     depends_on:
       - seaweedfs-filer
 
