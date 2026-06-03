@@ -2,39 +2,9 @@
 
 set -e
 
-python citizens_project/manage.py migrate --noinput
-python citizens_project/manage.py load_comorbidities
-
-# Automatically create the superuser if .env values are configured
-if [[ -n "$DJANGO_SUPERUSER_USERNAME" && "$DJANGO_SUPERUSER_USERNAME" != "admin" && \
-     -n "$DJANGO_SUPERUSER_EMAIL" && "$DJANGO_SUPERUSER_EMAIL" != "admin@example.com" && \
-     -n "$DJANGO_SUPERUSER_PASSWORD" && "$DJANGO_SUPERUSER_PASSWORD" != "admin" ]]; then
-
-  echo "👤 Creating SuperUser..."
-  python citizens_project/manage.py shell <<EOF
-
-
-from django.contrib.auth import get_user_model
-User = get_user_model()
-if not User.objects.filter(username="$DJANGO_SUPERUSER_USERNAME").exists(): # user does not exist
-  User.objects.create_superuser(
-    username="$DJANGO_SUPERUSER_USERNAME",
-    email="$DJANGO_SUPERUSER_EMAIL",
-    password="$DJANGO_SUPERUSER_PASSWORD"
-  )
-  print("Superuser created successfully")
-
-  print("Access at: http://0.0.0.0:8000/admin" )
-else:
-  print("Superuser already exists, continuing initialization...")
-EOF
-else
-    echo "Superuser environment variables are not defined."
-fi 
-
-echo "Starting Django server..."
-
-# Initialize S3 bucket if environment variables are set
+# 1. Initialize S3 bucket if environment variables are set
+# We do this FIRST because it might need retries while other services boot up.
+# We also reduce the wait time to make it feel faster.
 if [[ -n "$AWS_S3_ENDPOINT_URL" && -n "$AWS_STORAGE_BUCKET_NAME" ]]; then
   echo "🪣 Initializing S3 bucket: $AWS_STORAGE_BUCKET_NAME..."
   python -c "
@@ -67,15 +37,43 @@ for attempt in range(max_retries):
                 raise e
         sys.exit(0)
     except Exception as e:
-        print(f'Attempt {attempt + 1}/{max_retries} - Could not initialize bucket: {e}')
+        print(f'Attempt {attempt + 1}/{max_retries} - S3 not ready yet, retrying...')
         if attempt < max_retries - 1:
-            time.sleep(5)
+            time.sleep(2) # Shorter wait for faster perceived boot
         else:
-            print('Failed to initialize bucket after maximum retries.')
-            # We don't exit 1 here to allow the server to start even if init failed 
-            # (it might be a transient network issue during startup)
+            print('Warning: S3 initialization failed. Continuing anyway...')
 "
 fi
 
+# 2. Database migrations and data loading
+echo "🔄 Running migrations..."
+python citizens_project/manage.py migrate --noinput
+
+echo "🧬 Checking comorbidities..."
+python citizens_project/manage.py load_comorbidities
+
+# 3. Automatically create the superuser if .env values are configured
+if [[ -n "$DJANGO_SUPERUSER_USERNAME" && "$DJANGO_SUPERUSER_USERNAME" != "admin" && \
+     -n "$DJANGO_SUPERUSER_EMAIL" && "$DJANGO_SUPERUSER_EMAIL" != "admin@example.com" && \
+     -n "$DJANGO_SUPERUSER_PASSWORD" && "$DJANGO_SUPERUSER_PASSWORD" != "admin" ]]; then
+
+  echo "👤 Checking SuperUser..."
+  python citizens_project/manage.py shell <<EOF
+from django.contrib.auth import get_user_model
+User = get_user_model()
+if not User.objects.filter(username="$DJANGO_SUPERUSER_USERNAME").exists():
+  User.objects.create_superuser(
+    username="$DJANGO_SUPERUSER_USERNAME",
+    email="$DJANGO_SUPERUSER_EMAIL",
+    password="$DJANGO_SUPERUSER_PASSWORD"
+  )
+  print("Superuser created successfully")
+else:
+  print("Superuser already exists.")
+EOF
+fi 
+
+# 4. Start Server
+echo "🚀 Starting Django server..."
 echo "Access the server at: http://localhost:8000"
 python citizens_project/manage.py runserver 0.0.0.0:8000
