@@ -64,7 +64,7 @@ services:
         condition: service_healthy
 
   seaweedfs-master:
-    image: chrislusf/seaweedfs:latest
+    image: chrislusf/seaweedfs:3.59
     container_name: seaweedfs-master
     ports:
       - "9333:9333"
@@ -73,7 +73,7 @@ services:
       - seaweedfs-data:/data
 
   seaweedfs-volume:
-    image: chrislusf/seaweedfs:latest
+    image: chrislusf/seaweedfs:3.59
     container_name: seaweedfs-volume
     ports:
       - "8080:8080"
@@ -84,7 +84,7 @@ services:
       - seaweedfs-master
 
   seaweedfs-filer:
-    image: chrislusf/seaweedfs:latest
+    image: chrislusf/seaweedfs:3.59
     container_name: seaweedfs-filer
     ports:
       - "8888:8888"
@@ -97,11 +97,11 @@ services:
       - seaweedfs-volume
 
   seaweedfs-s3:
-    image: chrislusf/seaweedfs:latest
+    image: chrislusf/seaweedfs:3.59
     container_name: seaweedfs-s3
     ports:
       - "8333:8333"
-    command: s3 -domainName=localhost -key.file= -cert.file= -filer=seaweedfs-filer:8888
+    command: s3 -domainName=localhost -filer=seaweedfs-filer:8888
     depends_on:
       - seaweedfs-filer
 

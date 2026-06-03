@@ -53,7 +53,11 @@ max_retries = 5
 for attempt in range(max_retries):
     try:
         try:
-            s3.create_bucket(Bucket=bucket)
+            kwargs = {'Bucket': bucket}
+            region = os.environ.get('AWS_S3_REGION_NAME', 'us-east-1')
+            if region != 'us-east-1':
+                kwargs['CreateBucketConfiguration'] = {'LocationConstraint': region}
+            s3.create_bucket(**kwargs)
             print(f'Bucket {bucket} created successfully.')
         except ClientError as e:
             error_code = e.response.get('Error', {}).get('Code')

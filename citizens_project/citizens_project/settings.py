@@ -192,29 +192,40 @@ CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
 
 
 # S3 Storage Settings (SeaweedFS)
-STORAGES = {
-    "default": {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-    },
-    "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-    },
-}
+AWS_S3_ENDPOINT_URL = os.environ.get('AWS_S3_ENDPOINT_URL')
+
+if AWS_S3_ENDPOINT_URL:
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+else:
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
 
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
 AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
-AWS_S3_ENDPOINT_URL = os.environ.get('AWS_S3_ENDPOINT_URL')
 AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME', 'us-east-1')
 AWS_S3_SIGNATURE_VERSION = 's3v4'
 AWS_S3_FILE_OVERWRITE = False
 AWS_DEFAULT_ACL = None
-AWS_S3_VERIFY = False
+AWS_S3_VERIFY = os.environ.get('AWS_S3_VERIFY', 'False').lower() == 'true'
 AWS_S3_ADDRESSING_STYLE = 'path'
-AWS_QUERYSTRING_AUTH = False
+AWS_QUERYSTRING_AUTH = os.environ.get('AWS_QUERYSTRING_AUTH', 'False').lower() == 'true'
 
 # This ensures the browser can access images via localhost:8333
 # while Django continues to upload internally via seaweedfs-s3:8333
 AWS_S3_CUSTOM_DOMAIN = None
-AWS_S3_URL_PROTOCOL = 'http'
-AWS_S3_SECURE_URLS = False
+AWS_S3_URL_PROTOCOL = os.environ.get('AWS_S3_URL_PROTOCOL', 'http')
+AWS_S3_SECURE_URLS = os.environ.get('AWS_S3_SECURE_URLS', 'False').lower() == 'true'
