@@ -62,6 +62,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      seaweedfs-s3:
+        condition: service_started
 
   seaweedfs-master:
     image: chrislusf/seaweedfs:3.59
@@ -102,6 +104,12 @@ services:
     ports:
       - "8333:8333"
     command: s3 -domainName=localhost -filer=seaweedfs-filer:8888
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8333/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
     depends_on:
       - seaweedfs-filer
 
