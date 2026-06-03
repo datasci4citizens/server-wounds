@@ -4,15 +4,15 @@ set -e
 
 # 1. Database migrations and data loading
 # We do this in the background if possible, or at least keep it efficient.
-echo "🔄 Running migrations..."
+echo "[Migrations] Running migrations..."
 python citizens_project/manage.py migrate --noinput
 
-echo "🧬 Checking comorbidities..."
+echo "[Comorbidities] Checking comorbidities..."
 python citizens_project/manage.py load_comorbidities
 
 # 2. Automatically create the superuser if .env values are configured
 if [[ -n "$DJANGO_SUPERUSER_USERNAME" && "$DJANGO_SUPERUSER_USERNAME" != "admin" ]]; then
-  echo "👤 Checking SuperUser..."
+  echo "[Auth] Checking SuperUser..."
   python citizens_project/manage.py shell <<EOF
 from django.contrib.auth import get_user_model
 User = get_user_model()
@@ -34,7 +34,7 @@ fi
 # but subsequent attempts will work after the bucket is created.
 if [[ -n "$AWS_S3_ENDPOINT_URL" && -n "$AWS_STORAGE_BUCKET_NAME" ]]; then
   (
-    echo "🪣 [Background] Initializing S3 bucket: $AWS_STORAGE_BUCKET_NAME..."
+    echo "[S3] Background: Initializing bucket: $AWS_STORAGE_BUCKET_NAME..."
     python -c "
 import boto3, os, time, sys
 from botocore.exceptions import ClientError
@@ -72,6 +72,6 @@ for attempt in range(max_retries):
 fi
 
 # 4. Start Server
-echo "🚀 Starting Django server..."
+echo "[Server] Starting Django server..."
 echo "Access the server at: http://localhost:8000"
 python citizens_project/manage.py runserver 0.0.0.0:8000
