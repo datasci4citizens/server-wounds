@@ -225,23 +225,23 @@ class ObservationSerializer(serializers.ModelSerializer):
         # Fix image URL: ensure it's absolute and accessible by the browser.
         # We replace the internal docker host 'seaweedfs-s3' with 'localhost'.
         if instance.image:
-            request = self.context.get('request')
             url = instance.image.url
             
-            if 'seaweedfs-s3' in url:
-                url = url.replace('seaweedfs-s3', 'localhost')
-            
-            if request is not None:
-                # build_absolute_uri handles protocol and leading slashes properly
-                representation['image'] = request.build_absolute_uri(url)
+            # If the URL is already absolute (S3), we just translate the host for the browser
+            if url.startswith('http'):
+                if 'seaweedfs-s3' in url:
+                    url = url.replace('seaweedfs-s3', 'localhost')
+                representation['image'] = url
             else:
-                # Fallback for when request is not in context
-                if url.startswith('//'):
-                    representation['image'] = f"http:{url}"
-                elif not url.startswith('http'):
-                    # Only prepend if it doesn't already look like a full URL
-                    representation['image'] = f"http://{url}"
+                # Handle relative paths (fallback or FileSystemStorage)
+                request = self.context.get('request')
+                if request is not None:
+                    representation['image'] = request.build_absolute_uri(url)
                 else:
-                    representation['image'] = url
+                    # Manual fallback
+                    if url.startswith('//'):
+                        representation['image'] = f"http:{url}"
+                    else:
+                        representation['image'] = f"http://localhost:8000{url}"
                 
         return representation

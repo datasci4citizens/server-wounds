@@ -32,10 +32,6 @@ services:
 
     restart: on-failure:3
 
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
-
     environment:
       DEBUG: ${DEBUG}
       SERVER_WOUNDS_DB_HOST: ${SERVER_WOUNDS_DB_HOST}
