@@ -23,12 +23,11 @@ services:
   web: # server
     container_name: django_server_wounds
     build:
-      context: ..
+      context: .
       dockerfile: docker/dockerfile
-    entrypoint: ["bash", "/code/docker/entrypoint.sh"]
-
+    entrypoint: python entrypoint.py
     volumes:
-      - ..:/code:z
+     - .:/code:z
 
     restart: on-failure:3
 
