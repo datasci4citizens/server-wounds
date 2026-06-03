@@ -49,7 +49,7 @@ s3 = boto3.client('s3',
 )
 bucket = os.environ.get('AWS_STORAGE_BUCKET_NAME')
 
-max_retries = 5
+max_retries = 10
 for attempt in range(max_retries):
     try:
         try:
@@ -69,7 +69,7 @@ for attempt in range(max_retries):
     except Exception as e:
         print(f'Attempt {attempt + 1}/{max_retries} - Could not initialize bucket: {e}')
         if attempt < max_retries - 1:
-            time.sleep(2)
+            time.sleep(5)
         else:
             print('Failed to initialize bucket after maximum retries.')
             # We don't exit 1 here to allow the server to start even if init failed 
