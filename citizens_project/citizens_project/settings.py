@@ -166,11 +166,25 @@ LOGGING = {
 }
 
 # CORS settings
-CORS_ALLOWED_ORIGINS = [
+cors_origins_env = os.environ.get("CORS_ALLOWED_ORIGINS", "")
+CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins_env.split(",") if origin.strip()] or [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "https://localhost",
 ]
+
 CORS_ALLOW_CREDENTIALS = True
+
+from corsheaders.defaults import default_headers
+if DEBUG:
+    CORS_ALLOW_HEADERS = list(default_headers) + [
+        'ngrok-skip-browser-warning',
+    ]
+else:
+    CORS_ALLOW_HEADERS = list(default_headers)
+
+# CSRF — origens confiáveis para POST cross-origin
+CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
 
 
 # S3 Storage Settings (SeaweedFS)
@@ -211,3 +225,5 @@ AWS_QUERYSTRING_AUTH = os.environ.get('AWS_QUERYSTRING_AUTH', 'False').lower() =
 AWS_S3_CUSTOM_DOMAIN = None
 AWS_S3_URL_PROTOCOL = os.environ.get('AWS_S3_URL_PROTOCOL', 'http')
 AWS_S3_SECURE_URLS = os.environ.get('AWS_S3_SECURE_URLS', 'False').lower() == 'true'
+
+
