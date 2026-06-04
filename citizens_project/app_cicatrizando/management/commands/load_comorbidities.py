@@ -14,10 +14,14 @@ class Command(BaseCommand):
     'Populates the Comorbidity database with contents from comorbidities_ICD11.csv'
 
     def add_arguments(self, parser):
+        # Determine default path relative to this file's location
+        current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        default_csv = os.path.join(current_dir, 'comorbidities_ICD11.csv')
+        
         parser.add_argument(
             '--file',
             type=str,
-            default='app_cicatrizando/management/comorbidities_ICD11.csv',
+            default=default_csv,
         )
         parser.add_argument(
             '--force',

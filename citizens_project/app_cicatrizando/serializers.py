@@ -205,7 +205,7 @@ class ObservationSerializer(serializers.ModelSerializer):
             'id', 'wound', 'author', 'author_name', 'author_role', 'created_at', 
             'pain_level', 'exudate_amount', 'exudate_type', 
             'tissue_type', 'dressing_changes', 'periwound_skin', 
-            'wound_edge', 'fever_24h', 'extra_notes', 'patient_guidelines'
+            'wound_edge', 'fever_24h', 'extra_notes', 'patient_guidelines', 'image'
         ]
         read_only_fields = ['wound', 'author']
 
@@ -221,5 +221,27 @@ class ObservationSerializer(serializers.ModelSerializer):
             # 'Pr' is Provider/Specialist in the model choices
             if viewer_role == 'Pa' and author_role == 'Pr':
                 representation['extra_notes'] = None
+        
+        # Fix image URL: ensure it's absolute and accessible by the browser.
+        # We replace the internal docker host 'seaweedfs-s3' with 'localhost'.
+        if instance.image:
+            url = instance.image.url
+            
+            # If the URL is already absolute (S3), we just translate the host for the browser
+            if url.startswith('http'):
+                if 'seaweedfs-s3' in url:
+                    url = url.replace('seaweedfs-s3', 'localhost')
+                representation['image'] = url
+            else:
+                # Handle relative paths (fallback or FileSystemStorage)
+                request = self.context.get('request')
+                if request is not None:
+                    representation['image'] = request.build_absolute_uri(url)
+                else:
+                    # Manual fallback
+                    if url.startswith('//'):
+                        representation['image'] = f"http:{url}"
+                    else:
+                        representation['image'] = f"http://localhost:8000{url}"
                 
         return representation
