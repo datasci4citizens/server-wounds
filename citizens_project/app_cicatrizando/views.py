@@ -462,7 +462,7 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
                 "height": data.get("height") or None,
                 "weight": data.get("weight") or None,
                 "smoking_status": data.get("smoking_status") or None,
-                "alcohol_consumption": data.get("alcohol_consumption") or None,
+                "alcohol_consumption": data.get("alcohol_consumption") or [],
             }
         )
         

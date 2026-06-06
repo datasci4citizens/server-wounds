@@ -67,7 +67,7 @@ class Patient(models.Model):
     height = models.DecimalField(max_digits=4, decimal_places=2, validators=[MinValueValidator(0.0), MaxValueValidator(3.0)], blank=True, null=True)
     weight = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(0.0), MaxValueValidator(500.0)], blank=True, null=True)
     smoking_status = models.CharField(max_length=10, choices=SmokingChoices.choices, blank=True, null=True)
-    alcohol_consumption = models.CharField(max_length=10, choices=AlcoholChoices.choices, blank=True, null=True)
+    alcohol_consumption = models.JSONField(default=list, blank=True, null=True)
 
     assigned_providers = models.ManyToManyField(Provider)
     comorbidities = models.ManyToManyField(Comorbidity)

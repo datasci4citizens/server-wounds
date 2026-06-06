@@ -70,7 +70,7 @@ class PatientRegisterSerializer(serializers.Serializer):
     height = serializers.DecimalField(max_digits=4, decimal_places=2, required=False, allow_null=True)
     weight = serializers.DecimalField(max_digits=5, decimal_places=2, required=False, allow_null=True)
     smoking_status = serializers.CharField(required=False, allow_blank=True, allow_null=True, max_length=10)
-    alcohol_consumption = serializers.CharField(required=False, allow_blank=True, allow_null=True, max_length=10)
+    alcohol_consumption = serializers.ListField(child=serializers.CharField(max_length=20), required=False, default=list)
     comorbidities = serializers.ListField(child=serializers.CharField(max_length=255), required=False, default=list)
 
 
@@ -96,7 +96,7 @@ class UpdateFieldsSerializer(serializers.Serializer):
     height = serializers.DecimalField(max_digits=4, decimal_places=2, required=False, allow_null=True)
     weight = serializers.DecimalField(max_digits=5, decimal_places=2, required=False, allow_null=True)
     smoking_status = serializers.CharField(required=False, allow_blank=True, allow_null=True, max_length=10)
-    alcohol_consumption = serializers.CharField(required=False, allow_blank=True, allow_null=True, max_length=10)
+    alcohol_consumption = serializers.ListField(child=serializers.CharField(max_length=20), required=False, default=list)
     comorbidities = serializers.ListField(child=serializers.CharField(max_length=255), required=False)
     def validate_state(self, value):
         return validate_brazilian_state(value)
@@ -148,7 +148,7 @@ class PatientDataSerializer(serializers.Serializer):
     height = serializers.DecimalField(max_digits=4, decimal_places=2, allow_null=True, required=False)
     weight = serializers.DecimalField(max_digits=5, decimal_places=2, allow_null=True, required=False)
     smoking_status = serializers.CharField(allow_blank=True, allow_null=True, required=False)
-    alcohol_consumption = serializers.CharField(allow_blank=True, allow_null=True, required=False)
+    alcohol_consumption = serializers.ListField(child=serializers.CharField(max_length=20), required=False, allow_null=True, default=list)
     assigned_specialists = serializers.ListField()
     comorbidities = serializers.ListField()
 
