@@ -768,6 +768,9 @@ class ComorbiditySearchView(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         queryset = super().get_queryset()
+        # Filter for "macro" diseases only: must have a code, and code must not contain a dot '.'
+        queryset = queryset.filter(code__isnull=False).exclude(code__contains='.')
+        
         search_query = self.request.query_params.get('search', None)
         if search_query:
             from django.db.models import Q
