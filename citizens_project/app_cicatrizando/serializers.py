@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Provider, Comorbidity
+from .models import Comorbidity, Wound, Observation
 
 
 # Valid Brazilian state codes
@@ -185,8 +185,6 @@ class ComorbiditySerializer(serializers.ModelSerializer):
     class Meta:
         model = Comorbidity
         fields = ['concept_id', 'code', 'name']
-
-from .models import Wound, Observation
 
 class WoundSerializer(serializers.ModelSerializer):
     patient_name = serializers.CharField(source='patient.wounds_user.user.get_full_name', read_only=True)

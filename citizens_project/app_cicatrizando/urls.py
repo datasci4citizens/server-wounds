@@ -1,5 +1,6 @@
 from django.urls import path, include
 from rest_framework import routers
+from rest_framework_simplejwt.views import TokenRefreshView
 from .views import(
     GoogleLoginView, 
     SpecialistRegistrationView,
@@ -14,7 +15,6 @@ from .views import(
     UpdateFieldsView,
     WoundViewSet
 )
-from rest_framework_simplejwt.views import TokenRefreshView
 from drf_spectacular.views import SpectacularSwaggerView, SpectacularAPIView
 
 router = routers.DefaultRouter()
