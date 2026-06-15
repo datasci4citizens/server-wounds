@@ -1,0 +1,89 @@
+# Single-workflow CI/CD: build image -> push to GHCR -> bump tag in this infra
+# repo (ArgoCD then syncs to the cluster). Drop this file into an app repo at
+# .github/workflows/deploy-k8s.yml.
+#
+# Required in the app repo (Settings -> Secrets and variables -> Actions):
+#   Secret   INFRA_APP_ID            - GitHub App "infra-deployer" App ID
+#   Secret   INFRA_APP_PRIVATE_KEY   - that App's private key (.pem contents)
+#   Variable APP_NAME                - dir name under apps/ here (e.g. mih-server)
+#
+# The infra-deployer GitHub App must be installed on the server-infrastructure
+# repo with Contents: Read and write.
+name: Build, Push and Deploy
+
+on:
+  push:
+    branches:
+      - feature/k8-auto-deploy # set to the app's default branch
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout app repo
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=sha,prefix=sha-
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # Frontends bake env at build time — uncomment and add repo variables:
+          # build-args: |
+          #   VITE_GOOGLE_CLIENT_ID=${{ vars.VITE_GOOGLE_CLIENT_ID }}
+
+      - name: Generate App Token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.INFRA_APP_ID }}
+          private-key: ${{ secrets.INFRA_APP_PRIVATE_KEY }}
+          owner: datasci4citizens
+          repositories: server-infrastructure
+
+      - name: Checkout infra repo
+        uses: actions/checkout@v4
+        with:
+          repository: datasci4citizens/server-infrastructure
+          token: ${{ steps.app-token.outputs.token }}
+          ref: main
+          path: infra
+
+      - name: Bump image tag in infra
+        working-directory: infra
+        run: |
+          SHA_TAG="sha-${GITHUB_SHA::7}"
+          cd "apps/${{ vars.APP_NAME }}/overlays/prod"
+          sed -i "s|newTag: .*|newTag: ${SHA_TAG}|" kustomization.yaml
+          git config user.name "infra-deployer[bot]"
+          git config user.email "infra-deployer[bot]@users.noreply.github.com"
+          git add kustomization.yaml
+          git diff --cached --quiet || git commit -m "chore: bump ${{ vars.APP_NAME }} image to ${SHA_TAG}"
+          git push
