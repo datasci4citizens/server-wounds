@@ -14,7 +14,7 @@ name: Build, Push and Deploy
 on:
   push:
     branches:
-      - feature/k8-auto-deploy # set to the app's default branch
+      - main # set to the app's default branch
   workflow_dispatch:
 
 env:
