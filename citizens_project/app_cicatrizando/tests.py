@@ -25,6 +25,8 @@ from app_cicatrizando.models import Provider, Patient, WoundsUser, Wound, Observ
 import io
 from PIL import Image
 
+User = get_user_model()
+
 class BaseTestClass(APITestCase):
 
 	#auth urls
