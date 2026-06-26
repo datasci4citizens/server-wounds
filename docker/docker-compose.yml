@@ -2,7 +2,7 @@ services:
 
   db:  # database
     container_name: database_wounds
-    image: postgres:latest
+    image: postgres:18
     volumes:
       - wound-data:/var/lib/postgresql
     restart: on-failure:3
@@ -23,11 +23,11 @@ services:
   web: # server
     container_name: django_server_wounds
     build:
-      context: .
+      context: ..
       dockerfile: docker/dockerfile
-    entrypoint: python entrypoint.py
+    entrypoint: python docker/entrypoint.py
     volumes:
-     - .:/code:z
+     - ..:/code:z
 
     restart: on-failure:3
 

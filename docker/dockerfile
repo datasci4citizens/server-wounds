@@ -8,4 +8,4 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 
 COPY . /code/
 
-ENTRYPOINT ["python", "entrypoint.py"]
+ENTRYPOINT ["python", "docker/entrypoint.py"]
