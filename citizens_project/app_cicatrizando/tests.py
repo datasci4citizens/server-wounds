@@ -15,15 +15,17 @@ Note:
 - for more information on commands, check server-wounds/quickstart.py docstring 
 """
 
-from unittest.mock import patch
-from datetime import date, datetime
-from django.contrib.auth import get_user_model
-from rest_framework import status
-from rest_framework.test import APITestCase
-from rest_framework.exceptions import APIException
-from app_cicatrizando.models import Provider, Patient, WoundsUser, Wound, Observation, WoundEtiology, WoundLocation
 import io
+from datetime import date, datetime
+from unittest.mock import patch
+
+from django.contrib.auth import get_user_model
 from PIL import Image
+from rest_framework import status
+from rest_framework.exceptions import APIException
+from rest_framework.test import APITestCase
+
+from app_cicatrizando.models import Observation, Patient, Provider, Wound, WoundEtiology, WoundLocation, WoundsUser
 
 User = get_user_model()
 

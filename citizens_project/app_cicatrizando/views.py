@@ -1,14 +1,18 @@
-from rest_framework import viewsets, status
+import logging
+
+from django.contrib.auth import get_user_model
+from django.db import transaction
+from django.db.models import Q
+from drf_spectacular.utils import OpenApiResponse, extend_schema
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.decorators import action
-from drf_spectacular.utils import extend_schema, OpenApiResponse
-from django.contrib.auth import get_user_model
+
 from .google import google_get_user_data
-from .models import WoundsUser, Provider, Patient, Comorbidity, Wound
-from django.db import transaction
+from .models import Comorbidity, Patient, Provider, Wound, WoundsUser
 from .serializers import (
     GoogleAuthSerializer,
     GoogleAuthResponseSerializer,
@@ -23,7 +27,6 @@ from .serializers import (
     WoundSerializer,
     ObservationSerializer
 )
-import logging
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
@@ -773,7 +776,6 @@ class ComorbiditySearchView(viewsets.ReadOnlyModelViewSet):
         
         search_query = self.request.query_params.get('search', None)
         if search_query:
-            from django.db.models import Q
             queryset = queryset.filter(Q(name__icontains=search_query) | Q(code__icontains=search_query))
         return queryset
 

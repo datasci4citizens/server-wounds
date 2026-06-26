@@ -1,9 +1,12 @@
-import os
 import csv
+import os
 import re
-from django.core.management.base import BaseCommand
-from django.conf import settings
+
 from app_cicatrizando.models import Comorbidity
+from django.conf import settings
+
+from django.core.management.base import BaseCommand
+
 
 comorbidity_max_name_length = Comorbidity._meta.get_field("name").max_length
 

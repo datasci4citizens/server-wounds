@@ -1,6 +1,7 @@
-from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
-from app_cicatrizando.models import Provider, Patient, WoundsUser, Wound, Observation
+from django.core.management.base import BaseCommand
+
+from app_cicatrizando.models import Observation, Patient, Provider, Wound, WoundsUser
 
 class Command(BaseCommand):
     help = 'Deletes all Patient, Provider, Wound, Observation, and WoundsUser records (excluding superusers) for testing purposes.'

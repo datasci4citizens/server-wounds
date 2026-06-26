@@ -8,12 +8,12 @@ It integrates with Django settings for Google API client credentials and manages
 error reporting via Django REST Framework's `APIException`.
 """
 
-from typing import Any, Dict
-
-import requests
 from django.conf import settings
 from rest_framework.exceptions import APIException
 import logging
+from typing import Any, Dict
+
+import requests
 
 logger = logging.getLogger("app_cicatrizando")
 

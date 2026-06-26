@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Comorbidity, Wound, Observation
+
+from .models import Comorbidity, Observation, Wound
 
 
 # Valid Brazilian state codes
