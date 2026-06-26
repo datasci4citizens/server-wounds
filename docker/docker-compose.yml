@@ -2,7 +2,7 @@ services:
 
   db:
     container_name: database_wounds
-    image: postgres:latest
+    image: postgres:18.4
     env_file:
       - ../.env
     volumes:
@@ -27,10 +27,12 @@ services:
     build:
       context: ..
       dockerfile: docker/dockerfile
+    entrypoint: python docker/entrypoint.py
     env_file:
       - ../.env
     volumes:
-      - ..:/code:z
+     - ..:/code:z
+
     restart: on-failure:3
     environment:
       DEBUG: ${DEBUG}

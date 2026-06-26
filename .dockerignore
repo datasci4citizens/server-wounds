@@ -39,3 +39,4 @@ quickstart.py
 
 # Documentação
 docs/
+*.md
