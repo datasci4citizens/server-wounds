@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Provider, Comorbidity
+
+from .models import Comorbidity, Observation, Wound
 
 
 # Valid Brazilian state codes
@@ -70,7 +71,7 @@ class PatientRegisterSerializer(serializers.Serializer):
     height = serializers.DecimalField(max_digits=4, decimal_places=2, required=False, allow_null=True)
     weight = serializers.DecimalField(max_digits=5, decimal_places=2, required=False, allow_null=True)
     smoking_status = serializers.CharField(required=False, allow_blank=True, allow_null=True, max_length=10)
-    alcohol_consumption = serializers.CharField(required=False, allow_blank=True, allow_null=True, max_length=10)
+    alcohol_consumption = serializers.ListField(child=serializers.CharField(max_length=20), required=False, default=list)
     comorbidities = serializers.ListField(child=serializers.CharField(max_length=255), required=False, default=list)
 
 
@@ -96,7 +97,7 @@ class UpdateFieldsSerializer(serializers.Serializer):
     height = serializers.DecimalField(max_digits=4, decimal_places=2, required=False, allow_null=True)
     weight = serializers.DecimalField(max_digits=5, decimal_places=2, required=False, allow_null=True)
     smoking_status = serializers.CharField(required=False, allow_blank=True, allow_null=True, max_length=10)
-    alcohol_consumption = serializers.CharField(required=False, allow_blank=True, allow_null=True, max_length=10)
+    alcohol_consumption = serializers.ListField(child=serializers.CharField(max_length=20), required=False, default=list)
     comorbidities = serializers.ListField(child=serializers.CharField(max_length=255), required=False)
     def validate_state(self, value):
         return validate_brazilian_state(value)
@@ -148,7 +149,7 @@ class PatientDataSerializer(serializers.Serializer):
     height = serializers.DecimalField(max_digits=4, decimal_places=2, allow_null=True, required=False)
     weight = serializers.DecimalField(max_digits=5, decimal_places=2, allow_null=True, required=False)
     smoking_status = serializers.CharField(allow_blank=True, allow_null=True, required=False)
-    alcohol_consumption = serializers.CharField(allow_blank=True, allow_null=True, required=False)
+    alcohol_consumption = serializers.ListField(child=serializers.CharField(max_length=20), required=False, allow_null=True, default=list)
     assigned_specialists = serializers.ListField()
     comorbidities = serializers.ListField()
 
@@ -186,8 +187,6 @@ class ComorbiditySerializer(serializers.ModelSerializer):
         model = Comorbidity
         fields = ['concept_id', 'code', 'name']
 
-from .models import Wound, Observation
-
 class WoundSerializer(serializers.ModelSerializer):
     patient_name = serializers.CharField(source='patient.wounds_user.user.get_full_name', read_only=True)
     
@@ -205,7 +204,7 @@ class ObservationSerializer(serializers.ModelSerializer):
             'id', 'wound', 'author', 'author_name', 'author_role', 'created_at', 
             'pain_level', 'exudate_amount', 'exudate_type', 
             'tissue_type', 'dressing_changes', 'periwound_skin', 
-            'wound_edge', 'fever_24h', 'extra_notes', 'patient_guidelines'
+            'wound_edge', 'fever_24h', 'extra_notes', 'patient_guidelines', 'image'
         ]
         read_only_fields = ['wound', 'author']
 
@@ -221,5 +220,27 @@ class ObservationSerializer(serializers.ModelSerializer):
             # 'Pr' is Provider/Specialist in the model choices
             if viewer_role == 'Pa' and author_role == 'Pr':
                 representation['extra_notes'] = None
+        
+        # Fix image URL: ensure it's absolute and accessible by the browser.
+        # We replace the internal docker host 'seaweedfs-s3' with 'localhost'.
+        if instance.image:
+            url = instance.image.url
+            
+            # If the URL is already absolute (S3), we just translate the host for the browser
+            if url.startswith('http'):
+                if 'seaweedfs-s3' in url:
+                    url = url.replace('seaweedfs-s3', 'localhost')
+                representation['image'] = url
+            else:
+                # Handle relative paths (fallback or FileSystemStorage)
+                request = self.context.get('request')
+                if request is not None:
+                    representation['image'] = request.build_absolute_uri(url)
+                else:
+                    # Manual fallback
+                    if url.startswith('//'):
+                        representation['image'] = f"http:{url}"
+                    else:
+                        representation['image'] = f"http://localhost:8000{url}"
                 
         return representation

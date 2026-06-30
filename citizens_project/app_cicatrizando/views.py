@@ -1,12 +1,18 @@
-from rest_framework import viewsets, status
+import logging
+
+from django.contrib.auth import get_user_model
+from django.db import transaction
+from django.db.models import Q
+from drf_spectacular.utils import OpenApiResponse, extend_schema
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from drf_spectacular.utils import extend_schema, OpenApiResponse
-from django.contrib.auth import get_user_model
+
 from .google import google_get_user_data
-from .models import WoundsUser, Provider, Patient, Comorbidity
-from django.db import transaction
+from .models import Comorbidity, Patient, Provider, Wound, WoundsUser
 from .serializers import (
     GoogleAuthSerializer,
     GoogleAuthResponseSerializer,
@@ -18,11 +24,11 @@ from .serializers import (
     UpdateFieldsSerializer,
     MeResponseSerializer,
     ComorbiditySerializer,
+    WoundSerializer,
+    ObservationSerializer
 )
-import logging
 logger = logging.getLogger(__name__)
 User = get_user_model()
-
 
 def _split_full_name(full_name: str):
     """Split full name into first_name and last_name for Django User."""
@@ -63,7 +69,6 @@ def _is_registration_complete(user):
         result = False
 
     return result
-
 
 def _get_user_role_display(wounds_user:  WoundsUser) -> str: 
     """Convert role code to display string."""
@@ -462,7 +467,7 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
                 "height": data.get("height") or None,
                 "weight": data.get("weight") or None,
                 "smoking_status": data.get("smoking_status") or None,
-                "alcohol_consumption": data.get("alcohol_consumption") or None,
+                "alcohol_consumption": data.get("alcohol_consumption") or [],
             }
         )
         
@@ -620,7 +625,6 @@ class UpdateFieldsView(viewsets.ViewSet):
 
         return Response(status=status.HTTP_200_OK)
 
-   
 class PatientValidationView(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
@@ -754,7 +758,6 @@ class PatientMeView(viewsets.ViewSet):
         }
         
         return Response(response_data)
-from rest_framework.pagination import LimitOffsetPagination
 
 class ComorbidityPagination(LimitOffsetPagination):
     default_limit = 20
@@ -768,15 +771,13 @@ class ComorbiditySearchView(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         queryset = super().get_queryset()
+        # Filter for "macro" diseases only: must have a code, and code must not contain a dot '.'
+        queryset = queryset.filter(code__isnull=False).exclude(code__contains='.')
+        
         search_query = self.request.query_params.get('search', None)
         if search_query:
-            from django.db.models import Q
             queryset = queryset.filter(Q(name__icontains=search_query) | Q(code__icontains=search_query))
         return queryset
-
-from .serializers import WoundSerializer, ObservationSerializer
-from .models import Wound, Observation
-from rest_framework.decorators import action
 
 class WoundViewSet(viewsets.ModelViewSet):
     """

@@ -15,12 +15,19 @@ Note:
 - for more information on commands, check server-wounds/quickstart.py docstring 
 """
 
-from unittest.mock import patch
+import io
 from datetime import date, datetime
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
-from rest_framework.test import APITestCase
+from PIL import Image
+from rest_framework import status
 from rest_framework.exceptions import APIException
-from app_cicatrizando.models import Provider, Patient, WoundsUser
+from rest_framework.test import APITestCase
+
+from app_cicatrizando.models import Observation, Patient, Provider, Wound, WoundEtiology, WoundLocation, WoundsUser
+
+User = get_user_model()
 
 class BaseTestClass(APITestCase):
 
@@ -75,7 +82,6 @@ class BaseTestClass(APITestCase):
 	def _auth_headers(self, access_token):
 		return {"HTTP_AUTHORIZATION": f"Bearer {access_token}"}
 
-
 # Authentication Tests
 class AuthenticationErrorTests(BaseTestClass):
 	def test_me_requires_authentication(self):
@@ -121,7 +127,7 @@ class AuthenticationErrorTests(BaseTestClass):
 		self.assertEqual(response.status_code, 500)
 
 	def test_specialist_registration_requires_professional_id(self):
-		user, _ = self._create_user_with_wounds_profile(
+		user, wounds_user = self._create_user_with_wounds_profile(
 			email="provider.missing.id@example.com",
 		)
 
@@ -140,7 +146,7 @@ class AuthenticationErrorTests(BaseTestClass):
 
 		self.assertEqual(response.status_code, 400)
 		self.assertIn("professional_id", response.data)
-		self.assertFalse(Provider.objects.filter(wounds_user=user).exists())
+		self.assertFalse(Provider.objects.filter(wounds_user=wounds_user).exists())
 
 	def test_specialist_registration_validates_brazilian_state(self):
 		user, _ = self._create_user_with_wounds_profile(
@@ -202,7 +208,7 @@ class AuthenticationFlowTests(BaseTestClass):
 			birth_date=date(1990, 1, 1),
 		)
 		Provider.objects.create(
-			wounds_user=user,
+			wounds_user=wounds_user,
 			professional_id="COREN-SP 12345",
 		)
 
@@ -291,7 +297,7 @@ class AuthenticationFlowTests(BaseTestClass):
 		self.assertEqual(response.data["email"], "incomplete@example.com")
 		self.assertIsNone(response.data["role"])
 		self.assertFalse(response.data["registration_complete"])
-		self.assertIsNone(response.data["specialist"])
+		self.assertIsNone(response.data.get("specialist"))
 
 	def test_specialist_registration_updates_existing_wounds_user(self):
 		user, wounds_user = self._create_user_with_wounds_profile(
@@ -324,7 +330,7 @@ class AuthenticationFlowTests(BaseTestClass):
 		self.assertEqual(wounds_user.role, WoundsUser.Provider)
 
 		# Verify Provider was created
-		provider = Provider.objects.get(wounds_user=user)
+		provider = Provider.objects.get(wounds_user=wounds_user)
 		self.assertEqual(provider.professional_id, "COREN-RJ 654321")
 		self.assertEqual(provider.contact_phone, "21988887777")
 		self.assertEqual(provider.contact_email, "updated@hospital.com")
@@ -352,9 +358,166 @@ class AuthenticationFlowTests(BaseTestClass):
 
 # Features Tests
 
-
 class ProviderFeaturesTests(BaseTestClass):
-	patientlisturl = "specialist/patients"
-	woundsuser = BaseTestClass.create_wounds_user(role="Provider")
 
-	
+	patientlisturl = "specialist/patients"
+
+	def setUp(self):
+		super().setUp()
+		# Use the proper instance method to create a user and assign to self
+		self.user, self.woundsuser = self._create_user_with_wounds_profile(
+			email="provider@example.com",
+			role="Pr"
+		)
+
+class WoundMVPTests(APITestCase):
+    def setUp(self):
+        # Create a specialist
+        self.specialist_user = User.objects.create_user(username='specialist@example.com', email='specialist@example.com', first_name='Dr.', last_name='Specialist')
+        self.specialist_wounds_user = WoundsUser.objects.create(user=self.specialist_user, role=WoundsUser.Provider, state='SP', city='São Paulo')
+        self.provider = Provider.objects.create(wounds_user=self.specialist_wounds_user, professional_id='COREN-SP 12345')
+
+        # Create a patient
+        self.patient_user = User.objects.create_user(username='patient@example.com', email='patient@example.com', first_name='John', last_name='Doe')
+        self.patient_wounds_user = WoundsUser.objects.create(user=self.patient_user, role=WoundsUser.Patient, state='SP', city='São Paulo')
+        self.patient = Patient.objects.create(wounds_user=self.patient_wounds_user)
+        self.patient.assigned_providers.add(self.provider)
+
+        # URLs
+        self.wounds_url = '/wounds/'
+
+    def test_specialist_can_create_wound_and_observation(self):
+        self.client.force_authenticate(user=self.specialist_user)
+        
+        # 1. Create Wound
+        wound_data = {
+            "patient": self.patient.id,
+            "etiology": WoundEtiology.DIABETIC_FOOT,
+            "location": WoundLocation.HALLUX
+        }
+        response = self.client.post(self.wounds_url, wound_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        wound_id = response.data['id']
+        
+        # 2. Create Observation
+        obs_url = f'{self.wounds_url}{wound_id}/observations/'
+        obs_data = {
+            "pain_level": 5,
+            "exudate_amount": "Médio",
+            "exudate_type": "Seroso",
+            "tissue_type": "Granulação",
+            "dressing_changes": 1,
+            "periwound_skin": "Inchaço/Edema",
+            "wound_edge": "Bem definidas, não aderidas à base da ferida",
+            "fever_24h": False,
+            "extra_notes": "Specialist confidential note",
+            "patient_guidelines": "Keep it clean"
+        }
+        response = self.client.post(obs_url, obs_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['extra_notes'], "Specialist confidential note")
+
+    def test_patient_access_and_privacy(self):
+        # Create a wound and observation first
+        wound = Wound.objects.create(
+            patient=self.patient,
+            etiology=WoundEtiology.PRESSURE_INJURY,
+            location=WoundLocation.CALCANEAL
+        )
+        obs = Observation.objects.create(
+            wound=wound,
+            author=self.specialist_wounds_user,
+            pain_level=3,
+            exudate_amount="Pouco",
+            exudate_type="Seroso",
+            tissue_type="Epitelização",
+            dressing_changes=1,
+            periwound_skin="Eritema menor que 2 cm",
+            wound_edge="Definidas, contorno claramente visível, aderidas, niveladas com a base da ferida",
+            fever_24h=False,
+            extra_notes="Specialist secret note",
+            patient_guidelines="Guideline for patient"
+        )
+
+        self.client.force_authenticate(user=self.patient_user)
+        
+        # 1. Patient should see their wound
+        response = self.client.get(self.wounds_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['id'], wound.id)
+
+        # 2. Patient should see observations but NOT extra_notes from specialist
+        obs_url = f'{self.wounds_url}{wound.id}/observations/'
+        response = self.client.get(obs_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertIsNone(response.data[0]['extra_notes'])
+        self.assertEqual(response.data[0]['patient_guidelines'], "Guideline for patient")
+
+    def test_patient_cannot_create_wound(self):
+        self.client.force_authenticate(user=self.patient_user)
+        wound_data = {
+            "patient": self.patient.id,
+            "etiology": WoundEtiology.DIABETIC_FOOT,
+            "location": WoundLocation.HALLUX
+        }
+        response = self.client.post(self.wounds_url, wound_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_specialist_only_sees_assigned_patients_wounds(self):
+        # Create another patient NOT assigned to this specialist
+        other_user = User.objects.create_user(username='other@example.com', email='other@example.com')
+        other_wounds_user = WoundsUser.objects.create(user=other_user, role=WoundsUser.Patient)
+        other_patient = Patient.objects.create(wounds_user=other_wounds_user)
+        
+        Wound.objects.create(
+            patient=other_patient,
+            etiology=WoundEtiology.SURGICAL,
+            location=WoundLocation.KNEE_ANTERIOR
+        )
+
+        self.client.force_authenticate(user=self.specialist_user)
+        response = self.client.get(self.wounds_url)
+        # Should only see John Doe's wound (none created yet in this test for John Doe, so 0)
+        self.assertEqual(len(response.data), 0)
+
+    def test_specialist_can_upload_image_with_observation(self):
+        self.client.force_authenticate(user=self.specialist_user)
+        
+        # 1. Create Wound
+        wound = Wound.objects.create(
+            patient=self.patient,
+            etiology=WoundEtiology.DIABETIC_FOOT,
+            location=WoundLocation.HALLUX
+        )
+        
+        # 2. Create Dummy Image
+        file_io = io.BytesIO()
+        image = Image.new('RGB', (100, 100), color='red')
+        image.save(file_io, 'JPEG')
+        file_io.seek(0)
+        file_io.name = 'test_wound.jpg'
+
+        # 3. Upload Observation with Image
+        obs_url = f'{self.wounds_url}{wound.id}/observations/'
+        obs_data = {
+            "pain_level": 5,
+            "exudate_amount": "Médio",
+            "exudate_type": "Seroso",
+            "tissue_type": "Granulação",
+            "dressing_changes": 1,
+            "periwound_skin": "Inchaço/Edema",
+            "wound_edge": "Bem definidas, não aderidas à base da ferida",
+            "fever_24h": False,
+            "image": file_io
+        }
+        
+        # We must use format='multipart' for file uploads
+        response = self.client.post(obs_url, obs_data, format='multipart')
+        
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn('image', response.data)
+        self.assertIsNotNone(response.data['image'])
+        # Verification of the URL (it should point to our S3/SeaweedFS endpoint)
+        self.assertIn('wounds/observations/test_wound', response.data['image'])

@@ -1,6 +1,8 @@
-from django.db import models
 from django.contrib.auth import get_user_model
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+
+django_user = get_user_model()
 
 class GenderChoices(models.TextChoices):
     MALE = 'M', 'Masculino'
@@ -23,54 +25,6 @@ class AlcoholChoices(models.TextChoices):
     GT14_F = 'GT14_F', 'Mais de 14 doses por semana (M)'
     LT9_F = 'LT9_F', 'Menos de 9 latas por semana (M)'
     GT9_F = 'GT9_F', 'Mais de 9 latas por semana (M)'
-
-
-django_user = get_user_model()
-
-class Comorbidity(models.Model):
-    name = models.CharField(max_length=255)
-    concept_id = models.CharField(max_length=255, primary_key=True)
-    code = models.CharField(max_length=50, blank=True, null=True)
-
-class WoundsUser(models.Model):
-    user = models.OneToOneField(django_user, on_delete=models.CASCADE, related_name="wounds_user")
-    
-    birth_date = models.DateField(blank=True, null=True)
-    state = models.CharField(max_length=2, blank=True)
-    city = models.CharField(max_length=100, blank=True)
-    
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    Provider = "Pr"
-    Patient = "Pa"
-    roles = [
-        (Patient, "Paciente"),
-        (Provider, "Especialista"),
-    ]
-    role = models.CharField(choices=roles, max_length=2, blank=True)
-    
-class Provider(models.Model):
-    wounds_user = models.OneToOneField(WoundsUser, on_delete=models.CASCADE, related_name="provider")
-
-    professional_id = models.CharField(max_length=15, unique=True)
-    contact_email = models.EmailField(blank=True, null=True, max_length=50, unique = True)
-    contact_phone = models.CharField(blank=True, null=True, max_length=15, unique = True) 
-
-class Patient(models.Model):
-    wounds_user = models.OneToOneField(WoundsUser, on_delete=models.CASCADE)
-    
-    contact_email = models.EmailField(blank=True, null=True, max_length=50, unique = True)
-    contact_phone = models.CharField(blank=True, null=True, max_length=15, unique = True) 
-
-    gender = models.CharField(max_length=1, choices=GenderChoices.choices, blank=True, null=True)
-    height = models.DecimalField(max_digits=4, decimal_places=2, validators=[MinValueValidator(0.0), MaxValueValidator(3.0)], blank=True, null=True)
-    weight = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(0.0), MaxValueValidator(500.0)], blank=True, null=True)
-    smoking_status = models.CharField(max_length=10, choices=SmokingChoices.choices, blank=True, null=True)
-    alcohol_consumption = models.CharField(max_length=10, choices=AlcoholChoices.choices, blank=True, null=True)
-
-    assigned_providers = models.ManyToManyField(Provider)
-    comorbidities = models.ManyToManyField(Comorbidity)
 
 class WoundEtiology(models.TextChoices):
     DIABETIC_FOOT = 'Úlcera do pé diabético', 'Úlcera do pé diabético'
@@ -135,6 +89,51 @@ class WoundEdgeStatus(models.TextChoices):
     DEFINED_ROLLED = 'Bem definidas, não aderidas à base, enrolada, espessada', 'Bem definidas, não aderidas à base, enrolada, espessada'
     DEFINED_FIBROTIC = 'Bem definidas, fibróticas, com crostas e/ou hiperqueratose.', 'Bem definidas, fibróticas, com crostas e/ou hiperqueratose.'
 
+class Comorbidity(models.Model):
+    name = models.CharField(max_length=255)
+    concept_id = models.CharField(max_length=255, primary_key=True)
+    code = models.CharField(max_length=50, blank=True, null=True)
+
+class WoundsUser(models.Model):
+    user = models.OneToOneField(django_user, on_delete=models.CASCADE, related_name="wounds_user")
+    
+    birth_date = models.DateField(blank=True, null=True)
+    state = models.CharField(max_length=2, blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    Provider = "Pr"
+    Patient = "Pa"
+    roles = [
+        (Patient, "Paciente"),
+        (Provider, "Especialista"),
+    ]
+    role = models.CharField(choices=roles, max_length=2, blank=True)
+    
+class Provider(models.Model):
+    wounds_user = models.OneToOneField(WoundsUser, on_delete=models.CASCADE, related_name="provider")
+
+    professional_id = models.CharField(max_length=15, unique=True)
+    contact_email = models.EmailField(blank=True, null=True, max_length=50, unique = True)
+    contact_phone = models.CharField(blank=True, null=True, max_length=15, unique = True) 
+
+class Patient(models.Model):
+    wounds_user = models.OneToOneField(WoundsUser, on_delete=models.CASCADE)
+    
+    contact_email = models.EmailField(blank=True, null=True, max_length=50, unique = True)
+    contact_phone = models.CharField(blank=True, null=True, max_length=15, unique = True) 
+
+    gender = models.CharField(max_length=1, choices=GenderChoices.choices, blank=True, null=True)
+    height = models.DecimalField(max_digits=4, decimal_places=2, validators=[MinValueValidator(0.0), MaxValueValidator(3.0)], blank=True, null=True)
+    weight = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(0.0), MaxValueValidator(500.0)], blank=True, null=True)
+    smoking_status = models.CharField(max_length=10, choices=SmokingChoices.choices, blank=True, null=True)
+    alcohol_consumption = models.JSONField(default=list, blank=True, null=True)
+
+    assigned_providers = models.ManyToManyField(Provider)
+    comorbidities = models.ManyToManyField(Comorbidity)
+
 class Wound(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="wounds")
     etiology = models.CharField(max_length=50, choices=WoundEtiology.choices)
@@ -145,7 +144,7 @@ class Wound(models.Model):
 
     def __str__(self):
         return f"{self.etiology} - {self.location} ({self.patient.wounds_user.user.get_full_name()})"
-
+    
 class Observation(models.Model):
     wound = models.ForeignKey(Wound, on_delete=models.CASCADE, related_name="observations")
     author = models.ForeignKey(WoundsUser, on_delete=models.SET_NULL, null=True)
@@ -166,8 +165,8 @@ class Observation(models.Model):
     extra_notes = models.TextField(blank=True, null=True)
     patient_guidelines = models.TextField(blank=True, null=True)
     
-    # Media (Phase 4 - will be added later)
-    # image = models.ImageField(upload_to='wounds/', blank=True, null=True)
+    # Media
+    image = models.ImageField(upload_to='observations/', blank=True, null=True)
 
     class Meta:
         ordering = ['-created_at']

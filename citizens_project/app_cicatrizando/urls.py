@@ -1,21 +1,22 @@
-from django.urls import path, include
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from django.urls import include, path
 from rest_framework import routers
-from .views import(
-    GoogleLoginView, 
-    SpecialistRegistrationView,
+from rest_framework_simplejwt.views import TokenRefreshView
+
+from .views import (
+    ComorbiditySearchView,
+    GoogleLoginView,
+    MeView,
+    PatientMeView,
+    PatientValidationView,
+    RegisterPatientComorbidityView,
     SpecialistPatientListView,
     SpecialistPatientRegisterView,
     SpecialistPatientUpdateView,
-    PatientValidationView,
-    PatientMeView,
-    MeView,
-    RegisterPatientComorbidityView,
-    ComorbiditySearchView,
+    SpecialistRegistrationView,
     UpdateFieldsView,
-    WoundViewSet
+    WoundViewSet,
 )
-from rest_framework_simplejwt.views import TokenRefreshView
-from drf_spectacular.views import SpectacularSwaggerView, SpectacularAPIView
 
 router = routers.DefaultRouter()
 
