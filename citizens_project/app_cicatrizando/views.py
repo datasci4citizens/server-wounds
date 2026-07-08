@@ -3,15 +3,15 @@ import logging
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import Q
-from drf_spectacular.utils import OpenApiResponse, extend_schema
+from drf_spectacular.utils import OpenApiResponse
+from google import genai
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-
-from .google import google_get_user_data
+from .google_auth import google_get_user_data
 from .models import Comorbidity, Patient, Provider, Wound, WoundsUser
 from .serializers import (
     GoogleAuthSerializer,
@@ -826,3 +826,24 @@ class WoundViewSet(viewsets.ModelViewSet):
             # Link to wound and set current user as author
             serializer.save(wound=wound, author=request.user.wounds_user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+class TextToSpeechView(viewsets.ViewSet):
+    permission_classes = [AllowAny] # for now :D
+
+    def create(self, request):
+        client = genai.Client()
+        interaction = client.interactions.create(
+            model ="gemini-3.1-flash-tts-preview",
+            response_format={"type": "audio"},
+            generation_config={
+                "speech_config": [
+                    {"voice": "Kore"}
+                ]
+            },
+            input = request.data["text"]
+        )
+
+        data = {
+            "b64_audio": interaction.output_audio
+            }
+        return Response(data)

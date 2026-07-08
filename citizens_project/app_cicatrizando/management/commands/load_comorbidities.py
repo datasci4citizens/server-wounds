@@ -4,8 +4,10 @@ import re
 
 from app_cicatrizando.models import Comorbidity
 from django.conf import settings
+from django.core.management import call_command
 
 from django.core.management.base import BaseCommand
+from django.db import connection
 
 
 comorbidity_max_name_length = Comorbidity._meta.get_field("name").max_length
@@ -15,6 +17,23 @@ comorbidity_max_name_length = Comorbidity._meta.get_field("name").max_length
 
 class Command(BaseCommand):
     'Populates the Comorbidity database with contents from comorbidities_ICD11.csv'
+
+    def ensure_comorbidity_table(self):
+        existing_tables = set(connection.introspection.table_names())
+
+        if Comorbidity._meta.db_table in existing_tables:
+            return
+
+        self.stdout.write(self.style.WARNING('Comorbidity table is missing. Running migrations first...'))
+        call_command('migrate', interactive=False, verbosity=0)
+
+        existing_tables = set(connection.introspection.table_names())
+        if Comorbidity._meta.db_table in existing_tables:
+            return
+
+        self.stdout.write(self.style.WARNING('Comorbidity migration was not applied. Creating the table directly...'))
+        with connection.schema_editor() as schema_editor:
+            schema_editor.create_model(Comorbidity)
 
     def add_arguments(self, parser):
         # Determine default path relative to this file's location
@@ -37,6 +56,8 @@ class Command(BaseCommand):
         force = options['force']
         if not os.path.isabs(file_path):
             file_path = os.path.join(settings.BASE_DIR.parent, file_path)
+
+        self.ensure_comorbidity_table()
 
         if not os.path.exists(file_path):
             self.stdout.write(self.style.ERROR(f'File not found at {file_path}'))

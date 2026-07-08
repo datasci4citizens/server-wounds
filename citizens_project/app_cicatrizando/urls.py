@@ -16,6 +16,7 @@ from .views import (
     SpecialistRegistrationView,
     UpdateFieldsView,
     WoundViewSet,
+    TextToSpeechView,
 )
 
 router = routers.DefaultRouter()
@@ -36,6 +37,8 @@ router.register(r'patient/comorbidities', RegisterPatientComorbidityView, basena
 router.register(r'comorbidities/search', ComorbiditySearchView, basename='comorbidities-search')
 router.register(r'wounds', WoundViewSet, basename='wounds')
 
+# other
+router.register(r'api/tts', TextToSpeechView, basename="TTS")
 urlpatterns = [
     path('', include(router.urls)),
     path('Update/', UpdateFieldsView.as_view({'patch': 'patch'}), name="Update Information"),
