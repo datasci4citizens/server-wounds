@@ -12,6 +12,9 @@
 name: Build, Push and Deploy
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - main # set to the app's default branch
@@ -61,6 +64,7 @@ jobs:
           #   VITE_GOOGLE_CLIENT_ID=${{ vars.VITE_GOOGLE_CLIENT_ID }}
 
       - name: Generate App Token
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         id: app-token
         uses: actions/create-github-app-token@v1
         with:
@@ -70,6 +74,7 @@ jobs:
           repositories: server-infrastructure
 
       - name: Checkout infra repo
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         uses: actions/checkout@v4
         with:
           repository: datasci4citizens/server-infrastructure
@@ -78,6 +83,7 @@ jobs:
           path: infra
 
       - name: Bump image tag in infra
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         working-directory: infra
         run: |
           SHA_TAG="sha-${GITHUB_SHA::7}"
