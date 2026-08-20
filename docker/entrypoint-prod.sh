@@ -5,6 +5,7 @@ set -e
 cd /code/citizens_project
 
 python manage.py migrate --noinput
+python manage.py collectstatic --noinput
 python manage.py load_comorbidities
 
 # Optionally create a superuser if credentials are provided and not defaults

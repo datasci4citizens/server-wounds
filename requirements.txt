@@ -10,6 +10,8 @@ django-cors-headers==4.3.1
 django-storages==1.14.6
 boto3==1.43.18
 Pillow==12.2.0
+django-unfold
+whitenoise==6.8.2
 
 # Not used in the current version of the backend
 # torch==2.10.0
