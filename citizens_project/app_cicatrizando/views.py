@@ -386,7 +386,8 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
         responses={
             200: OpenApiResponse(description="Patient already exists, added specialist relation", response=PatientDataSerializer()),
             201: OpenApiResponse(description="Created new Patient entry", response=PatientDataSerializer()),
-            404: OpenApiResponse(description="Specialist does not exist")
+            404: OpenApiResponse(description="Specialist does not exist"),
+            409: OpenApiResponse(description="Patient is already a Specialist")
         }
     )
 
@@ -416,14 +417,22 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
             }
         )
 
+
         patient_wounds_user, new_wounds_user = WoundsUser.objects.update_or_create(user=patient_user,
             defaults={
                 "birth_date": data.get("birth_date", None),
                 "state": serializer.validate_state(data.get("state", "")),
                 "city": data.get("city", ""),
-                "role": WoundsUser.Patient
-            }
+            },
+            create_defaults={"role": WoundsUser.Patient}
         )
+
+        if (patient_wounds_user.role == WoundsUser.Provider):
+            
+            return Response(
+                {"detail": "This user is already registered as a specialist."},
+                status=status.HTTP_409_CONFLICT
+            )
 
         patient, new_patient = Patient.objects.update_or_create(wounds_user=patient_wounds_user,
             defaults={
