@@ -431,11 +431,11 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
             }
         )
 
-        if(new_wounds_user):
-            patient_wounds_user.birth_date = data.get("birth_date", None)
-            patient_wounds_user.state = serializer.validate_state(data.get("state", ""))
-            patient_wounds_user.city = data.get("city", "")
-            patient_wounds_user.role = WoundsUser.Patient
+        if not new_wounds_user:
+            if "birth_date" in data: patient_wounds_user.birth_date = data["birth_date"]
+            if "state" in data: patient_wounds_user.state = data["state"]
+            if "city" in data: patient_wounds_user.city = data["city"]
+            patient_wounds_user.save()
 
 
         if (patient_wounds_user.role == WoundsUser.Provider):
