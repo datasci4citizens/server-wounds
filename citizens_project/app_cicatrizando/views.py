@@ -407,7 +407,7 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
         name_in_list =  _split_full_name(data.get("name"))
 
         user_email = data["google_email"]
-        patient_user, new_user = User.objects.get_or_create(
+        patient_user, new_user = User.objects.update_or_create(
             username= user_email,
             defaults={
                 "first_name" : name_in_list[0],
@@ -416,7 +416,7 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
             }
         )
 
-        patient_wounds_user, new_wounds_user = WoundsUser.objects.get_or_create(user=patient_user,
+        patient_wounds_user, new_wounds_user = WoundsUser.objects.update_or_create(user=patient_user,
             defaults={
                 "birth_date": data.get("birth_date", None),
                 "state": serializer.validate_state(data.get("state", "")),
@@ -425,7 +425,7 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
             }
         )
 
-        patient, new_patient = Patient.objects.get_or_create(wounds_user=patient_wounds_user,
+        patient, new_patient = Patient.objects.update_or_create(wounds_user=patient_wounds_user,
             defaults={
                 "contact_phone": data.get("contact_phone") or None,
                 "contact_email": data.get("contact_email") or None,
