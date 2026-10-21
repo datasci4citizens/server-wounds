@@ -386,7 +386,8 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
         responses={
             200: OpenApiResponse(description="Patient already exists, added specialist relation", response=PatientDataSerializer()),
             201: OpenApiResponse(description="Created new Patient entry", response=PatientDataSerializer()),
-            404: OpenApiResponse(description="Specialist does not exist")
+            404: OpenApiResponse(description="Specialist does not exist"),
+            409: OpenApiResponse(description="Patient is already a Specialist")
         }
     )
 
@@ -407,7 +408,7 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
         name_in_list =  _split_full_name(data.get("name"))
 
         user_email = data["google_email"]
-        patient_user, new = User.objects.get_or_create(
+        patient_user, new_user = User.objects.get_or_create(
             username= user_email,
             defaults={
                 "first_name" : name_in_list[0],
@@ -416,69 +417,67 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
             }
         )
 
-        if not new:
-            patient_wounds_user_object = WoundsUser.objects.get(user=patient_user)
-            patient = Patient.objects.get(wounds_user=patient_wounds_user_object)
-            patient.assigned_providers.add(provider)
+        if (new_user):
+            patient_user.first_name = name_in_list[0]
+            patient_user.last_name = name_in_list[1]
+            patient_user.email = user_email
 
-            if "comorbidities" in data:
-                comorbidities = Comorbidity.objects.filter(concept_id__in=data["comorbidities"])
-                patient.comorbidities.set(comorbidities)
-
-            # Update WoundsUser fields
-            if "birth_date" in data: patient_wounds_user_object.birth_date = data["birth_date"]
-            if "state" in data: patient_wounds_user_object.state = data["state"]
-            if "city" in data: patient_wounds_user_object.city = data["city"]
-            patient_wounds_user_object.save()
-
-            response = {
-                "id": patient.id,
-                "name": data.get("name"),
-                "birth_date": patient_wounds_user_object.birth_date,
-                "state": patient_wounds_user_object.state,
-                "city": patient_wounds_user_object.city,
-                "contact_phone": patient.contact_phone,
-                "contact_email": patient.contact_email,
-                "gender": patient.gender,
-                "height": patient.height,
-                "weight": patient.weight,
-                "smoking_status": patient.smoking_status,
-                "alcohol_consumption": patient.alcohol_consumption,
-                "assigned_specialists": [p.id for p in patient.assigned_providers.all()],
-                "comorbidities": ComorbiditySerializer(patient.comorbidities.all(), many=True).data
+        patient_wounds_user, new_wounds_user = WoundsUser.objects.get_or_create(user=patient_user,
+            defaults={
+                "birth_date": data.get("birth_date", None),
+                "state": serializer.validate_state(data.get("state", "")),
+                "city": data.get("city", ""),
+                "role": WoundsUser.Patient
             }
-            return Response(response, status=status.HTTP_200_OK)
-
-
-        patient_wounds_user = WoundsUser.objects.create(
-            user=patient_user,
-            birth_date = data.get("birth_date", None),
-            state = serializer.validate_state(data.get("state", "")),
-            city = data.get("city", ""),
-            role = WoundsUser.Patient,
         )
 
-        patient, _ = Patient.objects.get_or_create(
-            wounds_user=patient_wounds_user,
+        if not new_wounds_user:
+            if "birth_date" in data: patient_wounds_user.birth_date = data["birth_date"]
+            if "state" in data: patient_wounds_user.state = data["state"]
+            if "city" in data: patient_wounds_user.city = data["city"]
+            patient_wounds_user.save()
+
+
+        if (patient_wounds_user.role == WoundsUser.Provider):
+            
+            return Response(
+                {"detail": "This user is already registered as a specialist."},
+                status=status.HTTP_409_CONFLICT
+            )
+        elif (patient_wounds_user.role != WoundsUser.Patient):
+            patient_wounds_user.role = WoundsUser.Patient
+
+
+        patient, new_patient = Patient.objects.get_or_create(wounds_user=patient_wounds_user,
             defaults={
-                "contact_phone": data.get("contact_phone") or None,
-                "contact_email": data.get("contact_email") or None,
-                "gender": data.get("gender") or None,
-                "height": data.get("height") or None,
-                "weight": data.get("weight") or None,
-                "smoking_status": data.get("smoking_status") or None,
+                "contact_phone": data.get("contact_phone"),
+                "contact_email": data.get("contact_email"),
+                "gender": data.get("gender"),
+                "height": data.get("height"),
+                "weight": data.get("weight"),
+                "smoking_status": data.get("smoking_status"),
                 "alcohol_consumption": data.get("alcohol_consumption") or [],
             }
         )
-        
+        if(new_patient):
+
+            patient.contact_phone = data.get("contact_phone")
+            patient.contact_email = data.get("contact_email")
+            patient.gender = data.get("gender")
+            patient.height = data.get("height")
+            patient.weight = data.get("weight")
+            patient.smoking_status = data.get("smoking_status")
+            patient.alcohol_consumption = data.get("alcohol_consumption")
+            
         patient.assigned_providers.add(provider)
+            
+
         
         if "comorbidities" in data:
             comorbidities = Comorbidity.objects.filter(concept_id__in=data["comorbidities"])
             patient.comorbidities.set(comorbidities)
 
         response = {
-          
             "id": patient.id,
             "name": data.get("name"),
             "birth_date": patient_wounds_user.birth_date,
@@ -494,7 +493,12 @@ class SpecialistPatientRegisterView(viewsets.ViewSet):
             "assigned_specialists": [p.id for p in patient.assigned_providers.all()],
             "comorbidities": ComorbiditySerializer(patient.comorbidities.all(), many=True).data
         }
-        return Response(response, status=status.HTTP_201_CREATED)
+        if (new_patient or new_user or new_wounds_user):
+            return_status = status.HTTP_201_CREATED
+        else:
+            return_status = status.HTTP_200_OK
+
+        return Response(response, status=return_status)
 
 class RegisterPatientComorbidityView(viewsets.ViewSet):
     serializer = RegisterPatientComorbiditySerializer
