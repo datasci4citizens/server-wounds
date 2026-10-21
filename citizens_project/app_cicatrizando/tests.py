@@ -40,7 +40,7 @@ class BaseTestClass(APITestCase):
 
 
 
-	def _create_user_with_wounds_profile(self, *, email, role=None, full_name="", birth_date=None):
+	def _create_user_with_wounds_profile(self, *, email, role="", full_name="", birth_date=None, city="", state=""):
 		first_name, _, last_name = full_name.strip().partition(" ") if full_name else ("", "", "")
 		user = get_user_model().objects.create_user(
 			username=email,
@@ -51,9 +51,9 @@ class BaseTestClass(APITestCase):
 		wounds_user = WoundsUser.objects.create(
 			user=user,
 			birth_date=birth_date,
-			state="",
-			city="",
-			role=role or "",
+			state=state,
+			city=city,
+			role=role,
 		)
 		return user, wounds_user
 	
@@ -172,6 +172,54 @@ class AuthenticationErrorTests(BaseTestClass):
 
 class AuthenticationFlowTests(BaseTestClass):
 	@patch("app_cicatrizando.views.google_get_user_data")
+	def test_google_logged_in_user_can_be_registered_by_specialist(self, mock_google_get_user_data):
+		patient_email = "google.patient@example.com"
+		mock_google_get_user_data.return_value = {
+			"email": patient_email,
+			"given_name": "Google",
+			"family_name": "Patient",
+			"sub": "google-sub-patient-001",
+		}
+
+		# The patient logs in with Google before being registered by a specialist.
+		login_response = self.client.post(
+			self.google_login_url,
+			{"auth_code": "google-auth-code-patient"},
+			format="json",
+		)
+
+		self.assertEqual(login_response.status_code, 201)
+		patient_user = User.objects.get(email=patient_email)
+		patient_wounds_user = WoundsUser.objects.get(user=patient_user)
+
+		# Register the patient using a different authenticated specialist.
+		specialist_user, specialist_wounds_user = self._create_user_with_wounds_profile(
+			email="registering.specialist@example.com",
+			role=WoundsUser.Provider,
+			full_name="Registering Specialist",
+		)
+		provider = Provider.objects.create(
+			wounds_user=specialist_wounds_user,
+			professional_id="COREN-SP 99999",
+		)
+		self.client.force_authenticate(user=specialist_user)
+
+		response = self.client.post(
+			"/specialist/patient/register/",
+			{
+				"google_email": patient_email,
+			},
+			format="json",
+		)
+
+		self.assertEqual(response.status_code, 201)
+		self.assertEqual(User.objects.filter(email=patient_email).count(), 1)
+		self.assertEqual(WoundsUser.objects.filter(user=patient_user).count(), 1)
+		patient = Patient.objects.get(wounds_user=patient_wounds_user)
+		self.assertEqual(response.data["id"], patient.id)
+		self.assertTrue(patient.assigned_providers.filter(pk=provider.pk).exists())
+
+	@patch("app_cicatrizando.views.google_get_user_data")
 	def test_google_login_creates_new_user_returns_201(self, mock_google_get_user_data):
 		mock_google_get_user_data.return_value = {
 			"email": "new.user@example.com",
@@ -206,6 +254,8 @@ class AuthenticationFlowTests(BaseTestClass):
 			full_name="Existing User",
 			role=WoundsUser.Provider,
 			birth_date=date(1990, 1, 1),
+			state="SP",
+			city="São Paulo",
 		)
 		Provider.objects.create(
 			wounds_user=wounds_user,
