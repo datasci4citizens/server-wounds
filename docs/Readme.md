@@ -15,7 +15,7 @@
 ### 1. Prerequisites
 
 - Docker and Docker Compose installed
-- Python 3.14+ (for local development)
+- Python 3.12+ (for local development)
 - PostgreSQL client (for direct database access)
 
 ### 2. Configure Environment Variables
