@@ -16,7 +16,7 @@ Note:
 """
 
 import io
-from datetime import date, datetime
+from datetime import date
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
@@ -57,30 +57,15 @@ class BaseTestClass(APITestCase):
 		)
 		return user, wounds_user
 	
-	def _create_Provider_or_Patient(self, *, WoundsUser: WoundsUser, role: str, **fields):
-		if role not in ("patient", "provider"):
-			raise ValueError("role needs to be an exact match with: 'patient' or 'provider'")
-		
-		if role == 'patient':
-
-			patient = Patient.objects.create(
-
-
-			)
-			patient.wounds_user = WoundsUser
-
-		if role == 'provider':
-			provider = Provider.objects.create(
-				wounds_user = WoundsUser
-
-
-			)
-		return provider or patient
-
-
+	def _create_provider_or_patient(self, *, wounds_user: WoundsUser, role: str, **fields):
+		if role == WoundsUser.Patient:
+			return Patient.objects.create(wounds_user=wounds_user, **fields)
+		if role == WoundsUser.Provider:
+			return Provider.objects.create(wounds_user=wounds_user, **fields)
+		raise ValueError("role must be WoundsUser.Patient or WoundsUser.Provider")
 
 	def _auth_headers(self, access_token):
-		return {"HTTP_AUTHORIZATION": f"Bearer {access_token}"}
+		return {"HTTP_AUTHORIZATION": "Bearer " + access_token}
 
 # Authentication Tests
 class AuthenticationErrorTests(BaseTestClass):
@@ -410,8 +395,6 @@ class AuthenticationFlowTests(BaseTestClass):
 
 class ProviderFeaturesTests(BaseTestClass):
 
-	patientlisturl = "specialist/patients"
-
 	def setUp(self):
 		super().setUp()
 		# Use the proper instance method to create a user and assign to self
@@ -474,7 +457,7 @@ class WoundMVPTests(APITestCase):
             etiology=WoundEtiology.PRESSURE_INJURY,
             location=WoundLocation.CALCANEAL
         )
-        obs = Observation.objects.create(
+        Observation.objects.create(
             wound=wound,
             author=self.specialist_wounds_user,
             pain_level=3,
@@ -571,3 +554,80 @@ class WoundMVPTests(APITestCase):
         self.assertIsNotNone(response.data['image'])
         # Verification of the URL (it should point to our S3/SeaweedFS endpoint)
         self.assertIn('wounds/observations/test_wound', response.data['image'])
+
+    def test_provider_can_fill_provider_observation_data(self):
+        self.client.force_authenticate(user=self.specialist_user)
+
+        wound = Wound.objects.create(
+            patient=self.patient,
+            etiology=WoundEtiology.DIABETIC_FOOT,
+            location=WoundLocation.HALLUX,
+        )
+
+        file_io = io.BytesIO()
+        image = Image.new('RGB', (100, 100), color='red')
+        image.save(file_io, 'JPEG')
+        file_io.seek(0)
+        file_io.name = 'provider_observation.jpg'
+
+        response = self.client.post(
+            f'{self.wounds_url}{wound.id}/observations/',
+            {
+                'pain_level': 4,
+                'exudate_amount': 'Médio',
+                'exudate_type': 'Seroso',
+                'tissue_type': 'Granulação',
+                'periwound_skin': 'Inchaço/Edema',
+                'wound_edge': 'Bem definidas, não aderidas à base da ferida',
+                'image': file_io,
+            },
+            format='multipart',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        observation = Observation.objects.get(wound=wound)
+        self.assertEqual(observation.author, self.specialist_wounds_user)
+        self.assertEqual(observation.exudate_amount, 'Médio')
+        self.assertEqual(observation.exudate_type, 'Seroso')
+        self.assertEqual(observation.tissue_type, 'Granulação')
+        self.assertEqual(observation.periwound_skin, 'Inchaço/Edema')
+        self.assertEqual(observation.wound_edge, 'Bem definidas, não aderidas à base da ferida')
+        self.assertTrue(observation.image.name.endswith('provider_observation.jpg'))
+
+    def test_patient_can_fill_patient_observation_data(self):
+        self.client.force_authenticate(user=self.patient_user)
+
+        wound = Wound.objects.create(
+            patient=self.patient,
+            etiology=WoundEtiology.PRESSURE_INJURY,
+            location=WoundLocation.CALCANEAL,
+        )
+
+        response = self.client.post(
+            f'{self.wounds_url}{wound.id}/observations/',
+            {
+                'pain_level': 7,
+                'increase_in_exudate': True,
+                'exudate_amount': 'Muito',
+                'change_in_exudate_color': True,
+                'exudate_color': 'Amarelo',
+                'periwound_skin': 'Eritema menor que 2 cm',
+                'wound_edge': 'Definidas, contorno claramente visível, aderidas, niveladas com a base da ferida',
+                'odor_change': True,
+                'fever_24h': True,
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        observation = Observation.objects.get(wound=wound)
+        self.assertEqual(observation.author, self.patient_wounds_user)
+        self.assertEqual(observation.pain_level, 7)
+        self.assertTrue(observation.increase_in_exudate)
+        self.assertEqual(observation.exudate_amount, 'Muito')
+        self.assertTrue(observation.change_in_exudate_color)
+        self.assertEqual(observation.exudate_color, 'Amarelo')
+        self.assertEqual(observation.periwound_skin, 'Eritema menor que 2 cm')
+        self.assertEqual(observation.wound_edge, 'Definidas, contorno claramente visível, aderidas, niveladas com a base da ferida')
+        self.assertTrue(observation.odor_change)
+        self.assertTrue(observation.fever_24h)
