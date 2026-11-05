@@ -1,7 +1,7 @@
 Django==6.0.2
 djangorestframework==3.16.1
 djangorestframework-simplejwt==5.5.1
-psycopg[binary]==3.3.3
+psycopg[binary]==3.3.6
 google-auth==2.39.0
 requests==2.32.3
 drf-spectacular==0.28.0

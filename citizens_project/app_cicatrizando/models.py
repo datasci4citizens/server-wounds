@@ -4,7 +4,7 @@ from django.db import models
 
 django_user = get_user_model()
 
-class GenderChoices(models.TextChoices):
+class BirthGenderChoices(models.TextChoices):
     MALE = 'M', 'Masculino'
     FEMALE = 'F', 'Feminino'
 
@@ -17,10 +17,14 @@ class SmokingChoices(models.TextChoices):
 class AlcoholChoices(models.TextChoices):
     NONE = 'NONE', 'Não bebe'
     EX = 'EX', 'Ex-etilista'
+
+    # birthMale options
     LT21_M = 'LT21_M', 'Menos de 21 doses por semana (H)'
     GT21_M = 'GT21_M', 'Mais de 21 doses por semana (H)'
     LT13_M = 'LT13_M', 'Menos de 13 latas por semana (H)'
     GT13_M = 'GT13_M', 'Mais de 13 latas por semana (H)'
+
+    #birthFemale options
     LT14_F = 'LT14_F', 'Menos de 14 doses por semana (M)'
     GT14_F = 'GT14_F', 'Mais de 14 doses por semana (M)'
     LT9_F = 'LT9_F', 'Menos de 9 latas por semana (M)'
@@ -64,11 +68,20 @@ class ExudateAmount(models.TextChoices):
     HIGH = 'Muito', 'Muito'
 
 class ExudateType(models.TextChoices):
-    SEROUS = 'Seroso', 'Seroso'
-    PURULENT = 'Purulento', 'Purulento'
-    SANGUINEOUS = 'Sanguinolento', 'Sanguinolento'
+    SEROUS          = 'Seroso', 'Seroso'
+    PURULENT        = 'Purulento', 'Purulento'
+    SANGUINEOUS     = 'Sanguinolento', 'Sanguinolento'
     SEROSANGUINEOUS = 'Serosanguinolento', 'Serosanguinolento'
-    ABSENT = 'Ausente', 'Ausente'
+    ABSENT          = 'Ausente', 'Ausente'
+
+class ExudateColor(models.TextChoices):
+    Clear   = "Transparente", "Transparente"
+    Yellow  = "Amarelo", "Amarelo"
+    Green   = "Verde", "Verde"
+    Brown   = "Marrom", "Marrom"
+    Red     = "Vermelho", "Vermelho"
+    Pink    = "Rosa", "Rosa"
+
 
 class TissueType(models.TextChoices):
     HEALED = 'Cicatrizado', 'Cicatrizado'
@@ -125,7 +138,7 @@ class Patient(models.Model):
     contact_email = models.EmailField(blank=True, null=True, max_length=50, unique = True)
     contact_phone = models.CharField(blank=True, null=True, max_length=15, unique = True) 
 
-    gender = models.CharField(max_length=1, choices=GenderChoices.choices, blank=True, null=True)
+    gender = models.CharField(max_length=1, choices=BirthGenderChoices.choices, blank=True, null=True)
     height = models.DecimalField(max_digits=4, decimal_places=2, validators=[MinValueValidator(0.0), MaxValueValidator(3.0)], blank=True, null=True)
     weight = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(0.0), MaxValueValidator(500.0)], blank=True, null=True)
     smoking_status = models.CharField(max_length=10, choices=SmokingChoices.choices, blank=True, null=True)
@@ -153,19 +166,27 @@ class Observation(models.Model):
     
     # Clinical Metrics
     pain_level = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)])
-    exudate_amount = models.CharField(max_length=20, choices=ExudateAmount.choices)
-    exudate_type = models.CharField(max_length=20, choices=ExudateType.choices)
-    tissue_type = models.CharField(max_length=20, choices=TissueType.choices)
-    dressing_changes = models.IntegerField()
-    periwound_skin = models.CharField(max_length=50, choices=PeriwoundSkinStatus.choices)
-    wound_edge = models.CharField(max_length=255, choices=WoundEdgeStatus.choices)
-    fever_24h = models.BooleanField(default=False)
+
+    increase_in_exudate = models.BooleanField(default=False)
+    exudate_amount = models.CharField(max_length=20, choices=ExudateAmount.choices, blank=True)
+    change_in_exudate_color = models.BooleanField(default=False)
+    exudate_color = models.CharField(max_length=20, choices=ExudateColor.choices, blank=True)
     
-    # Notes
+    periwound_skin = models.CharField(max_length=50, choices=PeriwoundSkinStatus.choices, blank=True)
+    wound_edge = models.CharField(max_length=255, choices=WoundEdgeStatus.choices, blank=True)
+
+    dressing_changes = models.IntegerField(null=True)
+    odor_change = models.BooleanField(default=False)
+    fever_24h = models.BooleanField(default=False)
+
+    #Provider-side only
+    exudate_type = models.CharField(max_length=20, choices=ExudateType.choices,blank=True)
+    tissue_type = models.CharField(max_length=20, choices=TissueType.choices, blank= True) 
+
     extra_notes = models.TextField(blank=True, null=True)
     patient_guidelines = models.TextField(blank=True, null=True)
+
     
-    # Media
     image = models.ImageField(upload_to='observations/', blank=True, null=True)
 
     class Meta:
