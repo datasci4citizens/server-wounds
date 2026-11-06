@@ -72,15 +72,13 @@ class ExudateType(models.TextChoices):
     PURULENT        = 'Purulento', 'Purulento'
     SANGUINEOUS     = 'Sanguinolento', 'Sanguinolento'
     SEROSANGUINEOUS = 'Serosanguinolento', 'Serosanguinolento'
-    ABSENT          = 'Ausente', 'Ausente'
 
 class ExudateColor(models.TextChoices):
-    Clear   = "Transparente", "Transparente"
-    Yellow  = "Amarelo", "Amarelo"
-    Green   = "Verde", "Verde"
-    Brown   = "Marrom", "Marrom"
-    Red     = "Vermelho", "Vermelho"
-    Pink    = "Rosa", "Rosa"
+    Clear   = "Transparente", "Transparente" # serous / seropulent 
+    Yellow  = "Amarelado", "Amarelado"  #serous / seropulent
+    Green   = "Esverdeado", "Esverdeado" # porulent
+    Brown   = "Amarronzado", "Amarronzado" # porulent
+    Red     = "Vermelho", "Vermelho"  # serosanguineous
 
 
 class TissueType(models.TextChoices):
@@ -91,7 +89,6 @@ class TissueType(models.TextChoices):
     NECROTIC = 'Necrótico', 'Necrótico'
 
 class PeriwoundSkinStatus(models.TextChoices):
-    EDEMA = 'Inchaço/Edema', 'Inchaço/Edema'
     ERYTHEMA_LT_2CM = 'Eritema menor que 2 cm', 'Eritema menor que 2 cm'
     ERYTHEMA_GT_2CM = 'Eritema maior que 2 cm', 'Eritema maior que 2 cm'
 
@@ -165,21 +162,24 @@ class Observation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
     # Clinical Metrics
+    pain_increased = models.BooleanField(default=False)
     pain_level = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)])
 
+    has_exudate = models.BooleanField(default=False)
     increase_in_exudate = models.BooleanField(default=False)
     exudate_amount = models.CharField(max_length=20, choices=ExudateAmount.choices, blank=True)
     change_in_exudate_color = models.BooleanField(default=False)
     exudate_color = models.CharField(max_length=20, choices=ExudateColor.choices, blank=True)
-    
+
+    has_swelling = models.BooleanField(default=False)
     periwound_skin = models.CharField(max_length=50, choices=PeriwoundSkinStatus.choices, blank=True)
-    wound_edge = models.CharField(max_length=255, choices=WoundEdgeStatus.choices, blank=True)
 
     dressing_changes = models.IntegerField(null=True)
     odor_change = models.BooleanField(default=False)
     fever_24h = models.BooleanField(default=False)
 
     #Provider-side only
+    wound_edge = models.CharField(max_length=255, choices=WoundEdgeStatus.choices, blank=True)
     exudate_type = models.CharField(max_length=20, choices=ExudateType.choices,blank=True)
     tissue_type = models.CharField(max_length=20, choices=TissueType.choices, blank= True) 
 

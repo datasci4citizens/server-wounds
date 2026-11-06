@@ -436,11 +436,14 @@ class WoundMVPTests(APITestCase):
         obs_url = f'{self.wounds_url}{wound_id}/observations/'
         obs_data = {
             "pain_level": 5,
+            "pain_increased": True,
+            "has_exudate": True,
             "exudate_amount": "Médio",
             "exudate_type": "Seroso",
             "tissue_type": "Granulação",
             "dressing_changes": 1,
-            "periwound_skin": "Inchaço/Edema",
+            "has_swelling": True,
+            "periwound_skin": "Eritema menor que 2 cm",
             "wound_edge": "Bem definidas, não aderidas à base da ferida",
             "fever_24h": False,
             "extra_notes": "Specialist confidential note",
@@ -449,6 +452,9 @@ class WoundMVPTests(APITestCase):
         response = self.client.post(obs_url, obs_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['extra_notes'], "Specialist confidential note")
+        self.assertTrue(response.data['pain_increased'])
+        self.assertTrue(response.data['has_exudate'])
+        self.assertTrue(response.data['has_swelling'])
 
     def test_patient_access_and_privacy(self):
         # Create a wound and observation first
@@ -461,11 +467,14 @@ class WoundMVPTests(APITestCase):
             wound=wound,
             author=self.specialist_wounds_user,
             pain_level=3,
+            pain_increased=True,
+            has_exudate=True,
             exudate_amount="Pouco",
             exudate_type="Seroso",
             tissue_type="Epitelização",
             dressing_changes=1,
             periwound_skin="Eritema menor que 2 cm",
+            has_swelling=True,
             wound_edge="Definidas, contorno claramente visível, aderidas, niveladas com a base da ferida",
             fever_24h=False,
             extra_notes="Specialist secret note",
@@ -487,6 +496,9 @@ class WoundMVPTests(APITestCase):
         self.assertEqual(len(response.data), 1)
         self.assertIsNone(response.data[0]['extra_notes'])
         self.assertEqual(response.data[0]['patient_guidelines'], "Guideline for patient")
+        self.assertTrue(response.data[0]['pain_increased'])
+        self.assertTrue(response.data[0]['has_exudate'])
+        self.assertTrue(response.data[0]['has_swelling'])
 
     def test_patient_cannot_create_wound(self):
         self.client.force_authenticate(user=self.patient_user)
@@ -536,11 +548,14 @@ class WoundMVPTests(APITestCase):
         obs_url = f'{self.wounds_url}{wound.id}/observations/'
         obs_data = {
             "pain_level": 5,
+            "pain_increased": True,
+            "has_exudate": True,
             "exudate_amount": "Médio",
             "exudate_type": "Seroso",
             "tissue_type": "Granulação",
             "dressing_changes": 1,
-            "periwound_skin": "Inchaço/Edema",
+            "has_swelling": True,
+            "periwound_skin": "Eritema menor que 2 cm",
             "wound_edge": "Bem definidas, não aderidas à base da ferida",
             "fever_24h": False,
             "image": file_io
@@ -574,10 +589,13 @@ class WoundMVPTests(APITestCase):
             f'{self.wounds_url}{wound.id}/observations/',
             {
                 'pain_level': 4,
+                'pain_increased': True,
+                'has_exudate': True,
                 'exudate_amount': 'Médio',
                 'exudate_type': 'Seroso',
                 'tissue_type': 'Granulação',
-                'periwound_skin': 'Inchaço/Edema',
+                'has_swelling': True,
+                'periwound_skin': 'Eritema menor que 2 cm',
                 'wound_edge': 'Bem definidas, não aderidas à base da ferida',
                 'image': file_io,
             },
@@ -590,9 +608,13 @@ class WoundMVPTests(APITestCase):
         self.assertEqual(observation.exudate_amount, 'Médio')
         self.assertEqual(observation.exudate_type, 'Seroso')
         self.assertEqual(observation.tissue_type, 'Granulação')
-        self.assertEqual(observation.periwound_skin, 'Inchaço/Edema')
+        self.assertTrue(observation.pain_increased)
+        self.assertTrue(observation.has_exudate)
+        self.assertTrue(observation.has_swelling)
+        self.assertEqual(observation.periwound_skin, 'Eritema menor que 2 cm')
         self.assertEqual(observation.wound_edge, 'Bem definidas, não aderidas à base da ferida')
-        self.assertTrue(observation.image.name.endswith('provider_observation.jpg'))
+        self.assertTrue(observation.image.name.startswith('observations/provider_observation'))
+        self.assertTrue(observation.image.name.endswith('.jpg'))
 
     def test_patient_can_fill_patient_observation_data(self):
         self.client.force_authenticate(user=self.patient_user)
@@ -607,10 +629,13 @@ class WoundMVPTests(APITestCase):
             f'{self.wounds_url}{wound.id}/observations/',
             {
                 'pain_level': 7,
+                'pain_increased': True,
+                'has_exudate': True,
                 'increase_in_exudate': True,
                 'exudate_amount': 'Muito',
                 'change_in_exudate_color': True,
-                'exudate_color': 'Amarelo',
+                'exudate_color': 'Amarelado',
+                'has_swelling': True,
                 'periwound_skin': 'Eritema menor que 2 cm',
                 'wound_edge': 'Definidas, contorno claramente visível, aderidas, niveladas com a base da ferida',
                 'odor_change': True,
@@ -626,7 +651,10 @@ class WoundMVPTests(APITestCase):
         self.assertTrue(observation.increase_in_exudate)
         self.assertEqual(observation.exudate_amount, 'Muito')
         self.assertTrue(observation.change_in_exudate_color)
-        self.assertEqual(observation.exudate_color, 'Amarelo')
+        self.assertEqual(observation.exudate_color, 'Amarelado')
+        self.assertTrue(observation.pain_increased)
+        self.assertTrue(observation.has_exudate)
+        self.assertTrue(observation.has_swelling)
         self.assertEqual(observation.periwound_skin, 'Eritema menor que 2 cm')
         self.assertEqual(observation.wound_edge, 'Definidas, contorno claramente visível, aderidas, niveladas com a base da ferida')
         self.assertTrue(observation.odor_change)

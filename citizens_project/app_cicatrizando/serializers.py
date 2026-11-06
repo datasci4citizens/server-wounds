@@ -202,10 +202,12 @@ class ObservationSerializer(serializers.ModelSerializer):
         model = Observation
         fields = [
             'id', 'wound', 'author', 'author_name', 'author_role', 'created_at', 
-            'pain_level', 'exudate_amount', 'exudate_type', 
+            'pain_increased', 'pain_level', 'has_exudate', 'increase_in_exudate',
+            'exudate_amount', 'change_in_exudate_color', 'exudate_color',
+            'has_swelling', 'exudate_type',
             'tissue_type', 'dressing_changes', 'periwound_skin', 
-            'wound_edge', 'fever_24h', 'extra_notes', 'patient_guidelines', 'image', 'increase_in_exudate',
-            'change_in_exudate_color', 'exudate_color', 'odor_change'
+            'wound_edge', 'fever_24h', 'extra_notes', 'patient_guidelines', 'image',
+            'odor_change'
         ]
         read_only_fields = ['wound', 'author']
 
