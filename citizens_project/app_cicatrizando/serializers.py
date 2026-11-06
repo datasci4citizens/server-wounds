@@ -202,10 +202,12 @@ class ObservationSerializer(serializers.ModelSerializer):
         model = Observation
         fields = [
             'id', 'wound', 'author', 'author_name', 'author_role', 'created_at', 
-            'pain_level', 'exudate_amount', 'exudate_type', 
+            'pain_increased', 'pain_level', 'has_exudate', 'exudate_increased',
+            'exudate_amount', 'change_in_exudate_color', 'exudate_color',
+            'has_swelling', 'exudate_type',
             'tissue_type', 'dressing_changes', 'periwound_skin', 
-            'wound_edge', 'fever_24h', 'extra_notes', 'patient_guidelines', 'image', 'increase_in_exudate',
-            'change_in_exudate_color', 'exudate_color', 'odor_change'
+            'wound_edge', 'fever_24h', 'extra_notes', 'patient_guidelines', 'image',
+            'odor_change'
         ]
         read_only_fields = ['wound', 'author']
 
@@ -221,6 +223,8 @@ class ObservationSerializer(serializers.ModelSerializer):
             # 'Pr' is Provider/Specialist in the model choices
             if viewer_role == 'Pa' and author_role == 'Pr':
                 representation['extra_notes'] = None
+
+            
         
         # Fix image URL: ensure it's absolute and accessible by the browser.
         # We replace the internal docker host 'seaweedfs-s3' with 'localhost'.
