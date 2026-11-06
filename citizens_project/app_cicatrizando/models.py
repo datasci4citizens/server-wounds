@@ -166,12 +166,13 @@ class Observation(models.Model):
     pain_level = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)])
 
     has_exudate = models.BooleanField(default=False)
-    increase_in_exudate = models.BooleanField(default=False)
+    exudate_increased = models.BooleanField(default=False)
     exudate_amount = models.CharField(max_length=20, choices=ExudateAmount.choices, blank=True)
     change_in_exudate_color = models.BooleanField(default=False)
     exudate_color = models.CharField(max_length=20, choices=ExudateColor.choices, blank=True)
 
     has_swelling = models.BooleanField(default=False)
+    redness_increased = models.BooleanField(default=False)
     periwound_skin = models.CharField(max_length=50, choices=PeriwoundSkinStatus.choices, blank=True)
 
     dressing_changes = models.IntegerField(null=True)
