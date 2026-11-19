@@ -204,7 +204,7 @@ class ObservationSerializer(serializers.ModelSerializer):
             'id', 'wound', 'author', 'author_name', 'author_role', 'created_at', 
             'pain_increased', 'pain_level', 'has_exudate', 'exudate_increased',
             'exudate_amount', 'change_in_exudate_color', 'exudate_color',
-            'has_swelling', 'exudate_type',
+            'has_swelling', 'redness_increased', 'exudate_type',
             'tissue_type', 'dressing_changes', 'periwound_skin', 
             'wound_edge', 'fever_24h', 'extra_notes', 'patient_guidelines', 'image',
             'odor_change'
