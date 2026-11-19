@@ -218,6 +218,14 @@ class ObservationSerializer(serializers.ModelSerializer):
             attrs['exudate_increased'] = False
             attrs['change_in_exudate_color'] = False
             attrs['exudate_color'] = ''
+        # Se periwound_skin for um valor de eritema válido, redness_increased deve
+        # ser true (classificar a pele peri-lesional como eritema implica que a
+        # vermelhidão aumentou).
+        if attrs.get('periwound_skin') in (
+            'Eritema menor que 2 cm',
+            'Eritema maior que 2 cm',
+        ):
+            attrs['redness_increased'] = True
         if not attrs.get('redness_increased'):
             attrs['periwound_skin'] = ''
         return attrs
