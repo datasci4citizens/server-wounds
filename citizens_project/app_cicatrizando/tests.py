@@ -631,7 +631,7 @@ class WoundMVPTests(APITestCase):
                 'pain_level': 7,
                 'pain_increased': True,
                 'has_exudate': True,
-                'increase_in_exudate': True,
+                'exudate_increased': True,
                 'exudate_amount': 'Muito',
                 'change_in_exudate_color': True,
                 'exudate_color': 'Amarelado',
@@ -648,7 +648,7 @@ class WoundMVPTests(APITestCase):
         observation = Observation.objects.get(wound=wound)
         self.assertEqual(observation.author, self.patient_wounds_user)
         self.assertEqual(observation.pain_level, 7)
-        self.assertTrue(observation.increase_in_exudate)
+        self.assertTrue(observation.exudate_increased)
         self.assertEqual(observation.exudate_amount, 'Muito')
         self.assertTrue(observation.change_in_exudate_color)
         self.assertEqual(observation.exudate_color, 'Amarelado')
@@ -659,3 +659,30 @@ class WoundMVPTests(APITestCase):
         self.assertEqual(observation.wound_edge, 'Definidas, contorno claramente visível, aderidas, niveladas com a base da ferida')
         self.assertTrue(observation.odor_change)
         self.assertTrue(observation.fever_24h)
+
+    def test_redness_increased_is_exposed_by_api(self):
+        self.client.force_authenticate(user=self.patient_user)
+
+        wound = Wound.objects.create(
+            patient=self.patient,
+            etiology=WoundEtiology.PRESSURE_INJURY,
+            location=WoundLocation.CALCANEAL,
+        )
+
+        response = self.client.post(
+            f'{self.wounds_url}{wound.id}/observations/',
+            {
+                'pain_level': 2,
+                'redness_increased': True,
+                'periwound_skin': 'Eritema maior que 2 cm',
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(response.data['redness_increased'])
+        self.assertEqual(response.data['periwound_skin'], 'Eritema maior que 2 cm')
+
+        list_response = self.client.get(f'{self.wounds_url}{wound.id}/observations/')
+        self.assertEqual(list_response.status_code, status.HTTP_200_OK)
+        self.assertTrue(list_response.data[0]['redness_increased'])

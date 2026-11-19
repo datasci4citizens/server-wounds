@@ -204,12 +204,31 @@ class ObservationSerializer(serializers.ModelSerializer):
             'id', 'wound', 'author', 'author_name', 'author_role', 'created_at', 
             'pain_increased', 'pain_level', 'has_exudate', 'exudate_increased',
             'exudate_amount', 'change_in_exudate_color', 'exudate_color',
-            'has_swelling', 'exudate_type',
+            'has_swelling', 'redness_increased', 'exudate_type',
             'tissue_type', 'dressing_changes', 'periwound_skin', 
             'wound_edge', 'fever_24h', 'extra_notes', 'patient_guidelines', 'image',
             'odor_change'
         ]
         read_only_fields = ['wound', 'author']
+
+    def validate(self, attrs):
+        # Validação condicional: campos filhso só fazem sentido quando o campo-pai está ativo.
+        # Se o pai for falso, forçar o filho a false/vazio para evitar dados contraditórios.
+        if not attrs.get('has_exudate'):
+            attrs['exudate_increased'] = False
+            attrs['change_in_exudate_color'] = False
+            attrs['exudate_color'] = ''
+        # Se periwound_skin for um valor de eritema válido, redness_increased deve
+        # ser true (classificar a pele peri-lesional como eritema implica que a
+        # vermelhidão aumentou).
+        if attrs.get('periwound_skin') in (
+            'Eritema menor que 2 cm',
+            'Eritema maior que 2 cm',
+        ):
+            attrs['redness_increased'] = True
+        if not attrs.get('redness_increased'):
+            attrs['periwound_skin'] = ''
+        return attrs
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
