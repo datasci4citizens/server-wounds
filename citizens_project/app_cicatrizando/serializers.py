@@ -211,6 +211,17 @@ class ObservationSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['wound', 'author']
 
+    def validate(self, attrs):
+        # Validação condicional: campos filhso só fazem sentido quando o campo-pai está ativo.
+        # Se o pai for falso, forçar o filho a false/vazio para evitar dados contraditórios.
+        if not attrs.get('has_exudate'):
+            attrs['exudate_increased'] = False
+            attrs['change_in_exudate_color'] = False
+            attrs['exudate_color'] = ''
+        if not attrs.get('redness_increased'):
+            attrs['periwound_skin'] = ''
+        return attrs
+
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         request = self.context.get('request')
